@@ -1,0 +1,81 @@
+@startuml SupplyChain_Pro_UseCase
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+
+actor Guest
+actor "Free User" as FreeUser
+actor "Premium User" as PremiumUser
+
+Guest <|-- FreeUser
+FreeUser <|-- PremiumUser
+
+' hidden links: mengunci urutan vertikal aktor (Guest atas, Premium bawah)
+' supaya tidak dibalik oleh auto-layout graphviz
+Guest -[hidden]-> FreeUser
+FreeUser -[hidden]-> PremiumUser
+
+rectangle "SupplyChain Pro" {
+
+  package "Autentikasi" {
+    usecase "Registrasi / Login /\nReset Password" as UC1
+  }
+
+  package "Discover Supplier" {
+    usecase "Cari & Filter Supplier" as UC2
+  }
+
+  package "Detail Supplier" {
+    usecase "Lihat Detail Supplier\n(field gratis)" as UC3
+    usecase "Lihat Field Premium\nSupplier" as UC3a
+  }
+
+  package "Perbandingan Supplier" {
+    usecase "Bandingkan Supplier\n(maks 3)" as UC5
+    usecase "Lihat Data Operasional\nPremium pada Perbandingan" as UC5a
+    usecase "Export Perbandingan\nke PDF" as UC6
+  }
+
+  package "Dokumen Supplier" {
+    usecase "Download Dokumen\nGratis" as UC7
+    usecase "Download Dokumen\nPremium" as UC7a
+  }
+
+  package "Wishlist & Langganan" {
+    usecase "Simpan Supplier\nke Wishlist" as UC4
+    usecase "Lihat Halaman\nUpgrade Premium" as UC8
+    usecase "Checkout Upgrade\nke Premium (simulasi)" as UC9
+  }
+}
+
+' --- Guest: akses tanpa login ---
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC5
+Guest --> UC7
+
+' --- Free User: tambahan setelah login ---
+FreeUser --> UC4
+FreeUser --> UC8
+FreeUser --> UC9
+
+' --- Premium User: tambahan akses data/berbayar ---
+PremiumUser --> UC3a
+PremiumUser --> UC5a
+PremiumUser --> UC6
+PremiumUser --> UC7a
+
+' --- Relasi include/extend sesuai logika bisnis (dijaga lokal per modul) ---
+UC3a ..> UC3 : <<extend>>
+UC5a ..> UC5 : <<extend>>
+UC6 ..> UC5 : <<include>>
+UC7a ..> UC7 : <<extend>>
+
+@enduml

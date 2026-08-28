@@ -1,0 +1,80 @@
+<mxfile host="app.diagrams.net" modified="2026-08-28T00:00:00.000Z" agent="SupplyChainPro-PBL" version="24.7.17" type="device">
+  <diagram id="erd-supplychain-pro" name="ERD - SupplyChain Pro">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1650" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- users -->
+        <mxCell id="tbl_users" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;users&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;name&lt;br&gt;email (UNIQUE)&lt;br&gt;email_verified_at&lt;br&gt;password&lt;br&gt;remember_token&lt;br&gt;subscription_tier (enum)&lt;br&gt;premium_expires_at&lt;br&gt;avatar&lt;br&gt;created_at&lt;br&gt;updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="240" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- suppliers -->
+        <mxCell id="tbl_suppliers" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;suppliers&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;name&lt;br&gt;slug (UNIQUE)&lt;br&gt;logo&lt;br&gt;tagline&lt;br&gt;description&lt;br&gt;country&lt;br&gt;city&lt;br&gt;industry_category&lt;br&gt;is_verified&lt;br&gt;about &lt;i&gt;(free)&lt;/i&gt;&lt;br&gt;website &lt;i&gt;(free)&lt;/i&gt;&lt;br&gt;founded_year &lt;i&gt;(premium)&lt;/i&gt;&lt;br&gt;company_size &lt;i&gt;(premium)&lt;/i&gt;&lt;br&gt;production_capacity &lt;i&gt;(premium)&lt;/i&gt;&lt;br&gt;moq &lt;i&gt;(premium)&lt;/i&gt;&lt;br&gt;avg_lead_time &lt;i&gt;(premium)&lt;/i&gt;&lt;br&gt;carbon_footprint_report &lt;i&gt;(premium)&lt;/i&gt;&lt;br&gt;created_at&lt;br&gt;updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="260" height="400" as="geometry" />
+        </mxCell>
+
+        <!-- supplier_tags -->
+        <mxCell id="tbl_supplier_tags" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;supplier_tags&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;supplier_id (FK)&lt;br&gt;tag_name" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="780" y="40" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- certifications -->
+        <mxCell id="tbl_certifications" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;certifications&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;name&lt;br&gt;category" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- supplier_certifications (pivot) -->
+        <mxCell id="tbl_supplier_certifications" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;supplier_certifications&lt;/div&gt;&lt;div style=&quot;text-align:center;font-size:10px;&quot;&gt;(pivot: suppliers M:N certifications)&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;supplier_id (FK)&lt;br&gt;certification_id (FK)&lt;br&gt;status (enum)&lt;br&gt;is_premium_field" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="360" y="500" width="260" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- documents -->
+        <mxCell id="tbl_documents" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;documents&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;supplier_id (FK)&lt;br&gt;title&lt;br&gt;type&lt;br&gt;file_path&lt;br&gt;external_url&lt;br&gt;is_premium&lt;br&gt;created_at&lt;br&gt;updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="780" y="220" width="240" height="220" as="geometry" />
+        </mxCell>
+
+        <!-- saved_suppliers (pivot) -->
+        <mxCell id="tbl_saved_suppliers" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;saved_suppliers&lt;/div&gt;&lt;div style=&quot;text-align:center;font-size:10px;&quot;&gt;(pivot: users M:N suppliers - wishlist)&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;user_id (FK)&lt;br&gt;supplier_id (FK)&lt;br&gt;created_at&lt;br&gt;updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="40" y="700" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- comparisons (unused) -->
+        <mxCell id="tbl_comparisons" value="&lt;div style=&quot;text-align:center;font-weight:bold;font-size:13px;&quot;&gt;comparisons&lt;/div&gt;&lt;div style=&quot;text-align:center;font-size:10px;&quot;&gt;(belum dipakai fitur manapun)&lt;/div&gt;&lt;hr size=&quot;1&quot;/&gt;&lt;b&gt;id&lt;/b&gt; (PK)&lt;br&gt;user_id (FK)&lt;br&gt;supplier_ids (json)&lt;br&gt;created_at&lt;br&gt;updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingBottom=6;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="720" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="edge1" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=ERmany;startFill=0;endFill=0;fontSize=10;" edge="1" parent="1" source="tbl_suppliers" target="tbl_supplier_tags">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge2" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=ERmany;startFill=0;endFill=0;fontSize=10;" edge="1" parent="1" source="tbl_suppliers" target="tbl_documents">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge3" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=ERmany;startFill=0;endFill=0;fontSize=10;" edge="1" parent="1" source="tbl_suppliers" target="tbl_supplier_certifications">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge4" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=ERmany;startFill=0;endFill=0;fontSize=10;" edge="1" parent="1" source="tbl_certifications" target="tbl_supplier_certifications">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge5" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=ERmany;startFill=0;endFill=0;fontSize=10;" edge="1" parent="1" source="tbl_users" target="tbl_saved_suppliers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge6" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=ERmany;startFill=0;endFill=0;fontSize=10;" edge="1" parent="1" source="tbl_suppliers" target="tbl_saved_suppliers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge7" value="1..N (belum dipakai)" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=ERmany;startFill=0;endFill=0;fontSize=10;dashed=1;" edge="1" parent="1" source="tbl_users" target="tbl_comparisons">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
