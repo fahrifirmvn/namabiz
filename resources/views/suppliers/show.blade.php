@@ -28,12 +28,21 @@
                     <h2 class="font-bold text-lg">{{ $supplier->name }}</h2>
                     <p class="text-text-secondary text-sm mb-4">{{ $supplier->tagline }}</p>
 
-                    <a href="#" class="block bg-black text-white rounded-lg py-2.5 font-medium hover:bg-gray-800">Contact Supplier</a>
+                    @if(filled($supplier->website))
+                        @php
+                            $websiteUrl = \Illuminate\Support\Str::startsWith($supplier->website, ['http://', 'https://'])
+                                ? $supplier->website
+                                : 'https://' . $supplier->website;
+                        @endphp
+                        <a href="{{ $websiteUrl }}" target="_blank" rel="noopener noreferrer" class="block bg-black text-white rounded-lg py-2.5 font-medium text-center hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">Visit Supplier Website</a>
+                    @else
+                        <span class="block border border-gray-200 text-gray-500 rounded-lg py-2.5 font-medium text-center">No Website Listed</span>
+                    @endif
 
                     @if(auth()->user()?->isPremium())
                         <form method="POST" action="{{ route('suppliers.save', $supplier) }}" class="mt-2">
                             @csrf
-                            <button type="submit" class="w-full border border-gray-300 rounded-lg py-2.5 font-medium hover:bg-gray-50">
+                            <button type="submit" class="w-full border border-gray-300 rounded-lg py-2.5 font-medium hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">
                                 {{ $isSaved ? 'Saved' : 'Save Profile' }}
                             </button>
                         </form>
@@ -74,7 +83,13 @@
                             </div>
                             <div class="flex justify-between">
                                 <dt class="text-text-secondary">Website</dt>
-                                <dd class="font-medium">{{ $supplier->website }}</dd>
+                                <dd class="font-medium text-right">
+                                    @if(filled($supplier->website))
+                                        <a href="{{ $websiteUrl ?? (\Illuminate\Support\Str::startsWith($supplier->website, ['http://', 'https://']) ? $supplier->website : 'https://' . $supplier->website) }}" target="_blank" rel="noopener noreferrer" class="text-gray-900 underline underline-offset-2 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black">{{ $supplier->website }}</a>
+                                    @else
+                                        <span class="text-gray-500">Not listed</span>
+                                    @endif
+                                </dd>
                             </div>
                         </dl>
 

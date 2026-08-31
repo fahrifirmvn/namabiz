@@ -60,8 +60,8 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <label class="text-sm text-text-secondary">Sort by:</label>
-                    <select wire:model.live="sort" class="rounded-lg border-gray-300 text-sm">
+                    <label for="supplier-sort" class="text-sm text-text-secondary">Sort by:</label>
+                    <select id="supplier-sort" wire:model.live="sort" class="rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-black">
                         <option value="relevance">Relevance</option>
                         <option value="newest">Newest</option>
                         <option value="company_size">Company Size</option>
@@ -73,7 +73,7 @@
                 @forelse($suppliers as $supplier)
                     <x-supplier-card :supplier="$supplier" />
                 @empty
-                    <p class="text-text-secondary col-span-2">No suppliers match your filters.</p>
+                    <p class="text-text-secondary md:col-span-2" role="status">No suppliers match your filters.</p>
                 @endforelse
             </div>
 

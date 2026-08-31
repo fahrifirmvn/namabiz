@@ -13,8 +13,8 @@
             <button type="button"
                     x-data
                     x-on:click="Livewire.dispatch('open-premium-modal', { documentTitle: 'Comparison PDF' })"
-                    class="inline-flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed">
-                <x-heroicon-o-lock-closed class="w-4 h-4" /> Download Comparison (PDF)
+                    class="inline-flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">
+                <x-heroicon-o-lock-closed aria-hidden="true" class="w-4 h-4" /> Download Comparison (PDF)
             </button>
         @endif
     </div>
@@ -28,21 +28,22 @@
                         <th class="text-left font-medium p-4 min-w-[200px]">
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-lg font-bold text-text-primary">{{ $supplier->name }}</span>
-                                <button wire:click="removeSupplier({{ $supplier->id }})" class="text-gray-400 hover:text-gray-600">
-                                    <x-heroicon-o-x-mark class="w-4 h-4" />
+                                <button type="button" wire:click="removeSupplier({{ $supplier->id }})" aria-label="Remove {{ $supplier->name }} from comparison" class="text-gray-500 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded">
+                                    <x-heroicon-o-x-mark aria-hidden="true" class="w-4 h-4" />
                                 </button>
                             </div>
                         </th>
                     @endforeach
                     @if($this->suppliers->count() < 3)
                         <th class="text-left font-medium p-4 min-w-[200px] relative">
-                            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Add Supplier"
-                                   class="w-full rounded-lg border-gray-300 text-sm font-normal">
+                            <label for="compare-supplier-search" class="sr-only">Add supplier to comparison</label>
+                            <input id="compare-supplier-search" type="search" wire:model.live.debounce.300ms="search" placeholder="Add Supplier"
+                                   class="w-full rounded-lg border-gray-300 text-sm font-normal focus:ring-2 focus:ring-black">
                             @if($this->searchResults->isNotEmpty())
                                 <div class="absolute z-10 left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
                                     @foreach($this->searchResults as $result)
-                                        <button wire:click="addSupplier({{ $result->id }})"
-                                                class="block w-full text-left px-3 py-2 text-sm font-normal hover:bg-gray-50">
+                                        <button type="button" wire:click="addSupplier({{ $result->id }})"
+                                                class="block w-full text-left px-3 py-2 text-sm font-normal hover:bg-gray-50 focus-visible:bg-gray-50">
                                             {{ $result->name }}
                                         </button>
                                     @endforeach
@@ -136,7 +137,7 @@
                                 @if(!$doc)
                                     <span class="text-gray-300">N/A</span>
                                 @elseif($doc->is_premium && !$this->isPremium)
-                                    <span class="inline-flex items-center gap-1 text-gray-400"><x-heroicon-o-lock-closed class="w-3.5 h-3.5" /> Premium</span>
+                                    <span class="inline-flex items-center gap-1 text-gray-600"><x-heroicon-o-lock-closed aria-hidden="true" class="w-3.5 h-3.5" /> Premium</span>
                                 @else
                                     <span class="inline-flex items-center gap-1 text-text-primary"><x-heroicon-o-document-text class="w-4 h-4" /> {{ ucfirst($doc->type) }}</span>
                                 @endif
