@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->hasMany(Comparison::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(SupplierReview::class);
+    }
+
     public function isPremium(): bool
     {
         return PremiumAccess::isPremium($this);

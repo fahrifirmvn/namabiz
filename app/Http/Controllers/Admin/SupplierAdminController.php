@@ -7,6 +7,7 @@ use App\Models\Certification;
 use App\Models\Document;
 use App\Models\IndustryCategory;
 use App\Models\Supplier;
+use App\Models\SupplierReview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -122,7 +123,7 @@ class SupplierAdminController extends Controller
      */
     public function edit(Supplier $supplier): View
     {
-        $supplier->load(['documents', 'tags', 'certifications.certification']);
+        $supplier->load(['documents', 'tags', 'certifications.certification', 'reviews.user']);
         $categories = IndustryCategory::orderBy('name')->get();
         $certifications = Certification::orderBy('category')->orderBy('name')->get();
 
@@ -280,5 +281,41 @@ class SupplierAdminController extends Controller
 
         return redirect()->route('admin.suppliers.edit', $supplier)
             ->with('success', "Dokumen '{$title}' berhasil dihapus.");
+    }
+
+    /**
+     * Provide an official vendor response to a review.
+     */
+    public function replyReview(Request $request, Supplier $supplier, SupplierReview $review): RedirectResponse
+    {
+        if ($review->supplier_id !== $supplier->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'supplier_reply' => ['required', 'string', 'max:3000'],
+        ]);
+
+        $review->supplier_reply = $validated['supplier_reply'];
+        $review->replied_at = now();
+        $review->save();
+
+        return redirect()->route('admin.suppliers.edit', $supplier)
+            ->with('success', 'Tanggapan resmi pemasok berhasil dipublikasikan.');
+    }
+
+    /**
+     * Delete a review as an administrator.
+     */
+    public function destroyReview(Supplier $supplier, SupplierReview $review): RedirectResponse
+    {
+        if ($review->supplier_id !== $supplier->id) {
+            abort(404);
+        }
+
+        $review->delete();
+
+        return redirect()->route('admin.suppliers.edit', $supplier)
+            ->with('success', 'Ulasan pembeli berhasil dihapus.');
     }
 }

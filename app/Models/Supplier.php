@@ -58,4 +58,46 @@ class Supplier extends Model
     {
         return $this->hasMany(SavedSupplier::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(SupplierReview::class);
+    }
+
+    public function getAverageRatingAttribute(): ?float
+    {
+        if ($this->relationLoaded('reviews')) {
+            $avg = $this->reviews->avg('rating');
+        } else {
+            $avg = $this->reviews()->avg('rating');
+        }
+
+        return $avg ? round((float) $avg, 1) : null;
+    }
+
+    public function ratingBreakdown(): array
+    {
+        $reviews = $this->relationLoaded('reviews') ? $this->reviews : $this->reviews()->get();
+        $total = $reviews->count();
+
+        $breakdown = [
+            5 => 0,
+            4 => 0,
+            3 => 0,
+            2 => 0,
+            1 => 0,
+        ];
+
+        if ($total === 0) {
+            return $breakdown;
+        }
+
+        foreach ($reviews as $rev) {
+            if (isset($breakdown[$rev->rating])) {
+                $breakdown[$rev->rating]++;
+            }
+        }
+
+        return array_map(fn ($count) => round(($count / $total) * 100), $breakdown);
+    }
 }

@@ -392,5 +392,103 @@
                 </form>
             </div>
         </div>
+
+        <!-- Panel Moderasi Ulasan & Tanggapan Resmi Pemasok -->
+        <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                        <x-heroicon-o-star class="w-5 h-5 text-amber-500" />
+                        <span>Moderasi Ulasan & Tanggapan Resmi Vendor</span>
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        Kelola ulasan pembeli, tinjau parameter evaluasi mutu, dan publikasikan tanggapan resmi atas nama vendor.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-full">
+                        ★ {{ $supplier->average_rating ? number_format($supplier->average_rating, 1) : '0.0' }} ({{ $supplier->reviews->count() }} ulasan)
+                    </span>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                @forelse($supplier->reviews as $rev)
+                    <div class="p-5 rounded-2xl bg-surface border border-gray-200 space-y-4">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="font-bold text-sm text-gray-900">{{ $rev->user?->name ?? 'Pengguna Pembeli' }}</h4>
+                                    <span class="text-2xs text-gray-400">({{ $rev->user?->email }})</span>
+                                    @if($rev->is_verified_buyer)
+                                        <span class="text-2xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
+                                            Pembeli Terverifikasi
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-2xs text-gray-500 mt-0.5">
+                                    {{ $rev->reviewer_role ? $rev->reviewer_role . ' di ' : '' }}{{ $rev->reviewer_company ?: '-' }} &bull; {{ $rev->created_at->format('d M Y, H:i') }}
+                                </p>
+                            </div>
+
+                            <form method="POST" action="{{ route('admin.suppliers.reviews.destroy', [$supplier, $rev]) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini secara permanen?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition" title="Hapus Ulasan Moderasi">
+                                    <x-heroicon-o-trash class="w-4 h-4" />
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Ratings Grid -->
+                        <div class="flex flex-wrap items-center gap-2 text-2xs">
+                            <span class="bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-md">
+                                Keseluruhan: {{ $rev->rating }}/5 ★
+                            </span>
+                            <span class="bg-gray-100 text-gray-700 font-medium px-2.5 py-1 rounded-md">
+                                Kualitas: {{ $rev->quality_rating }}/5
+                            </span>
+                            <span class="bg-gray-100 text-gray-700 font-medium px-2.5 py-1 rounded-md">
+                                Lead Time: {{ $rev->delivery_rating }}/5
+                            </span>
+                            <span class="bg-gray-100 text-gray-700 font-medium px-2.5 py-1 rounded-md">
+                                Layanan: {{ $rev->service_rating }}/5
+                            </span>
+                        </div>
+
+                        <!-- Review Text -->
+                        <div class="bg-white p-3.5 rounded-xl border border-gray-100 text-xs">
+                            <h5 class="font-bold text-gray-900 mb-1">{{ $rev->title }}</h5>
+                            <p class="text-gray-700 leading-relaxed">{{ $rev->comment }}</p>
+                        </div>
+
+                        <!-- Official Reply Form -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <h5 class="text-xs font-bold text-gray-900 mb-2 flex items-center gap-1.5">
+                                <x-heroicon-s-chat-bubble-left-right class="w-4 h-4 text-black" />
+                                <span>Tanggapan Resmi Vendor / Admin</span>
+                                @if($rev->replied_at)
+                                    <span class="text-2xs font-normal text-gray-500">(Dibalas {{ $rev->replied_at->format('d M Y, H:i') }})</span>
+                                @endif
+                            </h5>
+
+                            <form method="POST" action="{{ route('admin.suppliers.reviews.reply', [$supplier, $rev]) }}" class="space-y-3">
+                                @csrf
+                                <textarea name="supplier_reply" rows="2" required placeholder="Tulis klarifikasi atau ucapan terima kasih resmi dari pihak vendor pemasok..." class="w-full text-xs rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black leading-relaxed">{{ old('supplier_reply', $rev->supplier_reply) }}</textarea>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="px-4 py-1.5 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-semibold shadow-xs transition">
+                                        {{ $rev->supplier_reply ? 'Perbarui Tanggapan' : 'Publikasikan Tanggapan Resmi' }}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div class="py-8 text-center text-xs text-gray-400 bg-surface rounded-xl border border-dashed border-gray-200">
+                        Belum ada ulasan pembeli untuk pemasok ini.
+                    </div>
+                @endforelse
+            </div>
+        </div>
     </div>
 </x-app-layout>

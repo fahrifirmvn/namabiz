@@ -107,7 +107,7 @@ class DiscoverSearch extends Component
     #[Computed]
     public function recommendedSuppliers()
     {
-        return Supplier::with(['tags', 'certifications.certification', 'documents'])
+        return Supplier::with(['tags', 'certifications.certification', 'documents', 'reviews'])
             ->orderByDesc('is_verified')
             ->limit(3)
             ->get();
@@ -122,7 +122,7 @@ class DiscoverSearch extends Component
     public function render()
     {
         $suppliersQuery = Supplier::query()
-            ->with(['tags', 'certifications.certification', 'documents'])
+            ->with(['tags', 'certifications.certification', 'documents', 'reviews'])
             ->when($this->query !== '', function ($q) {
                 $keyword = trim($this->query);
                 $q->where(function ($sub) use ($keyword) {

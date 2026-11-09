@@ -10,6 +10,7 @@ use App\Http\Controllers\ProcurementCollectionController;
 use App\Http\Controllers\SavedSupplierController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SupplierReviewController;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,8 @@ Route::prefix('admin')
         Route::post('suppliers/{supplier}/documents', [SupplierAdminController::class, 'storeDocument'])->name('suppliers.documents.store');
         Route::delete('suppliers/{supplier}/documents/{document}', [SupplierAdminController::class, 'destroyDocument'])->name('suppliers.documents.destroy');
         Route::post('suppliers/{supplier}/certifications', [SupplierAdminController::class, 'syncCertifications'])->name('suppliers.certifications.sync');
+        Route::post('suppliers/{supplier}/reviews/{review}/reply', [SupplierAdminController::class, 'replyReview'])->name('suppliers.reviews.reply');
+        Route::delete('suppliers/{supplier}/reviews/{review}', [SupplierAdminController::class, 'destroyReview'])->name('suppliers.reviews.destroy');
 
         Route::resource('categories', CategoryAdminController::class)->except(['show']);
         Route::resource('certifications', CertificationAdminController::class)->except(['show']);
@@ -52,6 +55,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/procurement-collections', [ProcurementCollectionController::class, 'store'])->name('collections.store');
     Route::put('/procurement-collections/{collection}', [ProcurementCollectionController::class, 'update'])->name('collections.update');
     Route::delete('/procurement-collections/{collection}', [ProcurementCollectionController::class, 'destroy'])->name('collections.destroy');
+
+    Route::post('/suppliers/{supplier:slug}/reviews', [SupplierReviewController::class, 'store'])->name('suppliers.reviews.store');
+    Route::delete('/suppliers/{supplier:slug}/reviews/{review}', [SupplierReviewController::class, 'destroy'])->name('suppliers.reviews.destroy');
 
     Route::get('/upgrade', [SubscriptionController::class, 'show'])->name('upgrade');
     Route::post('/upgrade/checkout', [SubscriptionController::class, 'checkout'])->name('upgrade.checkout');
