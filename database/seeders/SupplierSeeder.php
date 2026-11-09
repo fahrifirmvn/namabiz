@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Certification;
 use App\Models\Supplier;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -31,7 +30,7 @@ class SupplierSeeder extends Seeder
                     'city' => 'Jakarta',
                     'industry_category' => 'Packaging Manufacturer',
                     'is_verified' => true,
-                    'about' => "Atlas Packaging is a leading provider of innovative and sustainable packaging solutions. With over two decades of industry experience, we specialize in developing robust industrial packaging and tailored consumer-facing designs that prioritize both durability and environmental responsibility. Our facilities are equipped with state-of-the-art machinery capable of high-volume production while maintaining stringent quality control standards.",
+                    'about' => 'Atlas Packaging is a leading provider of innovative and sustainable packaging solutions. With over two decades of industry experience, we specialize in developing robust industrial packaging and tailored consumer-facing designs that prioritize both durability and environmental responsibility. Our facilities are equipped with state-of-the-art machinery capable of high-volume production while maintaining stringent quality control standards.',
                     'website' => 'atlas-pkg.com',
                     'founded_year' => 1998,
                     'company_size' => '500-1000 employees',

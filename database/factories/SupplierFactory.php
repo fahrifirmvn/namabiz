@@ -43,4 +43,3 @@ class SupplierFactory extends Factory
         ];
     }
 }
-

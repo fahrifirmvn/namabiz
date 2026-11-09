@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Document;
+use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +19,12 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'supplier_id' => Supplier::factory(),
+            'title' => $this->faker->words(3, true),
+            'type' => 'pdf',
+            'file_path' => null,
+            'external_url' => $this->faker->url(),
+            'is_premium' => false,
         ];
     }
 }
