@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Certification;
 use App\Models\Supplier;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -29,6 +30,8 @@ class SupplierSeeder extends Seeder
                     'country' => 'Indonesia',
                     'city' => 'Jakarta',
                     'industry_category' => 'Packaging Manufacturer',
+                    'whatsapp' => '081288899901',
+                    'email' => 'sales@atlas-pkg.com',
                     'is_verified' => true,
                     'about' => 'Atlas Packaging is a leading provider of innovative and sustainable packaging solutions. With over two decades of industry experience, we specialize in developing robust industrial packaging and tailored consumer-facing designs that prioritize both durability and environmental responsibility. Our facilities are equipped with state-of-the-art machinery capable of high-volume production while maintaining stringent quality control standards.',
                     'website' => 'atlas-pkg.com',
@@ -59,6 +62,8 @@ class SupplierSeeder extends Seeder
                     'country' => 'Indonesia',
                     'city' => 'Surabaya',
                     'industry_category' => 'Distributor & Converter',
+                    'whatsapp' => '081377766602',
+                    'email' => 'halo@nusantaraplastics.id',
                     'is_verified' => false,
                     'about' => 'Nusantara Plastics Hub distributes and converts flexible packaging materials for FMCG and industrial clients across Southeast Asia.',
                     'website' => 'nusantaraplastics.id',
@@ -87,6 +92,8 @@ class SupplierSeeder extends Seeder
                     'country' => 'Indonesia',
                     'city' => 'Bandung',
                     'industry_category' => 'Contract Manufacturer',
+                    'whatsapp' => '081122334403',
+                    'email' => 'contact@indo-tech.co.id',
                     'is_verified' => false,
                     'about' => 'Indo-Tech Solutions provides precision manufacturing services for electronics enclosures and industrial components.',
                     'website' => 'indo-tech.co.id',
@@ -102,7 +109,7 @@ class SupplierSeeder extends Seeder
                     [$iso9001, 'partial', false],
                 ],
                 'documents' => [
-                    ['title' => 'Company Profile', 'type' => 'web_link', 'is_premium' => false],
+                    ['title' => 'Company Profile', 'type' => 'pdf', 'is_premium' => false],
                 ],
             ],
             [
@@ -113,6 +120,8 @@ class SupplierSeeder extends Seeder
                     'country' => 'United States',
                     'city' => 'Austin',
                     'industry_category' => 'Raw Material Supplier',
+                    'whatsapp' => '081555444004',
+                    'email' => 'sales@globalfoundries-mfg.com',
                     'is_verified' => true,
                     'about' => 'Global Foundries Manufacturing operates multiple casting facilities providing precision metal components to the automotive and aerospace industries.',
                     'website' => 'globalfoundries-mfg.com',
@@ -142,6 +151,8 @@ class SupplierSeeder extends Seeder
                     'country' => 'China',
                     'city' => 'Shenzhen',
                     'industry_category' => 'Contract Manufacturer',
+                    'whatsapp' => '081999888005',
+                    'email' => 'inquiry@apex-mfg.cn',
                     'is_verified' => true,
                     'about' => 'Apex Manufacturing delivers electronics assembly and PCB manufacturing at scale for global OEM clients.',
                     'website' => 'apex-mfg.cn',
@@ -236,8 +247,58 @@ class SupplierSeeder extends Seeder
 
     private function storePlaceholderFile(string $supplierName, string $documentTitle): string
     {
-        $path = 'documents/'.Str::slug("{$supplierName}-{$documentTitle}").'.txt';
-        Storage::disk('public')->put($path, "Placeholder file for \"{$documentTitle}\" ({$supplierName}).");
+        $path = 'documents/'.Str::slug("{$supplierName}-{$documentTitle}").'.pdf';
+
+        $html = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <title>".htmlspecialchars($documentTitle)."</title>
+            <style>
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 40px; color: #111827; line-height: 1.6; }
+                .header-table { width: 100%; border-bottom: 2px solid #111827; padding-bottom: 12px; margin-bottom: 25px; }
+                .logo { font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.5px; }
+                .badge { display: inline-block; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+                h1 { font-size: 24px; color: #111827; margin: 0 0 6px 0; font-weight: 800; }
+                .meta { font-size: 12px; color: #6b7280; margin-bottom: 25px; }
+                .card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+                .card-title { font-size: 14px; font-weight: bold; color: #111827; margin-top: 0; margin-bottom: 8px; }
+                .footer { font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 12px; text-align: center; margin-top: 40px; }
+            </style>
+        </head>
+        <body>
+            <table class='header-table'>
+                <tr>
+                    <td><div class='logo'>NAMABIZ DIRECTORY</div></td>
+                    <td style='text-align: right;'><span class='badge'>ARSIP TERVERIFIKASI</span></td>
+                </tr>
+            </table>
+
+            <h1>".htmlspecialchars($documentTitle)."</h1>
+            <div class='meta'>
+                Pemasok Terdaftar: <strong>".htmlspecialchars($supplierName).'</strong> &bull; Terbit: '.date('d F Y')."
+            </div>
+
+            <div class='card'>
+                <div class='card-title'>Ringkasan Dokumen Legal & Profil Pabrik</div>
+                <p>Dokumen ini merupakan publikasi resmi (".htmlspecialchars($documentTitle).') dari <strong>'.htmlspecialchars($supplierName)."</strong> yang tersimpan di arsip digital Namabiz.</p>
+                <p>Berkas ini berisi rincian kapabilitas permesinan, sertifikasi manajemen mutu internasional, portofolio produk pasokan industri, serta kontak resmi departemen pengadaan / penjualan.</p>
+            </div>
+
+            <div class='footer'>
+                Dokumen Resmi Namabiz &bull; Diunduh untuk kebutuhan evaluasi pengadaan B2B &bull; Hak Cipta &copy; ".date('Y').' '.htmlspecialchars($supplierName).'
+            </div>
+        </body>
+        </html>
+        ';
+
+        try {
+            $pdfContent = Pdf::loadHTML($html)->output();
+            Storage::disk('public')->put($path, $pdfContent);
+        } catch (\Throwable $e) {
+            Storage::disk('public')->put($path, "PDF Generated fallback for {$documentTitle}");
+        }
 
         return $path;
     }

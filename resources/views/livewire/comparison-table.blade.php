@@ -45,7 +45,7 @@
             </button>
 
             <!-- Ekspor PDF -->
-            <a href="{{ route('compare.download') }}"
+            <a href="{{ route('compare.download', ['suppliers' => $supplierIds]) }}"
                class="px-4 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 transition inline-flex items-center gap-1.5 shadow-2xs">
                 <x-heroicon-o-arrow-down-tray class="w-4 h-4 text-gray-500" />
                 <span>Ekspor PDF</span>
