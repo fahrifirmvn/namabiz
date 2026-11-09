@@ -64,9 +64,9 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('SupplyChain Pro')
-            ->assertSee('Discover')
-            ->assertSee('Analytics');
+            ->assertSee('Namabiz')
+            ->assertSee('Jelajahi')
+            ->assertSee('Bandingkan');
     }
 
     public function test_users_can_logout(): void

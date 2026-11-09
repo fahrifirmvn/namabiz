@@ -9,22 +9,26 @@ use Livewire\Component;
 
 class ComparisonTable extends Component
 {
-    public const MAX_SUPPLIERS = 3;
+    public const MAX_SUPPLIERS = 4;
 
     public array $supplierIds = [];
 
     public string $search = '';
 
+    public bool $onlyDifferences = false;
+
     public function mount(): void
     {
-        $this->supplierIds = Supplier::query()->inRandomOrder()->limit(2)->pluck('id')->toArray();
+        $requested = request('suppliers', request('ids'));
+        if (is_array($requested) && ! empty($requested)) {
+            $this->supplierIds = array_slice(array_map('intval', $requested), 0, self::MAX_SUPPLIERS);
+        } elseif (is_string($requested) && ! empty($requested)) {
+            $this->supplierIds = array_slice(array_map('intval', explode(',', $requested)), 0, self::MAX_SUPPLIERS);
+        } else {
+            $this->supplierIds = Supplier::query()->orderByDesc('is_verified')->limit(3)->pluck('id')->toArray();
+        }
     }
 
-    /**
-     * Re-enforce the max-supplier cap on every request, since $supplierIds is a
-     * public property and could otherwise be set directly to an arbitrary array
-     * via a crafted Livewire "updates" payload, bypassing addSupplier()'s check.
-     */
     public function updated($name): void
     {
         if ($name === 'supplierIds') {
@@ -35,6 +39,11 @@ class ComparisonTable extends Component
     public function hydrate(): void
     {
         $this->supplierIds = array_slice(array_unique($this->supplierIds), 0, self::MAX_SUPPLIERS);
+    }
+
+    public function toggleDifferences(): void
+    {
+        $this->onlyDifferences = ! $this->onlyDifferences;
     }
 
     public function addSupplier(int $supplierId): void
@@ -55,7 +64,7 @@ class ComparisonTable extends Component
     #[Computed]
     public function suppliers()
     {
-        return Supplier::with(['certifications.certification', 'documents'])
+        return Supplier::with(['certifications.certification', 'documents', 'tags'])
             ->whereIn('id', $this->supplierIds)
             ->get()
             ->sortBy(fn ($supplier) => array_search($supplier->id, $this->supplierIds))

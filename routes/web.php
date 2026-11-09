@@ -7,6 +7,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\SavedSupplierController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SupplierController;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +21,11 @@ Route::prefix('admin')
         Route::put('/suppliers/{supplier}', [SupplierAdminController::class, 'update'])->name('suppliers.update');
     });
 
-Route::get('/', [DiscoverController::class, 'index'])->name('discover.index');
+Route::get('/', function () {
+    return view('landing');
+})->name('home');
+
+Route::get('/discover', [DiscoverController::class, 'index'])->name('discover.index');
 Route::get('/suppliers/{supplier:slug}', [SupplierController::class, 'show'])->name('suppliers.show');
 Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
 
@@ -45,9 +50,17 @@ Route::middleware('auth')->group(function () {
     })->name('logout');
 });
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::get('dashboard', function () {
+    $user = auth()->user();
+    $savedSuppliers = $user->savedSuppliers()->with('supplier.tags')->get()->pluck('supplier')->filter();
+    if ($savedSuppliers->isEmpty()) {
+        $savedSuppliers = Supplier::with('tags')->limit(4)->get();
+    }
+    $recentlyViewed = Supplier::with('tags')->inRandomOrder()->limit(3)->get();
+    $recommended = Supplier::with('tags')->latest()->limit(3)->get();
+
+    return view('dashboard', compact('savedSuppliers', 'recentlyViewed', 'recommended'));
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::view('profile', 'profile')
     ->middleware(['auth'])

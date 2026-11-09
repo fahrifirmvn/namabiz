@@ -13,6 +13,12 @@ class SupplierController extends Controller
         $isSaved = auth()->check()
             && $supplier->savedBy()->where('user_id', auth()->id())->exists();
 
-        return view('suppliers.show', compact('supplier', 'isSaved'));
+        $similarSuppliers = Supplier::with(['tags', 'certifications.certification'])
+            ->where('industry_category', $supplier->industry_category)
+            ->where('id', '!=', $supplier->id)
+            ->limit(3)
+            ->get();
+
+        return view('suppliers.show', compact('supplier', 'isSaved', 'similarSuppliers'));
     }
 }
