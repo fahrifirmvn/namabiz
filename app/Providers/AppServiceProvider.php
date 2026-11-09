@@ -27,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
             return PremiumAccess::isPremium($user);
         });
 
+        Gate::define('access-admin', function (User $user): bool {
+            return $user->isAdmin();
+        });
+
         Blade::if('premium', function () {
             return PremiumAccess::isPremium(auth()->user());
         });

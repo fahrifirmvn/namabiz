@@ -42,4 +42,25 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the user has an active premium subscription.
+     */
+    public function premium(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'subscription_tier' => 'premium',
+            'premium_expires_at' => now()->addYear(),
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_admin' => true,
+        ]);
+    }
 }

@@ -27,6 +27,11 @@ class DatabaseSeeder extends Seeder
             'premium_expires_at' => now()->addYear(),
         ]);
 
+        User::factory()->admin()->create([
+            'name' => 'Admin Namabiz',
+            'email' => 'admin@namabiz.com',
+        ]);
+
         $this->call([
             CertificationSeeder::class,
             SupplierSeeder::class,

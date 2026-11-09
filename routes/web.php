@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SupplierAdminController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\DocumentController;
@@ -9,6 +10,15 @@ use App\Http\Controllers\SupplierController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'can:access-admin'])
+    ->group(function () {
+        Route::get('/suppliers', [SupplierAdminController::class, 'index'])->name('suppliers.index');
+        Route::get('/suppliers/{supplier}/edit', [SupplierAdminController::class, 'edit'])->name('suppliers.edit');
+        Route::put('/suppliers/{supplier}', [SupplierAdminController::class, 'update'])->name('suppliers.update');
+    });
 
 Route::get('/', [DiscoverController::class, 'index'])->name('discover.index');
 Route::get('/suppliers/{supplier:slug}', [SupplierController::class, 'show'])->name('suppliers.show');

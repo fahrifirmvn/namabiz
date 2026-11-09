@@ -45,6 +45,9 @@
                              class="absolute right-0 mt-2 w-44 bg-white rounded-lg border border-gray-200 shadow-lg py-1 text-sm">
                             <a href="{{ route('profile') }}" class="block px-4 py-2 hover:bg-gray-50 focus-visible:bg-gray-50">Profile</a>
                             <a href="{{ route('upgrade') }}" class="block px-4 py-2 hover:bg-gray-50 focus-visible:bg-gray-50">Billing</a>
+                            @can('access-admin')
+                                <a href="{{ route('admin.suppliers.index') }}" class="block px-4 py-2 hover:bg-gray-50 focus-visible:bg-gray-50 font-medium text-emerald-700">Admin Portal</a>
+                            @endcan
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-50 focus-visible:bg-gray-50">Logout</button>
@@ -87,6 +90,9 @@
                     <a href="{{ route('upgrade') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-gray-50">Upgrade</a>
                 @endunless
                 @auth
+                    @can('access-admin')
+                        <a href="{{ route('admin.suppliers.index') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-gray-50">Admin Portal</a>
+                    @endcan
                     <a href="{{ route('profile') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-gray-50">Profile</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
