@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryAdminController;
+use App\Http\Controllers\Admin\CertificationAdminController;
 use App\Http\Controllers\Admin\SupplierAdminController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\DiscoverController;
@@ -19,6 +21,10 @@ Route::prefix('admin')
         Route::resource('suppliers', SupplierAdminController::class)->except(['show']);
         Route::post('suppliers/{supplier}/documents', [SupplierAdminController::class, 'storeDocument'])->name('suppliers.documents.store');
         Route::delete('suppliers/{supplier}/documents/{document}', [SupplierAdminController::class, 'destroyDocument'])->name('suppliers.documents.destroy');
+        Route::post('suppliers/{supplier}/certifications', [SupplierAdminController::class, 'syncCertifications'])->name('suppliers.certifications.sync');
+
+        Route::resource('categories', CategoryAdminController::class)->except(['show']);
+        Route::resource('certifications', CertificationAdminController::class)->except(['show']);
     });
 
 Route::get('/', function () {

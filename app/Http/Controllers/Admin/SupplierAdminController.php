@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Certification;
 use App\Models\Document;
+use App\Models\IndustryCategory;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,7 +44,9 @@ class SupplierAdminController extends Controller
      */
     public function create(): View
     {
-        return view('admin.suppliers.create');
+        $categories = IndustryCategory::orderBy('name')->get();
+
+        return view('admin.suppliers.create', compact('categories'));
     }
 
     /**
@@ -119,8 +123,35 @@ class SupplierAdminController extends Controller
     public function edit(Supplier $supplier): View
     {
         $supplier->load(['documents', 'tags', 'certifications.certification']);
+        $categories = IndustryCategory::orderBy('name')->get();
+        $certifications = Certification::orderBy('category')->orderBy('name')->get();
 
-        return view('admin.suppliers.edit', compact('supplier'));
+        return view('admin.suppliers.edit', compact('supplier', 'categories', 'certifications'));
+    }
+
+    /**
+     * Synchronize certifications for the supplier.
+     */
+    public function syncCertifications(Request $request, Supplier $supplier): RedirectResponse
+    {
+        $submitted = $request->input('certifications', []);
+
+        // Delete existing certifications and recreate from submitted active ones
+        $supplier->certifications()->delete();
+
+        foreach ($submitted as $certId => $data) {
+            if (! empty($data['active'])) {
+                $status = in_array($data['status'] ?? '', ['verified', 'partial', 'not_verified']) ? $data['status'] : 'verified';
+                $supplier->certifications()->create([
+                    'certification_id' => (int) $certId,
+                    'status' => $status,
+                    'is_premium_field' => ! empty($data['is_premium_field']),
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.suppliers.edit', $supplier)
+            ->with('success', 'Daftar sertifikasi standar pemasok berhasil diperbarui.');
     }
 
     /**

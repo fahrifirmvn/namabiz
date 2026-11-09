@@ -81,8 +81,8 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Kategori Industri *</label>
                         <select name="industry_category" required class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
-                            @foreach(['Packaging Manufacturer', 'Distributor & Converter', 'Contract Manufacturer', 'Raw Material Supplier', 'Spices & Coconut', 'Logistics & Warehousing', 'Chemical & Ingredients'] as $cat)
-                                <option value="{{ $cat }}" {{ (old('industry_category', $supplier->industry_category) == $cat) ? 'selected' : '' }}>{{ $cat }}</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->name }}" {{ (old('industry_category', $supplier->industry_category) == $cat->name) ? 'selected' : '' }}>{{ $cat->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -219,6 +219,69 @@
                 </button>
             </div>
         </form>
+
+        <!-- ================= PANEL MANAJEMEN SERTIFIKASI PEMASOK ================= -->
+        <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Sertifikasi Standar & Legalitas Mutu</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Tandai sertifikasi resmi yang dimiliki pemasok dan tentukan status validasi auditnya.</p>
+                </div>
+                <a href="{{ route('admin.certifications.index') }}" class="text-xs font-semibold text-black hover:underline flex items-center gap-1">
+                    Kelola Master Sertifikasi &rarr;
+                </a>
+            </div>
+
+            <form method="POST" action="{{ route('admin.suppliers.certifications.sync', $supplier) }}" class="space-y-4">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @php
+                        $assignedCertMap = $supplier->certifications->keyBy('certification_id');
+                    @endphp
+                    @foreach($certifications as $cert)
+                        @php
+                            $assigned = $assignedCertMap->get($cert->id);
+                        @endphp
+                        <div class="p-4 rounded-xl border {{ $assigned ? 'border-emerald-300 bg-emerald-50/20' : 'border-gray-200 bg-surface' }} space-y-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="certifications[{{ $cert->id }}][active]" value="1" {{ $assigned ? 'checked' : '' }} class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
+                                    <span class="text-xs font-bold text-gray-900">{{ $cert->name }}</span>
+                                </label>
+                                <span class="text-2xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                                    {{ $cert->category }}
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100 text-xs">
+                                <div>
+                                    <label class="block text-2xs font-semibold text-gray-600 mb-1">Status Validasi</label>
+                                    <select name="certifications[{{ $cert->id }}][status]" class="w-full text-2xs rounded-lg border-gray-300 py-1 px-2 focus:border-black focus:ring-black">
+                                        <option value="verified" {{ ($assigned?->status === 'verified' || !$assigned) ? 'selected' : '' }}>Terverifikasi Resmi</option>
+                                        <option value="partial" {{ $assigned?->status === 'partial' ? 'selected' : '' }}>Dalam Proses Audit</option>
+                                        <option value="not_verified" {{ $assigned?->status === 'not_verified' ? 'selected' : '' }}>Belum Terverifikasi</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-2xs font-semibold text-gray-600 mb-1">Akses Informasi</label>
+                                    <label class="inline-flex items-center gap-1.5 mt-1 cursor-pointer">
+                                        <input type="checkbox" name="certifications[{{ $cert->id }}][is_premium_field]" value="1" {{ $assigned?->is_premium_field ? 'checked' : '' }} class="w-3.5 h-3.5 rounded border-gray-300 text-black focus:ring-black" />
+                                        <span class="text-2xs text-gray-700">Khusus Premium</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="flex justify-end pt-3">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white font-semibold text-xs shadow-xs transition inline-flex items-center gap-1.5">
+                        <x-heroicon-o-shield-check class="w-4 h-4" />
+                        <span>Simpan Pengaturan Sertifikasi</span>
+                    </button>
+                </div>
+            </form>
+        </div>
 
         <!-- ================= PANEL MANAJEMEN DOKUMEN (PDF) ================= -->
         <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">

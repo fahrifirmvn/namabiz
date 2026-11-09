@@ -46,9 +46,8 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Kategori Industri *</label>
                         <select name="industry_category" required class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
-                            <option value="">Pilih Kategori</option>
-                            @foreach(['Packaging Manufacturer', 'Distributor & Converter', 'Contract Manufacturer', 'Raw Material Supplier', 'Spices & Coconut', 'Logistics & Warehousing', 'Chemical & Ingredients'] as $cat)
-                                <option value="{{ $cat }}" {{ old('industry_category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->name }}" {{ old('industry_category') == $cat->name ? 'selected' : '' }}>{{ $cat->name }}</option>
                             @endforeach
                         </select>
                     </div>

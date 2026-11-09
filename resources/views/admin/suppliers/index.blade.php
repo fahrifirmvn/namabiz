@@ -19,6 +19,8 @@
     </x-slot>
 
     <div class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        @include('admin.partials.nav')
+
         @if (session('success'))
             <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl flex items-center justify-between text-sm shadow-xs">
                 <div class="flex items-center gap-2.5">
