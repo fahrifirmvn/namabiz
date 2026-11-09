@@ -1,0 +1,181 @@
+<mxfile host="app.diagrams.net" modified="2026-09-29T12:30:00.000Z" agent="Antigravity" version="24.0.0" type="device">
+  <diagram id="android-architecture-diagram" name="Arsitektur Android App">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1050" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- JUDUL UTAMA -->
+        <mxCell id="TITLE_BAR" value="DIAGRAM ARSITEKTUR APLIKASI ANDROID (MVVM &amp; OFFLINE-FIRST) - SUPPLYCHAIN PRO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0F172A;fontFamily=Helvetica;fontSize=15;fontStyle=1;fontColor=#FFFFFF;arcSize=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1420" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- ======================================================== -->
+        <!-- LAYER 1: PRESENTATION LAYER (UI) -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_UI" value="1. PRESENTATION / UI LAYER (Android Jetpack &amp; Material Design 3)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="1420" height="135" as="geometry" />
+        </mxCell>
+        <mxCell id="UI_1" value="Katalog / Discover Screen&#xa;(Search &amp; Filter Chip)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;shadow=1;" vertex="1" parent="LANE_UI">
+          <mxGeometry x="30" y="45" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="UI_2" value="In-App QR Scanner View&#xa;(CameraX Viewfinder)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;shadow=1;" vertex="1" parent="LANE_UI">
+          <mxGeometry x="280" y="45" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="UI_3" value="Detail Supplier &amp; Brosur&#xa;(Sticky WhatsApp Bar)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#10B981;strokeWidth=2;fontFamily=Helvetica;fontSize=11;fontColor=#065F46;fontStyle=1;shadow=1;" vertex="1" parent="LANE_UI">
+          <mxGeometry x="530" y="45" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="UI_4" value="Komparasi Spesifikasi&#xa;(2-Column Side-by-Side)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;shadow=1;" vertex="1" parent="LANE_UI">
+          <mxGeometry x="780" y="45" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="UI_5" value="Koleksi &amp; Dokumen Saya&#xa;(Offline PDF Viewer &amp; Bookmark)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;shadow=1;" vertex="1" parent="LANE_UI">
+          <mxGeometry x="1030" y="45" width="230" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ======================================================== -->
+        <!-- LAYER 2: VIEWMODEL & DOMAIN LAYER -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_VM" value="2. VIEWMODEL &amp; DOMAIN LAYER (State Management &amp; Coroutines)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="235" width="1420" height="150" as="geometry" />
+        </mxCell>
+        <!-- ViewModels -->
+        <mxCell id="VM_DISCOVER" value="DiscoverViewModel&#xa;(StateFlow&lt;UiState&gt;)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_VM">
+          <mxGeometry x="50" y="45" width="180" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="VM_DETAIL" value="SupplierDetailViewModel&#xa;(Gating &amp; Docs State)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_VM">
+          <mxGeometry x="260" y="45" width="180" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="VM_COMPARE" value="CompareViewModel&#xa;(Side-by-Side Specs)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_VM">
+          <mxGeometry x="470" y="45" width="180" height="45" as="geometry" />
+        </mxCell>
+        <!-- Use Cases (Domain) -->
+        <mxCell id="UC_BOX" value="Domain Use Cases: SearchSuppliersUseCase • DownloadBrochureUseCase • ToggleBookmarkUseCase • ExportComparePdfUseCase" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_VM">
+          <mxGeometry x="50" y="100" width="1150" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- ======================================================== -->
+        <!-- LAYER 3: DATA LAYER (REPOSITORY PATTERN) -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_DATA" value="3. DATA &amp; REPOSITORY LAYER (Single Source of Truth &amp; Offline-First)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="405" width="1420" height="270" as="geometry" />
+        </mxCell>
+        <!-- Central Repositories -->
+        <mxCell id="REPO_MAIN" value="Repositories: SupplierRepository • DocumentRepository • AuthRepository" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#0F172A;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#FFFFFF;fontStyle=1;shadow=1;" vertex="1" parent="LANE_DATA">
+          <mxGeometry x="50" y="45" width="1150" height="40" as="geometry" />
+        </mxCell>
+        <!-- Local Data Source -->
+        <mxCell id="SRC_LOCAL" value="LOCAL DATA SOURCE (Room DB &amp; Storage)&#xa;• CachedSuppliersDao (Offline Directory)&#xa;• OfflineDocumentsDao (Metadata PDF)&#xa;• ScanHistoryDao (Riwayat QR Scan)&#xa;• Encrypted DataStore (Token Sesi User)&#xa;• Internal Storage (/data/data/.../pdf_cache)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#0284C7;strokeWidth=2;fontFamily=Helvetica;fontSize=11;fontColor=#0369A1;fontStyle=1;align=left;spacingLeft=15;shadow=1;" vertex="1" parent="LANE_DATA">
+          <mxGeometry x="50" y="105" width="550" height="140" as="geometry" />
+        </mxCell>
+        <!-- Remote Data Source -->
+        <mxCell id="SRC_REMOTE" value="REMOTE DATA SOURCE (Network API Client)&#xa;• Retrofit 2 &amp; OkHttp Client&#xa;• AuthInterceptor (Bearer Token Injection)&#xa;• Moshi / Kotlinx Serialization (JSON Parsing)&#xa;• Gating Error Handler (403 Forbidden Paywall)&#xa;• Endpoints: /api/v1/suppliers, /api/v1/documents" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#059669;strokeWidth=2;fontFamily=Helvetica;fontSize=11;fontColor=#065F46;fontStyle=1;align=left;spacingLeft=15;shadow=1;" vertex="1" parent="LANE_DATA">
+          <mxGeometry x="650" y="105" width="550" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- ======================================================== -->
+        <!-- LAYER 4: ANDROID OS SERVICES & HARDWARE -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_OS" value="4. ANDROID OS HARDWARE &amp; EXTERNAL SERVICES" style="swimlane;whiteSpace=wrap;html=1;startSize=30;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="695" width="670" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="OS_1" value="CameraX Hardware API&#xa;(Scan QR Brosur di Pameran)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_OS">
+          <mxGeometry x="30" y="45" width="280" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OS_2" value="Android Intent System&#xa;(Direct ke WhatsApp / Dialer)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#10B981;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#065F46;fontStyle=1;" vertex="1" parent="LANE_OS">
+          <mxGeometry x="350" y="45" width="280" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OS_3" value="Android DownloadManager&#xa;(Simpan PDF ke HP &amp; Notifikasi)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_OS">
+          <mxGeometry x="30" y="110" width="280" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OS_4" value="Google Play Billing Library&#xa;(Langganan Premium / IAP)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_OS">
+          <mxGeometry x="350" y="110" width="280" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ======================================================== -->
+        <!-- LAYER 5: BACKEND CLOUD (LARAVEL API) -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_CLOUD" value="5. BACKEND CLOUD LAYER (Laravel REST API Server)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="750" y="695" width="710" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="CLOUD_API" value="Laravel RESTful API Controller&#xa;(/api/v1/suppliers • /api/v1/documents • /api/v1/compare)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#EF4444;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#991B1B;fontStyle=1;" vertex="1" parent="LANE_CLOUD">
+          <mxGeometry x="30" y="45" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="CLOUD_SEC" value="Sanctum Token Auth &amp;&#xa;Middleware: ensure.premium" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="LANE_CLOUD">
+          <mxGeometry x="410" y="45" width="270" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="CLOUD_DB" value="MySQL Database: users • suppliers • documents • certifications • saved_suppliers" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#F1F5F9;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_CLOUD">
+          <mxGeometry x="30" y="105" width="650" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- FOOTER CATATAN -->
+        <mxCell id="FOOTER_NOTE" value="&lt;b&gt;Catatan Arsitektur Android:&lt;/b&gt; Menerapkan pola &lt;b&gt;MVVM + Repository Pattern + Offline-First&lt;/b&gt; standar Google Android. Aplikasi mengutamakan pembacaan data lokal via &lt;b&gt;Room DB&lt;/b&gt; agar brosur tetap bisa dibuka tanpa sinyal (di pameran), dan sinkronisasi ke cloud via &lt;b&gt;Retrofit HTTP&lt;/b&gt; saat internet aktif." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#1E40AF;align=left;spacingLeft=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="895" width="1420" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ======================================================== -->
+        <!-- CONNECTORS / ALUR HUBUNGAN ANTAR LAYER -->
+        <!-- ======================================================== -->
+        <!-- UI -> ViewModel -->
+        <mxCell id="EDGE_UI_VM" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="UI_1" target="VM_DISCOVER">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EDGE_UI3_VM" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="UI_3" target="VM_DETAIL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ViewModel -> Repository -->
+        <mxCell id="EDGE_VM_REPO" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="UC_BOX" target="REPO_MAIN">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Repository -> Local / Remote -->
+        <mxCell id="EDGE_REPO_LOCAL" value="Read / Cache" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284C7;strokeWidth=2;fontFamily=Helvetica;fontSize=10;fontColor=#0284C7;" edge="1" parent="1" source="REPO_MAIN" target="SRC_LOCAL">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="325" y="490" />
+              <mxPoint x="325" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EDGE_REPO_REMOTE" value="Network Fetch" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=2;fontFamily=Helvetica;fontSize=10;fontColor=#059669;" edge="1" parent="1" source="REPO_MAIN" target="SRC_REMOTE">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="925" y="490" />
+              <mxPoint x="925" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Remote Source -> Cloud API -->
+        <mxCell id="EDGE_REMOTE_CLOUD" value="HTTPS / JSON REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EF4444;strokeWidth=2;fontFamily=Helvetica;fontSize=10;fontColor=#B91C1C;" edge="1" parent="1" source="SRC_REMOTE" target="CLOUD_API">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="925" y="660" />
+              <mxPoint x="930" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- UI -> Hardware Intents -->
+        <mxCell id="EDGE_UI2_CAM" value="Aktivasi Kamera" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;fontColor=#64748B;" edge="1" parent="1" source="UI_2" target="OS_1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="20" y="155" />
+              <mxPoint x="20" y="765" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EDGE_UI3_INTENT" value="Buka WhatsApp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10B981;strokeWidth=2;fontFamily=Helvetica;fontSize=10;fontColor=#065F46;" edge="1" parent="1" source="UI_3" target="OS_2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="220" />
+              <mxPoint x="530" y="220" />
+              <mxPoint x="530" y="765" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

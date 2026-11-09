@@ -1,0 +1,247 @@
+<mxfile host="app.diagrams.net" modified="2026-10-01T20:00:00.000Z" agent="Antigravity" version="24.0.0" type="device">
+  <diagram id="erd-android-chen-v2" name="ERD Android App (Notasi Chen - Revisi)">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE BAR -->
+        <mxCell id="TITLE" value="ENTITY RELATIONSHIP DIAGRAM (CHEN NOTATION) - AGRIM DIRECTORY MOBILE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0F172A;fontFamily=Helvetica;fontSize=14;fontStyle=1;fontColor=#FFFFFF;arcSize=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1520" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ======================================================== -->
+        <!-- ENTITAS 1: USER -->
+        <!-- ======================================================== -->
+        <mxCell id="E_USER" value="user" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="260" width="120" height="50" as="geometry" />
+        </mxCell>
+        <!-- Atribut User -->
+        <mxCell id="A_U_ID" value="&lt;u&gt;&lt;b&gt;id_user&lt;/b&gt;&lt;/u&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="150" width="90" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_U_NAME" value="nama" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="140" width="80" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_U_EMAIL" value="email" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="210" y="150" width="80" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_U_TIER" value="tier_langganan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#92400E;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="340" width="100" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_U_EXP" value="premium_expires_at" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#92400E;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="350" width="115" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Garis User -> Atribut -->
+        <mxCell id="LU1" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_USER" target="A_U_ID"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LU2" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_USER" target="A_U_NAME"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LU3" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_USER" target="A_U_EMAIL"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LU4" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_USER" target="A_U_TIER"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LU5" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_USER" target="A_U_EXP"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- ENTITAS 2: SUPPLIER -->
+        <!-- ======================================================== -->
+        <mxCell id="E_SUPP" value="supplier" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="260" width="130" height="50" as="geometry" />
+        </mxCell>
+        <!-- Atribut Supplier -->
+        <mxCell id="A_S_ID" value="&lt;u&gt;&lt;b&gt;id_supplier&lt;/b&gt;&lt;/u&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="140" width="95" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_NAME" value="nama_supplier" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="745" y="130" width="95" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_SLUG" value="slug (QR key)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="140" width="95" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_NEGARA" value="negara" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="610" y="210" width="80" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_KAT" value="kategori" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="880" y="210" width="80" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_MOQ" value="moq" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#1E40AF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="610" y="340" width="75" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_CAP" value="kapasitas_prod" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#1E40AF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="350" width="95" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_LEAD" value="lead_time" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#1E40AF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="810" y="350" width="85" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_S_VERIF" value="is_verified" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#065F46;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="905" y="330" width="85" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Garis Supplier -> Atribut -->
+        <mxCell id="LS1" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_ID"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS2" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_NAME"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS3" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_SLUG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS4" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_NEGARA"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS5" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_KAT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS6" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_MOQ"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS7" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_CAP"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS8" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_LEAD"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LS9" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_SUPP" target="A_S_VERIF"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- RELASI USER - SUPPLIER: MENYIMPAN (WISHLIST) -->
+        <mxCell id="R_SAVE" value="menyimpan&#xa;(bookmark)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="255" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="A_SAVE_DATE" value="tgl_disimpan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="435" y="195" width="90" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="L_RS1" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="R_SAVE" target="A_SAVE_DATE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RU_SAVE" value="M" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontStyle=1;" edge="1" parent="1" source="E_USER" target="R_SAVE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RS_SAVE" value="N" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontStyle=1;" edge="1" parent="1" source="R_SAVE" target="E_SUPP"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- ENTITAS 3: RFQ_REQUEST (Permintaan Kuotasi) -->
+        <!-- ======================================================== -->
+        <mxCell id="E_RFQ" value="rfq_request" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="470" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A_RFQ_ID" value="&lt;u&gt;&lt;b&gt;id_rfq&lt;/b&gt;&lt;/u&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="320" y="440" width="75" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_RFQ_VOL" value="volume_mt" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="320" y="500" width="85" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_RFQ_STAT" value="status (pending/sent)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="425" y="555" width="115" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_RFQ_PRICE" value="fob_quote_price" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="560" y="500" width="95" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="LR1" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_RFQ" target="A_RFQ_ID"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LR2" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_RFQ" target="A_RFQ_VOL"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LR3" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_RFQ" target="A_RFQ_STAT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LR4" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_RFQ" target="A_RFQ_PRICE"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- RELASI USER & SUPPLIER KE RFQ -->
+        <mxCell id="R_REQ" value="mengajukan" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="230" y="410" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RU_REQ" value="1" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="E_USER" target="R_REQ"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RREQ_RFQ" value="N" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="R_REQ" target="E_RFQ"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="R_REC" value="menerima" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="640" y="410" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RS_REC" value="1" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="E_SUPP" target="R_REC"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RREC_RFQ" value="N" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="R_REC" target="E_RFQ"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- ENTITAS 4: DOKUMEN -->
+        <!-- ======================================================== -->
+        <mxCell id="E_DOC" value="dokumen" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="725" y="650" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A_D_ID" value="&lt;u&gt;&lt;b&gt;id_dokumen&lt;/b&gt;&lt;/u&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="620" y="630" width="90" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_D_TITLE" value="judul_dokumen" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="610" y="690" width="95" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_D_TYPE" value="tipe_dokumen (katalog/audit)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="715" y="730" width="140" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_D_PREM" value="is_premium" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#92400E;" vertex="1" parent="1">
+          <mxGeometry x="870" y="690" width="85" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="LD1" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_DOC" target="A_D_ID"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LD2" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_DOC" target="A_D_TITLE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LD3" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_DOC" target="A_D_TYPE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LD4" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_DOC" target="A_D_PREM"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- RELASI SUPPLIER - DOKUMEN: MEMILIKI -->
+        <mxCell id="R_HASDOC" value="memiliki" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="735" y="520" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RS_DOC" value="1" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="E_SUPP" target="R_HASDOC"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RDOC_D" value="N" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="R_HASDOC" target="E_DOC"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- ENTITAS 5: SERTIFIKASI -->
+        <!-- ======================================================== -->
+        <mxCell id="E_CERT" value="sertifikasi" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="260" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A_C_ID" value="&lt;u&gt;&lt;b&gt;id_sertifikasi&lt;/b&gt;&lt;/u&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="150" width="95" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_C_NAME" value="nama_sertifikasi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="1375" y="150" width="100" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="A_C_KAT" value="kategori" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="265" width="80" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="LC1" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_CERT" target="A_C_ID"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LC2" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_CERT" target="A_C_NAME"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LC3" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="E_CERT" target="A_C_KAT"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- RELASI SUPPLIER - SERTIFIKASI (M:N) -->
+        <mxCell id="R_SUPCERT" value="memiliki_sertifikasi&#xa;(supplier_certifications)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="250" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="A_SC_EXP" value="masa_berlaku" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="170" width="85" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_SC_AUDIT" value="lembaga_audit" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="170" width="90" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="L_SC1" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="R_SUPCERT" target="A_SC_EXP"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="L_SC2" style="endArrow=none;strokeColor=#64748B;" edge="1" parent="1" source="R_SUPCERT" target="A_SC_AUDIT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RS_SC" value="N" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontStyle=1;" edge="1" parent="1" source="E_SUPP" target="R_SUPCERT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RC_SC" value="M" style="endArrow=none;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontStyle=1;" edge="1" parent="1" source="R_SUPCERT" target="E_CERT"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- ENTITAS LOKAL ROOM DB (OFFLINE CACHING) -->
+        <!-- ======================================================== -->
+        <mxCell id="E_OFFLINE" value="offline_brochure&#xa;(Room DB Entity)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=1;fontColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="860" width="130" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A_OFF_PATH" value="local_file_path" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0369A1;" vertex="1" parent="1">
+          <mxGeometry x="610" y="930" width="90" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_OFF_STAT" value="download_status" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0369A1;" vertex="1" parent="1">
+          <mxGeometry x="725" y="940" width="100" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_OFF_SIZE" value="file_size_bytes" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#0369A1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="930" width="90" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="LO1" style="endArrow=none;strokeColor=#0284C7;" edge="1" parent="1" source="E_OFFLINE" target="A_OFF_PATH"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LO2" style="endArrow=none;strokeColor=#0284C7;" edge="1" parent="1" source="E_OFFLINE" target="A_OFF_STAT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LO3" style="endArrow=none;strokeColor=#0284C7;" edge="1" parent="1" source="E_OFFLINE" target="A_OFF_SIZE"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- RELASI DOKUMEN - OFFLINE_BROCHURE: DIUNDUH (1:1) -->
+        <mxCell id="R_DOWNLOAD" value="diunduh_lokal" style="rhombus;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0369A1;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="730" y="750" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RD1" value="1" style="endArrow=none;strokeColor=#0284C7;strokeWidth=1.5;" edge="1" parent="1" source="E_DOC" target="R_DOWNLOAD"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RD2" value="1" style="endArrow=none;strokeColor=#0284C7;strokeWidth=1.5;" edge="1" parent="1" source="R_DOWNLOAD" target="E_OFFLINE"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ENTITAS LOKAL: SCAN HISTORY -->
+        <mxCell id="E_SCAN" value="scan_history&#xa;(Room DB Entity)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#059669;strokeColor=#047857;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontStyle=1;fontColor=#FFFFFF;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="470" width="125" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A_SC_TIME" value="waktu_scan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#065F46;" vertex="1" parent="1">
+          <mxGeometry x="1195" y="450" width="80" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="A_SC_RAW" value="payload_raw_qr" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;strokeWidth=1.2;fontFamily=Helvetica;fontSize=10;fontColor=#065F46;" vertex="1" parent="1">
+          <mxGeometry x="1195" y="505" width="95" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="LSN1" style="endArrow=none;strokeColor=#059669;" edge="1" parent="1" source="E_SCAN" target="A_SC_TIME"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="LSN2" style="endArrow=none;strokeColor=#059669;" edge="1" parent="1" source="E_SCAN" target="A_SC_RAW"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="R_RECORD" value="merekam_scan" style="rhombus;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#065F46;" vertex="1" parent="1">
+          <mxGeometry x="930" y="405" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RSC_SUPP" value="1" style="endArrow=none;strokeColor=#059669;strokeWidth=1.5;" edge="1" parent="1" source="E_SUPP" target="R_RECORD"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="RSC_SCAN" value="N" style="endArrow=none;strokeColor=#059669;strokeWidth=1.5;" edge="1" parent="1" source="R_RECORD" target="E_SCAN"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

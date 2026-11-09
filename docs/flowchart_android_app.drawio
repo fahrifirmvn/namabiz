@@ -1,0 +1,206 @@
+<mxfile host="app.diagrams.net" modified="2026-10-01T20:15:00.000Z" agent="Antigravity" version="24.0.0" type="device">
+  <diagram id="android-app-master-flow-v2" name="Flowchart Android App (5 Tab M3 - Revisi)">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2100" pageHeight="1150" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ======================================================== -->
+        <!-- FASE 1: ENTRY & ONBOARDING -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_1" value="FASE 1: ENTRY &amp; ONBOARDING" style="swimlane;whiteSpace=wrap;html=1;startSize=34;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="310" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="A1" value="Splash Screen Logo" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_1">
+          <mxGeometry x="45" y="60" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A2" value="Pemeriksaan&#xa;Sesi Aktif?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#92400E;fontStyle=1;" vertex="1" parent="LANE_1">
+          <mxGeometry x="55" y="150" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="A3" value="3 Slide Onboarding&#xa;(Pengenalan Fitur Saku)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#0F172A;" vertex="1" parent="LANE_1">
+          <mxGeometry x="45" y="270" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A4" value="Welcome Screen" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#0F172A;" vertex="1" parent="LANE_1">
+          <mxGeometry x="45" y="370" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A5" value="Login Google / Email" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#F1F5F9;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_1">
+          <mxGeometry x="25" y="470" width="125" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="A6" value="Akses Guest / Lewati" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#475569;" vertex="1" parent="LANE_1">
+          <mxGeometry x="160" y="470" width="125" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Edges in Lane 1 -->
+        <mxCell id="E_A1_A2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;" edge="1" parent="LANE_1" source="A1" target="A2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_A2_A3" value="Baru Install" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;fontColor=#475569;" edge="1" parent="LANE_1" source="A2" target="A3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_A3_A4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;" edge="1" parent="LANE_1" source="A3" target="A4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_A4_A5" value="Masuk Akun" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;fontColor=#475569;" edge="1" parent="LANE_1" source="A4" target="A5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_A4_A6" value="Mode Tamu" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;fontColor=#475569;" edge="1" parent="LANE_1" source="A4" target="A6"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- FASE 2: 5 TAB NAVIGASI UTAMA (M3 SHELL) -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_2" value="FASE 2: 5 TAB NAVIGASI UTAMA (M3 SHELL)" style="swimlane;whiteSpace=wrap;html=1;startSize=34;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="380" y="40" width="310" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="B_NAV" value="Bottom Navigation Bar&#xa;(Material Design 3 Shell)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#0F172A;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="LANE_2">
+          <mxGeometry x="45" y="60" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="TAB_HOME" value="1. Beranda / Home&#xa;(Needs Attention &amp; QR Quick Action)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_2">
+          <mxGeometry x="45" y="140" width="220" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="TAB_DISCOVER" value="2. Katalog / Discover&#xa;(Daftar &amp; Filter Supplier)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_2">
+          <mxGeometry x="45" y="240" width="220" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="TAB_RFQ" value="3. RFQ (Request for Quote)&#xa;(Kuotasi &amp; Negosiasi Harga)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_2">
+          <mxGeometry x="45" y="440" width="220" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="TAB_COMPARE" value="4. Komparasi Spek&#xa;(Side-by-Side 2 Kolom)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_2">
+          <mxGeometry x="45" y="680" width="220" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="TAB_PROFILE" value="5. Akun &amp; Library&#xa;(Profil, Saved &amp; Offline Docs)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_2">
+          <mxGeometry x="45" y="880" width="220" height="48" as="geometry" />
+        </mxCell>
+
+        <!-- Edges in Lane 2 -->
+        <mxCell id="E_B_T0" value="Tab 1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_2" source="B_NAV" target="TAB_HOME"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_B_T1" value="Tab 2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_2" source="B_NAV" target="TAB_DISCOVER"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_B_TR" value="Tab 3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_2" source="B_NAV" target="TAB_RFQ"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_B_T3" value="Tab 4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_2" source="B_NAV" target="TAB_COMPARE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_B_T4" value="Tab 5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_2" source="B_NAV" target="TAB_PROFILE"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- FASE 3: ALUR FITUR & DETAIL -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_3" value="FASE 3: ALUR FITUR &amp; DETAIL" style="swimlane;whiteSpace=wrap;html=1;startSize=34;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="720" y="40" width="370" height="1060" as="geometry" />
+        </mxCell>
+        <!-- Home Elements -->
+        <mxCell id="H_ATTN" value="Needs Attention &amp; Quick Action&#xa;(Halal Expiry Alert, RFQ Quotes)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#D97706;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#92400E;fontStyle=1;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="55" width="270" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="C3" value="Pemicu Scanner QR (CameraX)&#xa;(Ikon di Header Home / Discover)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#1E40AF;fontStyle=1;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="110" width="270" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="C4" value="ML Kit: QR Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#92400E;fontStyle=1;" vertex="1" parent="LANE_3">
+          <mxGeometry x="100" y="170" width="170" height="55" as="geometry" />
+        </mxCell>
+        <!-- Discover Elements -->
+        <mxCell id="C1" value="Pencarian &amp; Filter Bottom Sheet&#xa;(Origin, Lead Time, Sertifikasi, PDF)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="240" width="270" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="C2" value="Daftar Kartu Supplier &amp; Floating Compare" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="300" width="270" height="42" as="geometry" />
+        </mxCell>
+        <!-- Detail Supplier -->
+        <mxCell id="D_DETAIL" value="Halaman Detail Supplier&#xa;(Overview, Certificates, Documents)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#F1F5F9;strokeColor=#0F172A;strokeWidth=2;fontFamily=Helvetica;fontSize=12;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_3">
+          <mxGeometry x="40" y="360" width="290" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="D1" value="Trade Terms, Lots &amp; Sertifikat On-Site" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#334155;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="430" width="270" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="D_STICKY" value="Sticky Bottom Bar&#xa;[Chat WhatsApp | Request Quote]" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#10B981;strokeWidth=2;fontFamily=Helvetica;fontSize=11;fontColor=#065F46;fontStyle=1;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="480" width="270" height="45" as="geometry" />
+        </mxCell>
+        <!-- RFQ Elements -->
+        <mxCell id="R_FORM" value="Form Request for Quote (RFQ)&#xa;(Target Volume MT, Target Price)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="550" width="270" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="R_LIST" value="Daftar Kuotasi &amp; Status Nudge" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="610" width="270" height="40" as="geometry" />
+        </mxCell>
+        <!-- Compare Elements -->
+        <mxCell id="E1" value="Tabel Komparasi 2 Kolom&#xa;(Highlight Best Tag &amp; Diff Only)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="680" width="270" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="E3" value="Aksi: Export PDF / Request Quote Both" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="740" width="270" height="42" as="geometry" />
+        </mxCell>
+        <!-- Account Elements -->
+        <mxCell id="F1" value="Library: Saved Suppliers (Bookmark)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#334155;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="860" width="270" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="F2" value="Library: Downloaded Offline PDF Catalogs" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#FFFFFF;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#334155;" vertex="1" parent="LANE_3">
+          <mxGeometry x="50" y="910" width="270" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Edges in Lane 3 -->
+        <mxCell id="E_C3_C4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;" edge="1" parent="LANE_3" source="C3" target="C4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_C4_D" value="Valid" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_3" source="C4" target="D_DETAIL"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_C1_C2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;" edge="1" parent="LANE_3" source="C1" target="C2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_C2_D" value="Pilih Kartu" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_3" source="C2" target="D_DETAIL"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_D_STICKY" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10B981;strokeWidth=1.5;" edge="1" parent="LANE_3" source="D_DETAIL" target="D_STICKY"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_R_FORM" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;" edge="1" parent="LANE_3" source="R_FORM" target="R_LIST"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_E1_E3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="LANE_3" source="E1" target="E3"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- FASE 4: DECISION GATE (HAK AKSES & OFFLINE) -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_4" value="FASE 4: DECISION GATE (HAK AKSES &amp; OFFLINE)" style="swimlane;whiteSpace=wrap;html=1;startSize=34;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="40" width="340" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="G1" value="Direct WhatsApp Action&#xa;(Bebas Akses Tanpa Syarat)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#10B981;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#065F46;fontStyle=1;" vertex="1" parent="LANE_4">
+          <mxGeometry x="45" y="60" width="250" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="G_OFFLINE" value="Ada Koneksi Internet?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0369A1;fontStyle=1;" vertex="1" parent="LANE_4">
+          <mxGeometry x="70" y="140" width="200" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="H_OFF_CACHE" value="Ambil Data dari Room DB&#xa;&amp; Tampilkan Status Offline" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0369A1;fontStyle=1;" vertex="1" parent="LANE_4">
+          <mxGeometry x="45" y="235" width="250" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="G2" value="Simpan Favorit / Ajukan RFQ&#xa;(Sudah Login?)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#92400E;fontStyle=1;" vertex="1" parent="LANE_4">
+          <mxGeometry x="65" y="320" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="H1" value="Modal Login / Daftar Akun" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;" vertex="1" parent="LANE_4">
+          <mxGeometry x="45" y="420" width="250" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="G4" value="Unduh Dokumen Audit 🔒 /&#xa;Export PDF Komparasi&#xa;(Status Business Pro?)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#92400E;fontStyle=1;" vertex="1" parent="LANE_4">
+          <mxGeometry x="60" y="580" width="220" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="H3" value="Modal Upgrade Business Pro&#xa;(Google Play Billing IAP)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_4">
+          <mxGeometry x="45" y="700" width="250" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="H4" value="Akses Terbuka &amp; Unduh PDF&#xa;(WorkManager Background)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=14;fillColor=#F1F5F9;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#0F172A;fontStyle=1;" vertex="1" parent="LANE_4">
+          <mxGeometry x="45" y="800" width="250" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Edges in Lane 4 -->
+        <mxCell id="E_GOFF_NO" value="Tidak (Offline)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284C7;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;fontColor=#0284C7;" edge="1" parent="LANE_4" source="G_OFFLINE" target="H_OFF_CACHE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_G2_H1" value="Belum" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_4" source="G2" target="H1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_G4_H3" value="Free Tier" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_4" source="G4" target="H3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_G4_H4" value="Business Pro" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_4" source="G4" target="H4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="E_H3_H4" value="Beli Berhasil" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Helvetica;fontSize=10;" edge="1" parent="LANE_4" source="H3" target="H4"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ======================================================== -->
+        <!-- FASE 5: OUTPUT / HASIL AKHIR -->
+        <!-- ======================================================== -->
+        <mxCell id="LANE_5" value="FASE 5: OUTPUT / HASIL AKHIR" style="swimlane;whiteSpace=wrap;html=1;startSize=34;rounded=1;arcSize=6;fillColor=#F8FAFC;strokeColor=#94A3B8;strokeWidth=1.5;fontFamily=Helvetica;fontSize=13;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="1510" y="40" width="300" height="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="OUT_WA" value="💬 WhatsApp Sales Terbuka&#xa;(Intent ACTION_VIEW)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#10B981;strokeColor=#059669;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="LANE_5">
+          <mxGeometry x="40" y="60" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OUT_PDF" value="📄 PDF Tersimpan di Storage Internal&#xa;&amp; Dibuka via In-App Viewer" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#0F172A;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="LANE_5">
+          <mxGeometry x="40" y="160" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OUT_FAV" value="⭐ Supplier Tersimpan / RFQ Terkirim&#xa;(Tercatat di Server &amp; Room DB)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#0F172A;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="LANE_5">
+          <mxGeometry x="40" y="420" width="220" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="OUT_AUDIT" value="🔓 Laporan Audit &amp; PDF Terbuka&#xa;(Status Business Pro Aktif)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#0F172A;strokeColor=#0F172A;strokeWidth=1.5;fontFamily=Helvetica;fontSize=11;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="LANE_5">
+          <mxGeometry x="40" y="800" width="220" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Inter-lane connections -->
+        <mxCell id="IL_WA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#10B981;strokeWidth=2;" edge="1" parent="1" source="G1" target="OUT_WA"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="IL_STICKY_WA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#10B981;strokeWidth=1.5;" edge="1" parent="1" source="D_STICKY" target="G1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="IL_H4_OUT" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="H4" target="OUT_AUDIT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="IL_HOME_ATTN" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="TAB_HOME" target="H_ATTN"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="IL_DISC_C1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="TAB_DISCOVER" target="C1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="IL_RFQ_R1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="TAB_RFQ" target="R_FORM"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="IL_COMP_E1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="TAB_COMPARE" target="E1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="IL_ACC_F1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0F172A;strokeWidth=1.5;" edge="1" parent="1" source="TAB_PROFILE" target="F1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
