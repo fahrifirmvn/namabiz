@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ComparisonController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DocumentController;
-use App\Http\Controllers\Api\RfqController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\SupplierController;
 use Illuminate\Http\Request;
@@ -43,10 +42,6 @@ Route::prefix('v1')->group(function () {
         // Collection / Saved Suppliers
         Route::post('/suppliers/{id}/toggle-save', [SupplierController::class, 'toggleSave'])->name('api.suppliers.toggle-save');
         Route::get('/collection/saved', [SupplierController::class, 'savedSuppliers'])->name('api.suppliers.saved');
-
-        // RFQ (Request for Quotation)
-        Route::get('/rfq/list', [RfqController::class, 'index'])->name('api.rfq.list');
-        Route::post('/rfq/create', [RfqController::class, 'store'])->name('api.rfq.create');
 
         // Comparison Export PDF (Premium)
         Route::post('/suppliers/compare/download-pdf', [ComparisonController::class, 'downloadPdf'])->name('api.compare.pdf');

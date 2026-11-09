@@ -101,23 +101,24 @@
                 </div>
             </div>
 
-            <!-- Banner RFQ Baru -->
+            <!-- Banner Bantuan & Konsultasi Langsung -->
             <div class="bg-surface rounded-2xl border border-gray-200 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-gray-700 shadow-2xs shrink-0">
-                        <x-heroicon-o-document-magnifying-glass class="w-6 h-6" />
+                    <div class="w-12 h-12 rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-emerald-600 shadow-2xs shrink-0">
+                        <x-heroicon-o-chat-bubble-left-ellipsis class="w-6 h-6" />
                     </div>
                     <div>
                         <h3 class="font-bold text-gray-900 text-base">Tidak menemukan spesifikasi bahan baku yang Anda butuhkan?</h3>
-                        <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Publikasikan dokumen Permintaan Penawaran (RFQ) ke seluruh jaringan pemasok terverifikasi kami.</p>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Konsultasikan kebutuhan pasokan industri Anda langsung dengan tim kurator Namabiz.</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
                     <a href="{{ route('discover.index', ['q' => 'Kemasan']) }}" class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition">
-                        Pelajari Panduan RFQ
+                        Telusuri Kategori
                     </a>
-                    <a href="{{ route('upgrade') }}" class="px-4 py-2 text-xs font-semibold text-white bg-black rounded-xl hover:bg-gray-800 transition">
-                        Buat RFQ Baru +
+                    <a href="https://wa.me/6281234567890?text={{ urlencode('Halo Tim Namabiz, saya mencari rekomendasi pemasok untuk kebutuhan industri.') }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition inline-flex items-center gap-1.5">
+                        <x-heroicon-o-chat-bubble-left-ellipsis class="w-4 h-4" />
+                        <span>Hubungi Kurator WA</span>
                     </a>
                 </div>
             </div>

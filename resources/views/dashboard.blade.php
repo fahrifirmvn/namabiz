@@ -75,7 +75,7 @@
             <!-- Pesan Belum Dibaca -->
             <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs flex flex-col justify-between">
                 <div class="flex items-start justify-between">
-                    <span class="text-xs font-semibold text-gray-500">Pesan belum dibaca</span>
+                    <span class="text-xs font-semibold text-gray-500">Pesan & Kontak</span>
                     <x-heroicon-m-arrow-up-right class="w-4 h-4 text-gray-400" />
                 </div>
                 <div class="mt-4">
@@ -83,7 +83,7 @@
                         <span class="text-3xl font-extrabold text-gray-900">2</span>
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">Respons RFQ masuk</p>
+                    <p class="text-xs text-gray-400 mt-1">Kontak & tanggapan baru</p>
                 </div>
             </div>
         </div>

@@ -34,6 +34,8 @@ class SupplierFactory extends Factory
             'is_verified' => $this->faker->boolean(70),
             'about' => $this->faker->paragraphs(3, true),
             'website' => $this->faker->domainName(),
+            'whatsapp' => '62812'.$this->faker->numerify('########'),
+            'email' => $this->faker->safeEmail(),
             'founded_year' => $this->faker->numberBetween(1990, 2022),
             'company_size' => $this->faker->randomElement(['1-50 employees', '50-100 employees', '100-500 employees', '500-1000 employees', '1000+ employees']),
             'production_capacity' => $this->faker->numberBetween(1, 10).'M units/mo',

@@ -1,109 +1,333 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('admin.suppliers.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Back to List</a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Edit Supplier: <span class="text-emerald-700">{{ $supplier->name }}</span>
-            </h2>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{{ route('admin.suppliers.index') }}" class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition flex items-center gap-1">
+                    <x-heroicon-m-arrow-left class="w-4 h-4" /> Kembali ke Daftar
+                </a>
+                <h2 class="font-extrabold text-xl text-gray-900 leading-tight">
+                    Edit Pemasok: <span class="text-gray-600">{{ $supplier->name }}</span>
+                </h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('suppliers.show', $supplier->slug) }}" target="_blank" class="px-3.5 py-1.5 text-xs font-semibold rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition inline-flex items-center gap-1.5 shadow-2xs">
+                    <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-gray-400" />
+                    <span>Lihat Profil Publik</span>
+                </a>
+            </div>
         </div>
     </x-slot>
 
-    <div class="py-10 max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <form method="POST" action="{{ route('admin.suppliers.update', $supplier) }}" enctype="multipart/form-data" class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
+    <div class="py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        @if (session('success'))
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl flex items-center justify-between text-sm shadow-xs">
+                <div class="flex items-center gap-2.5">
+                    <x-heroicon-s-check-circle class="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span class="font-medium">{{ session('success') }}</span>
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl text-sm">
+                <p class="font-bold mb-1">Terdapat kesalahan:</p>
+                <ul class="list-disc list-inside space-y-1 text-xs">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <!-- Form Update Data Pemasok -->
+        <form method="POST" action="{{ route('admin.suppliers.update', $supplier) }}" enctype="multipart/form-data" class="space-y-8">
             @csrf
             @method('PUT')
 
-            <!-- Logo Section -->
-            <div class="p-6 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-4">
-                <h3 class="text-md font-bold text-gray-900">Supplier Logo & Media</h3>
-                <div class="flex items-center gap-6">
-                    <div class="w-20 h-20 rounded-xl overflow-hidden border bg-white flex items-center justify-center shrink-0">
+            <!-- 1. Identitas Perusahaan & Logo -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Identitas & Logo Pemasok</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Slug: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 font-mono">{{ $supplier->slug }}</code></p>
+                </div>
+
+                <!-- Preview & Upload Logo -->
+                <div class="p-5 bg-surface rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center gap-6">
+                    <div class="w-20 h-20 rounded-2xl overflow-hidden border border-gray-200 bg-white flex items-center justify-center shrink-0 shadow-2xs">
                         @if($supplier->logo)
                             <img src="{{ str_starts_with($supplier->logo, 'http') ? $supplier->logo : asset('storage/' . $supplier->logo) }}" alt="{{ $supplier->name }}" class="w-full h-full object-cover" />
                         @else
-                            <span class="text-emerald-800 font-bold text-lg">{{ strtoupper(substr($supplier->name, 0, 2)) }}</span>
+                            <span class="text-black font-extrabold text-xl">{{ strtoupper(substr($supplier->name, 0, 2)) }}</span>
                         @endif
                     </div>
-                    <div class="flex-1 space-y-3">
+                    <div class="flex-1 space-y-3 w-full">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Upload New Logo File</label>
-                            <input type="file" name="logo_file" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200" />
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Ganti Berkas Logo (PNG/JPG, maks 2MB)</label>
+                            <input type="file" name="logo_file" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 transition" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Or Direct Logo Image URL</label>
-                            <input type="text" name="logo_url" value="{{ old('logo_url', str_starts_with($supplier->logo ?? '', 'http') ? $supplier->logo : '') }}" placeholder="https://example.com/logo.png" class="w-full text-xs rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Atau Tautan URL Gambar</label>
+                            <input type="url" name="logo_url" value="{{ old('logo_url', str_starts_with($supplier->logo ?? '', 'http') ? $supplier->logo : '') }}" placeholder="https://example.com/logo.png" class="w-full text-xs rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Nama Perusahaan / Pabrik *</label>
+                        <input type="text" name="name" value="{{ old('name', $supplier->name) }}" required class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Kategori Industri *</label>
+                        <select name="industry_category" required class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
+                            @foreach(['Packaging Manufacturer', 'Distributor & Converter', 'Contract Manufacturer', 'Raw Material Supplier', 'Spices & Coconut', 'Logistics & Warehousing', 'Chemical & Ingredients'] as $cat)
+                                <option value="{{ $cat }}" {{ (old('industry_category', $supplier->industry_category) == $cat) ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tagline Singkat</label>
+                        <input type="text" name="tagline" value="{{ old('tagline', $supplier->tagline) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
                     </div>
                 </div>
             </div>
 
-            <!-- Basic Info -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 2. Kontak Langsung (WhatsApp, Email & Web) -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Company / Supplier Name *</label>
-                    <input type="text" name="name" value="{{ old('name', $supplier->name) }}" required class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
+                    <h3 class="text-base font-bold text-gray-900">Saluran Kontak Langsung</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Pelanggan langsung terhubung via WhatsApp & Email tanpa perantara.</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Industry Category *</label>
-                    <select name="industry_category" class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                        @foreach(['Packaging Manufacturer', 'Distributor & Converter', 'Contract Manufacturer', 'Raw Material Supplier', 'Spices & Coconut'] as $cat)
-                            <option value="{{ $cat }}" {{ (old('industry_category', $supplier->industry_category) == $cat) ? 'selected' : '' }}>{{ $cat }}</option>
-                        @endforeach
-                    </select>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">
+                            <span class="flex items-center gap-1.5">
+                                <x-heroicon-o-chat-bubble-left-ellipsis class="w-4 h-4 text-emerald-600" /> Nomor WhatsApp
+                            </span>
+                        </label>
+                        <input type="text" name="whatsapp" value="{{ old('whatsapp', $supplier->whatsapp) }}" placeholder="Contoh: 081234567890" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                        @if($supplier->whatsapp_url)
+                            <a href="{{ $supplier->whatsapp_url }}" target="_blank" class="text-2xs text-emerald-700 hover:underline mt-1 block">
+                                Uji buka chat: {{ $supplier->whatsapp }} &rarr;
+                            </a>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">
+                            <span class="flex items-center gap-1.5">
+                                <x-heroicon-o-envelope class="w-4 h-4 text-gray-600" /> Email Resmi
+                            </span>
+                        </label>
+                        <input type="email" name="email" value="{{ old('email', $supplier->email) }}" placeholder="sales@perusahaan.co.id" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">
+                            <span class="flex items-center gap-1.5">
+                                <x-heroicon-o-globe-alt class="w-4 h-4 text-gray-600" /> Website
+                            </span>
+                        </label>
+                        <input type="text" name="website" value="{{ old('website', $supplier->website) }}" placeholder="https://perusahaan.co.id" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Country *</label>
-                    <input type="text" name="country" value="{{ old('country', $supplier->country) }}" required class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">City / Plant Location</label>
-                    <input type="text" name="city" value="{{ old('city', $supplier->city) }}" class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Negara *</label>
+                        <input type="text" name="country" value="{{ old('country', $supplier->country) }}" required class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Kota / Lokasi Pabrik</label>
+                        <input type="text" name="city" value="{{ old('city', $supplier->city) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
                 </div>
             </div>
 
-            <!-- Tagline & Description -->
-            <div class="space-y-4">
+            <!-- 3. Profil & Deskripsi -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Tagline</label>
-                    <input type="text" name="tagline" value="{{ old('tagline', $supplier->tagline) }}" class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
+                    <h3 class="text-base font-bold text-gray-900">Profil & Narasi Perusahaan</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Penjelasan lengkap spesialisasi dan latar belakang pemasok.</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Description / About</label>
-                    <textarea name="description" rows="3" class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">{{ old('description', $supplier->description) }}</textarea>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tentang (About Singkat)</label>
+                        <textarea name="about" rows="3" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">{{ old('about', $supplier->about) }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Deskripsi Tambahan / Keunggulan</label>
+                        <textarea name="description" rows="3" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">{{ old('description', $supplier->description) }}</textarea>
+                    </div>
                 </div>
             </div>
 
-            <!-- Trade & Operational Specs -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
+            <!-- 4. Metrik Operasional & Verifikasi -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Minimal Order / Min. Pesanan (MOQ)</label>
-                    <input type="text" name="moq" value="{{ old('moq', $supplier->moq) }}" placeholder="1 Kontainer 20ft (±10 Ton)" class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
+                    <h3 class="text-base font-bold text-gray-900">Spesifikasi Operasional & Status</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Data metrik yang menjadi filter perbandingan pembeli.</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Kapasitas Produksi Bulanan</label>
-                    <input type="text" name="production_capacity" value="{{ old('production_capacity', $supplier->production_capacity) }}" placeholder="500 Ton / bulan" class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">MOQ (Pesanan Min.)</label>
+                        <input type="text" name="moq" value="{{ old('moq', $supplier->moq) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Kapasitas Produksi</label>
+                        <input type="text" name="production_capacity" value="{{ old('production_capacity', $supplier->production_capacity) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Lead Time Standar</label>
+                        <input type="text" name="avg_lead_time" value="{{ old('avg_lead_time', $supplier->avg_lead_time) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Jumlah Karyawan / Ukuran</label>
+                        <input type="text" name="company_size" value="{{ old('company_size', $supplier->company_size) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tahun Berdiri</label>
+                        <input type="number" name="founded_year" value="{{ old('founded_year', $supplier->founded_year) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Jejak Karbon / ISO Status</label>
+                        <input type="text" name="carbon_footprint_report" value="{{ old('carbon_footprint_report', $supplier->carbon_footprint_report) }}" class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Waktu Siap Kirim / Proses</label>
-                    <input type="text" name="avg_lead_time" value="{{ old('avg_lead_time', $supplier->avg_lead_time) }}" placeholder="14 Hari Kerja" class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
+
+                <div class="pt-4 border-t border-gray-100">
+                    <label class="inline-flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="is_verified" value="1" {{ old('is_verified', $supplier->is_verified) ? 'checked' : '' }} class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
+                        <span class="text-sm font-bold text-gray-900">Tandai sebagai Pemasok Terverifikasi Namabiz (Verified Badge)</span>
+                    </label>
                 </div>
             </div>
 
-            <!-- Verification & Checkbox -->
-            <div class="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="is_verified" name="is_verified" value="1" {{ old('is_verified', $supplier->is_verified) ? 'checked' : '' }} class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4" />
-                <label for="is_verified" class="text-sm font-semibold text-gray-800">Verified Syndicate Supplier (Badge)</label>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex justify-end gap-4 pt-6 border-t border-gray-100">
-                <a href="{{ route('admin.suppliers.index') }}" class="px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition text-sm">
-                    Cancel
+            <!-- Tombol Aksi Simpan -->
+            <div class="flex items-center justify-end gap-3 pt-4">
+                <a href="{{ route('admin.suppliers.index') }}" class="px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-semibold text-xs transition">
+                    Batal
                 </a>
-                <button type="submit" class="px-6 py-2.5 bg-emerald-700 text-white font-semibold rounded-lg hover:bg-emerald-800 transition text-sm shadow-sm">
-                    Save Changes & Broadcast to Mobile
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white font-semibold text-xs shadow-xs transition">
+                    Simpan Perubahan Data
                 </button>
             </div>
         </form>
+
+        <!-- ================= PANEL MANAJEMEN DOKUMEN (PDF) ================= -->
+        <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Dokumen Profil & Sertifikasi (PDF)</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Kelola berkas publikasi, spesifikasi produk, dan bukti legalitas pemasok.</p>
+                </div>
+                <span class="text-xs font-bold bg-gray-100 text-gray-800 px-3 py-1 rounded-full">
+                    {{ $supplier->documents->count() }} Dokumen Terpasang
+                </span>
+            </div>
+
+            <!-- List Dokumen yang Sudah Ada -->
+            <div class="space-y-3">
+                @forelse($supplier->documents as $doc)
+                    <div class="flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:bg-gray-50/50 transition">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-surface border border-gray-200 flex items-center justify-center text-gray-700 shrink-0">
+                                <x-heroicon-o-document-text class="w-5 h-5" />
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="text-sm font-bold text-gray-900 truncate">{{ $doc->title }}</h4>
+                                <div class="flex items-center gap-2 mt-0.5 text-2xs text-gray-500">
+                                    <span class="uppercase font-semibold bg-gray-100 px-1.5 py-0.5 rounded">{{ $doc->type ?? 'PDF' }}</span>
+                                    @if($doc->is_premium)
+                                        <span class="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                            <x-heroicon-s-lock-closed class="w-3 h-3" /> Khusus Akun Premium
+                                        </span>
+                                    @else
+                                        <span class="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                            Akses Publik Bebas
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 shrink-0">
+                            @if($doc->file_path || $doc->external_url)
+                                <a href="{{ route('documents.download', $doc) }}" class="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition" title="Unduh Berkas">
+                                    <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                                </a>
+                            @endif
+
+                            <form method="POST" action="{{ route('admin.suppliers.documents.destroy', [$supplier, $doc]) }}" onsubmit="return confirm('Yakin ingin menghapus berkas \'{{ addslashes($doc->title) }}\'?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition" title="Hapus Dokumen">
+                                    <x-heroicon-o-trash class="w-4 h-4" />
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div class="py-8 text-center text-xs text-gray-400 bg-surface rounded-xl border border-dashed border-gray-200">
+                        Belum ada dokumen yang diunggah untuk pemasok ini.
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Form Upload Dokumen Baru -->
+            <div class="mt-6 pt-6 border-t border-gray-100 bg-surface -mx-6 -mb-6 p-6 sm:-mx-8 sm:-mb-8 sm:p-8 rounded-b-2xl">
+                <h4 class="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <x-heroicon-o-arrow-up-tray class="w-4 h-4 text-gray-700" />
+                    <span>Unggah Dokumen / Sertifikasi Baru</span>
+                </h4>
+
+                <form method="POST" action="{{ route('admin.suppliers.documents.store', $supplier) }}" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Judul Dokumen *</label>
+                            <input type="text" name="title" required placeholder="Contoh: Company Profile & ISO 9001:2015" class="w-full text-xs rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Format Tipe Dokumen</label>
+                            <select name="type" class="w-full text-xs rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
+                                <option value="PDF">PDF (Dokumen Standar)</option>
+                                <option value="DOCX">DOCX (Spesifikasi Word)</option>
+                                <option value="XLSX">XLSX (Daftar Harga & Ukuran)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Pilih Berkas File (PDF/DOC, maks 15MB) *</label>
+                            <input type="file" name="file" required accept=".pdf,.doc,.docx,.xls,.xlsx" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 transition" />
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="is_premium" value="1" class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
+                                <span class="text-xs font-bold text-gray-800">Kunci Dokumen (Hanya Akun Premium yang Bisa Mengunduh)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-black hover:bg-gray-800 text-white font-semibold text-xs transition shadow-xs inline-flex items-center gap-1.5">
+                            <x-heroicon-o-cloud-arrow-up class="w-4 h-4" />
+                            <span>Unggah Dokumen</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </x-app-layout>

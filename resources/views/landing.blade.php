@@ -184,9 +184,9 @@
                     <div class="w-10 h-10 rounded-full bg-white border border-gray-200 font-bold flex items-center justify-center text-gray-900 mb-6 shadow-2xs">
                         3
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Hubungi</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Hubungi Langsung</h3>
                     <p class="text-sm text-gray-600 leading-relaxed">
-                        Kirim permintaan penawaran (RFQ) langsung ke pemasok terverifikasi dari halaman profil resminya.
+                        Hubungi pemasok terverifikasi secara langsung via WhatsApp dan Email resmi tanpa perantara.
                     </p>
                 </div>
             </div>

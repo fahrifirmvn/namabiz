@@ -51,11 +51,11 @@
                 <span>Ekspor PDF</span>
             </a>
 
-            <!-- Minta Penawaran Massal -->
-            <a href="mailto:rfq@namabiz.com?subject=Permintaan%20Penawaran%20Massal"
+            <!-- Hubungi Terpilih -->
+            <a href="mailto:contact@namabiz.com?subject=Permintaan%20Informasi%20Pemasok%20Massal"
                class="px-4 py-2 text-xs font-semibold rounded-xl bg-black text-white hover:bg-gray-800 transition inline-flex items-center gap-1.5 shadow-xs">
                 <x-heroicon-o-paper-airplane class="w-4 h-4" />
-                <span>Minta Penawaran ({{ count($this->suppliers) }})</span>
+                <span>Hubungi Terpilih ({{ count($this->suppliers) }})</span>
             </a>
         </div>
     </div>
@@ -334,15 +334,25 @@
                     <!-- SECTION 4: TINDAKAN LANJUTAN -->
                     <tr class="divide-x divide-gray-100 bg-gray-50/40">
                         <td class="p-5 font-bold text-gray-900">
-                            <span>Tindakan Lanjutan</span>
-                            <span class="block text-2xs text-gray-400 font-normal">Kirim RFQ spesifik ke masing-masing pihak</span>
+                            <span>Hubungi Langsung</span>
+                            <span class="block text-2xs text-gray-400 font-normal">Kontak via WhatsApp atau Email resmi</span>
                         </td>
                         @foreach($this->suppliers as $s)
                             <td class="p-5">
-                                <a href="mailto:contact@{{ ltrim($s->website ?? 'namabiz.com', 'https://http://') }}?subject=Permintaan%20Penawaran%20(RFQ)"
-                                   class="block text-center py-2 px-3 bg-black hover:bg-gray-800 text-white font-semibold text-xs rounded-xl transition shadow-2xs">
-                                    Minta RFQ {{ Str::limit($s->name, 12) }}
-                                </a>
+                                <div class="flex flex-col gap-1.5">
+                                    @if($s->whatsapp_url)
+                                        <a href="{{ $s->whatsapp_url }}"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="block text-center py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-2xs rounded-lg transition shadow-2xs">
+                                            WhatsApp
+                                        </a>
+                                    @endif
+                                    <a href="mailto:{{ $s->email ?: ($s->website ? 'sales@' . ltrim(parse_url($s->website, PHP_URL_HOST) ?? $s->website, 'www.') : 'contact@namabiz.com') }}"
+                                       class="block text-center py-1.5 px-3 bg-black hover:bg-gray-800 text-white font-medium text-2xs rounded-lg transition shadow-2xs">
+                                        Email
+                                    </a>
+                                </div>
                             </td>
                         @endforeach
                         @if(count($this->suppliers) < 4)

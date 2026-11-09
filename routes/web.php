@@ -16,9 +16,9 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth', 'can:access-admin'])
     ->group(function () {
-        Route::get('/suppliers', [SupplierAdminController::class, 'index'])->name('suppliers.index');
-        Route::get('/suppliers/{supplier}/edit', [SupplierAdminController::class, 'edit'])->name('suppliers.edit');
-        Route::put('/suppliers/{supplier}', [SupplierAdminController::class, 'update'])->name('suppliers.update');
+        Route::resource('suppliers', SupplierAdminController::class)->except(['show']);
+        Route::post('suppliers/{supplier}/documents', [SupplierAdminController::class, 'storeDocument'])->name('suppliers.documents.store');
+        Route::delete('suppliers/{supplier}/documents/{document}', [SupplierAdminController::class, 'destroyDocument'])->name('suppliers.documents.destroy');
     });
 
 Route::get('/', function () {

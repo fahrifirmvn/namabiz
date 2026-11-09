@@ -62,16 +62,39 @@
                                     <x-heroicon-o-globe-alt class="w-4 h-4 text-gray-400" /> {{ parse_url($websiteUrl, PHP_URL_HOST) ?? $supplier->website }}
                                 </a>
                             @endif
+                            @if($supplier->whatsapp)
+                                <a href="{{ $supplier->whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 font-medium">
+                                    <x-heroicon-o-chat-bubble-left-ellipsis class="w-4 h-4 text-emerald-600" /> {{ $supplier->whatsapp }}
+                                </a>
+                            @endif
+                            @if($supplier->email)
+                                <a href="mailto:{{ $supplier->email }}" class="inline-flex items-center gap-1 text-gray-700 hover:text-black">
+                                    <x-heroicon-o-envelope class="w-4 h-4 text-gray-400" /> {{ $supplier->email }}
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
 
                 <!-- Right Action Buttons -->
                 <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
-                    <a href="mailto:{{ $supplier->website ? 'sales@' . ltrim($supplier->website, 'https://http://') : 'contact@namabiz.com' }}"
-                       class="px-5 py-2.5 bg-black hover:bg-gray-800 text-white font-medium text-xs rounded-xl shadow-xs transition inline-flex items-center gap-2">
-                        <x-heroicon-o-chat-bubble-left-ellipsis class="w-4 h-4" />
-                        <span>Hubungi pemasok</span>
+                    @if($supplier->whatsapp_url)
+                        <a href="{{ $supplier->whatsapp_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-xl shadow-xs transition inline-flex items-center gap-2">
+                            <x-heroicon-o-chat-bubble-left-ellipsis class="w-4 h-4" />
+                            <span>WhatsApp</span>
+                        </a>
+                    @endif
+
+                    @php
+                        $contactEmail = $supplier->email ?: ($supplier->website ? 'sales@' . ltrim(parse_url($websiteUrl ?? $supplier->website, PHP_URL_HOST) ?? $supplier->website, 'www.') : 'contact@namabiz.com');
+                    @endphp
+                    <a href="mailto:{{ $contactEmail }}"
+                       class="px-4 py-2.5 bg-black hover:bg-gray-800 text-white font-medium text-xs rounded-xl shadow-xs transition inline-flex items-center gap-2">
+                        <x-heroicon-o-envelope class="w-4 h-4" />
+                        <span>Kirim Email</span>
                     </a>
 
                     @auth
