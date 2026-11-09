@@ -21,6 +21,10 @@
                            class="text-sm font-medium pb-1 transition {{ request()->routeIs('compare.*') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
                             Bandingkan
                         </a>
+                        <a href="{{ route('saved.index') }}"
+                           class="text-sm font-medium pb-1 transition {{ request()->routeIs('saved.*') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
+                            Tersimpan
+                        </a>
                     @else
                         <a href="{{ route('discover.index') }}"
                            class="text-sm font-medium pb-1 transition {{ request()->routeIs('discover.*') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
@@ -103,6 +107,7 @@
                             </div>
                             <div class="py-1">
                                 <a href="{{ route('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Profil Saya</a>
+                                <a href="{{ route('saved.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Pemasok Tersimpan</a>
                                 <a href="{{ route('upgrade') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Langganan & Billing</a>
                                 @can('access-admin')
                                     <a href="{{ route('admin.suppliers.index') }}" class="block px-4 py-2 font-medium text-emerald-700 hover:bg-emerald-50">Admin Portal</a>
@@ -158,6 +163,8 @@
                        class="block rounded-lg px-3 py-2 {{ request()->routeIs('discover.*') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Jelajahi</a>
                     <a href="{{ route('compare.index') }}" @click="open = false"
                        class="block rounded-lg px-3 py-2 {{ request()->routeIs('compare.*') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Bandingkan</a>
+                    <a href="{{ route('saved.index') }}" @click="open = false"
+                       class="block rounded-lg px-3 py-2 {{ request()->routeIs('saved.*') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Tersimpan</a>
                     @unless (auth()->user()->isPremium())
                         <a href="{{ route('upgrade') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-amber-700 bg-amber-50">Upgrade ke Premium</a>
                     @endunless

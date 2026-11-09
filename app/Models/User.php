@@ -44,6 +44,11 @@ class User extends Authenticatable
         return $this->hasMany(SavedSupplier::class);
     }
 
+    public function procurementCollections()
+    {
+        return $this->hasMany(ProcurementCollection::class);
+    }
+
     public function comparisons()
     {
         return $this->hasMany(Comparison::class);

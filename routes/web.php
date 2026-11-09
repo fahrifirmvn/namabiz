@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\SupplierAdminController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ProcurementCollectionController;
 use App\Http\Controllers\SavedSupplierController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SupplierController;
@@ -43,7 +44,15 @@ Route::prefix('analytics')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/saved-suppliers', [SavedSupplierController::class, 'index'])->name('saved.index');
     Route::post('/suppliers/{supplier}/save', [SavedSupplierController::class, 'toggle'])->name('suppliers.save');
+    Route::post('/saved-suppliers/{savedSupplier}/move', [SavedSupplierController::class, 'move'])->name('saved.move');
+    Route::delete('/saved-suppliers/{savedSupplier}', [SavedSupplierController::class, 'destroy'])->name('saved.destroy');
+
+    Route::post('/procurement-collections', [ProcurementCollectionController::class, 'store'])->name('collections.store');
+    Route::put('/procurement-collections/{collection}', [ProcurementCollectionController::class, 'update'])->name('collections.update');
+    Route::delete('/procurement-collections/{collection}', [ProcurementCollectionController::class, 'destroy'])->name('collections.destroy');
+
     Route::get('/upgrade', [SubscriptionController::class, 'show'])->name('upgrade');
     Route::post('/upgrade/checkout', [SubscriptionController::class, 'checkout'])->name('upgrade.checkout');
 
