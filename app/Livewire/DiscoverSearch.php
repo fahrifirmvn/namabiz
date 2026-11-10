@@ -17,18 +17,43 @@ class DiscoverSearch extends Component
     public string $query = '';
 
     #[Url(as: 'location')]
-    public array $locations = [];
+    public array|string $locations = [];
 
     #[Url(as: 'category')]
-    public array $categories = [];
+    public array|string $categories = [];
 
     #[Url(as: 'certification')]
-    public array $certifications = [];
+    public array|string $certifications = [];
 
     #[Url]
     public string $sort = 'relevance';
 
     public array $compareIds = [];
+
+    public function mount(): void
+    {
+        $this->normalizeFilters();
+    }
+
+    public function booted(): void
+    {
+        $this->normalizeFilters();
+    }
+
+    private function normalizeFilters(): void
+    {
+        if (is_string($this->categories)) {
+            $this->categories = $this->categories !== '' ? [$this->categories] : [];
+        }
+
+        if (is_string($this->locations)) {
+            $this->locations = $this->locations !== '' ? [$this->locations] : [];
+        }
+
+        if (is_string($this->certifications)) {
+            $this->certifications = $this->certifications !== '' ? [$this->certifications] : [];
+        }
+    }
 
     public function updatingQuery(): void
     {
@@ -133,10 +158,10 @@ class DiscoverSearch extends Component
                         ->orWhere('description', 'like', "%{$keyword}%");
                 });
             })
-            ->when(! empty($this->locations), fn ($q) => $q->whereIn('country', $this->locations))
-            ->when(! empty($this->categories), fn ($q) => $q->whereIn('industry_category', $this->categories))
+            ->when(! empty($this->locations), fn ($q) => $q->whereIn('country', (array) $this->locations))
+            ->when(! empty($this->categories), fn ($q) => $q->whereIn('industry_category', (array) $this->categories))
             ->when(! empty($this->certifications), function ($q) {
-                $q->whereHas('certifications.certification', fn ($sub) => $sub->whereIn('name', $this->certifications));
+                $q->whereHas('certifications.certification', fn ($sub) => $sub->whereIn('name', (array) $this->certifications));
             });
 
         match ($this->sort) {

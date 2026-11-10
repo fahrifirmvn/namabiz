@@ -31,4 +31,16 @@ class LandingPageTest extends TestCase
             ->assertSee(route('discover.index'))
             ->assertSee('Cari');
     }
+
+    public function test_discover_page_handles_string_query_parameters(): void
+    {
+        $response = $this->get(route('discover.index', ['category' => 'Packaging Manufacturer']));
+        $response->assertOk();
+
+        $responseLocation = $this->get(route('discover.index', ['location' => 'Indonesia']));
+        $responseLocation->assertOk();
+
+        $responseCert = $this->get(route('discover.index', ['certification' => 'ISO 9001']));
+        $responseCert->assertOk();
+    }
 }
