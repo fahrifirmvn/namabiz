@@ -145,4 +145,19 @@ class SecurityHardeningTest extends TestCase
             ->assertOk()
             ->assertJsonPath('meta.pagination.per_page', 50);
     }
+
+    public function test_sec_008_api_auth_endpoints_are_rate_limited(): void
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson(route('api.auth.login'), [
+                'email' => 'bruteforce@example.com',
+                'password' => 'wrong-password',
+            ])->assertStatus(401);
+        }
+
+        $this->postJson(route('api.auth.login'), [
+            'email' => 'bruteforce@example.com',
+            'password' => 'wrong-password',
+        ])->assertStatus(429);
+    }
 }

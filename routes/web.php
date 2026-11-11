@@ -65,7 +65,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/procurement-collections/{collection}', [ProcurementCollectionController::class, 'update'])->name('collections.update');
     Route::delete('/procurement-collections/{collection}', [ProcurementCollectionController::class, 'destroy'])->name('collections.destroy');
 
-    Route::post('/suppliers/{supplier:slug}/reviews', [SupplierReviewController::class, 'store'])->name('suppliers.reviews.store');
+    Route::post('/suppliers/{supplier:slug}/reviews', [SupplierReviewController::class, 'store'])
+        ->middleware('throttle:reviews')
+        ->name('suppliers.reviews.store');
     Route::delete('/suppliers/{supplier:slug}/reviews/{review}', [SupplierReviewController::class, 'destroy'])->name('suppliers.reviews.destroy');
 
     Route::get('/upgrade', [SubscriptionController::class, 'show'])->name('upgrade');

@@ -17,10 +17,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
-    // Public Auth Routes
-    Route::post('/auth/register', [AuthController::class, 'register'])->name('api.auth.register');
-    Route::post('/auth/login', [AuthController::class, 'login'])->name('api.auth.login');
-    Route::post('/auth/google', [AuthController::class, 'google'])->name('api.auth.google');
+    // Public Auth Routes (Rate-limited against brute-force & credential stuffing)
+    Route::middleware('throttle:api-auth')->group(function () {
+        Route::post('/auth/register', [AuthController::class, 'register'])->name('api.auth.register');
+        Route::post('/auth/login', [AuthController::class, 'login'])->name('api.auth.login');
+        Route::post('/auth/google', [AuthController::class, 'google'])->name('api.auth.google');
+    });
 
     // Public Directory Routes
     Route::get('/dashboard/home', [DashboardController::class, 'home'])->name('api.dashboard.home');
