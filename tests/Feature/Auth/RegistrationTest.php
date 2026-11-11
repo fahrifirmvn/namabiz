@@ -16,7 +16,10 @@ class RegistrationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('pages.auth.register');
+            ->assertSeeVolt('pages.auth.register')
+            ->assertSee('Buat Akun Pembeli Baru')
+            ->assertSee('Gunakan minimal 8 karakter')
+            ->assertSee('Masuk di sini');
     }
 
     public function test_new_users_can_register(): void
@@ -32,5 +35,19 @@ class RegistrationTest extends TestCase
         $component->assertRedirect(route('dashboard', absolute: false));
 
         $this->assertAuthenticated();
+    }
+
+    public function test_registration_rejects_short_or_unconfirmed_passwords(): void
+    {
+        Volt::test('pages.auth.register')
+            ->set('name', 'Test User')
+            ->set('email', 'test@example.com')
+            ->set('password', 'short')
+            ->set('password_confirmation', 'mismatch')
+            ->call('register')
+            ->assertHasErrors(['password'])
+            ->assertNoRedirect();
+
+        $this->assertGuest();
     }
 }

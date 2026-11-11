@@ -2,9 +2,10 @@
 
 use Illuminate\Support\Facades\Password;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.guest')] class extends Component
+new #[Layout('layouts.guest')] #[Title('Lupa Kata Sandi')] class extends Component
 {
     public string $email = '';
 
@@ -36,26 +37,37 @@ new #[Layout('layouts.guest')] class extends Component
     }
 }; ?>
 
-<div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-xl font-extrabold text-gray-900">Lupa Kata Sandi?</h2>
+        <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+            Masukkan alamat email yang terdaftar. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi Anda.
+        </p>
     </div>
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form wire:submit="sendPasswordResetLink">
+    <form wire:submit="sendPasswordResetLink" class="space-y-4">
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="email" value="Alamat Email" />
+            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" placeholder="nama@perusahaan.co.id" required autofocus />
+            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
+        <div class="pt-2">
+            <x-primary-button class="w-full" wire:loading.attr="disabled" wire:target="sendPasswordResetLink">
+                <span wire:loading.remove wire:target="sendPasswordResetLink">Kirim Tautan Atur Ulang</span>
+                <span wire:loading wire:target="sendPasswordResetLink">Mengirim...</span>
             </x-primary-button>
         </div>
     </form>
+
+    <div class="pt-4 border-t border-gray-100 text-center text-xs text-gray-600">
+        Ingat kata sandi Anda?
+        <a href="{{ route('login') }}" wire:navigate class="font-bold text-black hover:underline ms-1">
+            Kembali masuk
+        </a>
+    </div>
 </div>

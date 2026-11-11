@@ -8,9 +8,10 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.guest')] class extends Component
+new #[Layout('layouts.guest')] #[Title('Atur Ulang Kata Sandi')] class extends Component
 {
     #[Locked]
     public string $token = '';
@@ -69,36 +70,56 @@ new #[Layout('layouts.guest')] class extends Component
     }
 }; ?>
 
-<div>
-    <form wire:submit="resetPassword">
+<div class="space-y-6" x-data="{ showPassword: false }">
+    <div>
+        <h2 class="text-xl font-extrabold text-gray-900">Buat Kata Sandi Baru</h2>
+        <p class="text-xs text-gray-500 mt-1">
+            Masukkan kata sandi baru untuk mengamankan akun Anda.
+        </p>
+    </div>
+
+    <form wire:submit="resetPassword" class="space-y-4">
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
+            <x-input-label for="email" value="Alamat Email" />
             <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <x-input-label for="password" value="Kata Sandi Baru" />
+            <div class="relative mt-1">
+                <x-text-input wire:model="password" id="password" class="block w-full pr-10"
+                              x-bind:type="showPassword ? 'text' : 'password'"
+                              name="password" placeholder="Minimal 8 karakter" required autocomplete="new-password" />
+                <button type="button" @click="showPassword = !showPassword"
+                        class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-700"
+                        :aria-label="showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'">
+                    <x-heroicon-o-eye x-show="!showPassword" class="w-4 h-4" />
+                    <x-heroicon-o-eye-slash x-show="showPassword" x-cloak class="w-4 h-4" />
+                </button>
+            </div>
+            <p class="text-2xs text-gray-400 mt-1">Gunakan minimal 8 karakter dengan kombinasi huruf dan angka.</p>
+            <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
         </div>
 
         <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        <div>
+            <x-input-label for="password_confirmation" value="Konfirmasi Kata Sandi Baru" />
 
             <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                          type="password"
+                          x-bind:type="showPassword ? 'text' : 'password'"
+                          placeholder="Ulangi kata sandi baru"
                           name="password_confirmation" required autocomplete="new-password" />
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1.5" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
+        <div class="pt-2">
+            <x-primary-button class="w-full" wire:loading.attr="disabled" wire:target="resetPassword">
+                <span wire:loading.remove wire:target="resetPassword">Simpan Kata Sandi Baru</span>
+                <span wire:loading wire:target="resetPassword">Menyimpan...</span>
             </x-primary-button>
         </div>
     </form>

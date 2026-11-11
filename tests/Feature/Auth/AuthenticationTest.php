@@ -17,7 +17,19 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('pages.auth.login');
+            ->assertSeeVolt('pages.auth.login')
+            ->assertSee('Masuk ke Akun Anda')
+            ->assertSee('Daftar sekarang');
+    }
+
+    public function test_login_validates_required_email_and_password(): void
+    {
+        Volt::test('pages.auth.login')
+            ->set('form.email', '')
+            ->set('form.password', '')
+            ->call('login')
+            ->assertHasErrors(['form.email', 'form.password'])
+            ->assertNoRedirect();
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
