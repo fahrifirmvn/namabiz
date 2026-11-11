@@ -72,11 +72,9 @@
                                     <x-heroicon-o-user-group class="w-4 h-4 text-gray-400" /> {{ $supplier->company_size }}
                                 </span>
                             @endif
-                            @if($supplier->website)
+                            @if($supplier->safe_website_url)
                                 @php
-                                    $websiteUrl = \Illuminate\Support\Str::startsWith($supplier->website, ['http://', 'https://'])
-                                        ? $supplier->website
-                                        : 'https://' . $supplier->website;
+                                    $websiteUrl = $supplier->safe_website_url;
                                 @endphp
                                 <a href="{{ $websiteUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-gray-700 hover:text-black underline underline-offset-2">
                                     <x-heroicon-o-globe-alt class="w-4 h-4 text-gray-400" /> {{ parse_url($websiteUrl, PHP_URL_HOST) ?? $supplier->website }}

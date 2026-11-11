@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class SecurityHardeningTest extends TestCase
@@ -96,5 +97,32 @@ class SecurityHardeningTest extends TestCase
         // Unsafe javascript: scheme in external_url is blocked on download
         $this->get(route('documents.download', $unsafeDoc))->assertStatus(404);
         $this->getJson(route('api.documents.download', ['document' => $unsafeDoc->id]))->assertStatus(404);
+    }
+
+    public function test_sec_006_rejects_javascript_scheme_urls_and_svg_uploads(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $svgFile = UploadedFile::fake()->createWithContent(
+            'malicious.svg',
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>'
+        );
+
+        $this->actingAs($admin)
+            ->post(route('admin.suppliers.store'), [
+                'name' => 'PT Uji Skema',
+                'country' => 'Indonesia',
+                'industry_category' => 'Packaging Manufacturer',
+                'website' => 'javascript:alert(document.cookie)',
+                'logo_url' => 'data:text/html,<script>alert(1)</script>',
+                'logo_file' => $svgFile,
+            ])
+            ->assertSessionHasErrors(['website', 'logo_url', 'logo_file']);
+
+        $supplier = Supplier::factory()->make([
+            'website' => 'javascript:alert(1)',
+            'whatsapp' => 'abc',
+        ]);
+        $this->assertNull($supplier->safe_website_url);
+        $this->assertNull($supplier->whatsapp_url);
     }
 }

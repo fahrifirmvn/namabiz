@@ -85,14 +85,37 @@ class Supplier extends Model
             return null;
         }
 
-        $phone = preg_replace('/[^0-9]/', '', $this->whatsapp);
+        $phone = preg_replace('/[^0-9]/', '', (string) $this->whatsapp) ?? '';
         if (str_starts_with($phone, '0')) {
             $phone = '62'.substr($phone, 1);
         }
 
-        $text = urlencode("Halo {$this->name}, saya menemukan profil perusahaan Anda di platform Namabiz.");
+        if ($phone === '' || strlen($phone) < 7 || strlen($phone) > 15) {
+            return null;
+        }
+
+        $cleanName = trim((string) preg_replace('/[\x00-\x1F\x7F]+/', ' ', (string) $this->name));
+        $text = rawurlencode("Halo {$cleanName}, saya menemukan profil perusahaan Anda di platform Namabiz.");
 
         return "https://wa.me/{$phone}?text={$text}";
+    }
+
+    public function getSafeWebsiteUrlAttribute(): ?string
+    {
+        $raw = trim((string) $this->website);
+        if ($raw === '') {
+            return null;
+        }
+
+        $raw = preg_replace('/[\x00-\x1F\x7F\s]+/', '', $raw) ?? '';
+        $candidate = str_contains($raw, ':') ? $raw : 'https://'.$raw;
+        $scheme = strtolower((string) parse_url($candidate, PHP_URL_SCHEME));
+
+        if (! in_array($scheme, ['http', 'https'], true) || ! filter_var($candidate, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        return $candidate;
     }
 
     public function tags()

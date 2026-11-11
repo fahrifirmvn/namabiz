@@ -11,6 +11,14 @@ class SupplierRequest extends FormRequest
         return $this->user()?->can('access-admin') ?? false;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $website = trim((string) $this->input('website', ''));
+        if ($website !== '' && ! str_contains($website, ':')) {
+            $this->merge(['website' => 'https://'.$website]);
+        }
+    }
+
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -19,14 +27,14 @@ class SupplierRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'about' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:10000'],
+            'about' => ['nullable', 'string', 'max:20000'],
             'country' => ['required', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'industry_category' => ['required', 'string', 'max:100'],
-            'whatsapp' => ['nullable', 'string', 'max:50'],
+            'whatsapp' => ['nullable', 'string', 'max:50', 'regex:/^[0-9+\-\s()]+$/'],
             'email' => ['nullable', 'email', 'max:255'],
-            'website' => ['nullable', 'string', 'max:255'],
+            'website' => ['nullable', 'string', 'max:255', 'url:http,https'],
             'company_size' => ['nullable', 'string', 'max:100'],
             'founded_year' => ['nullable', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'moq' => ['nullable', 'string', 'max:100'],
@@ -34,8 +42,8 @@ class SupplierRequest extends FormRequest
             'avg_lead_time' => ['nullable', 'string', 'max:100'],
             'carbon_footprint_report' => ['nullable', 'string', 'max:100'],
             'is_verified' => ['nullable', 'boolean'],
-            'logo_url' => ['nullable', 'string', 'max:500'],
-            'logo_file' => ['nullable', 'image', 'max:2048'],
+            'logo_url' => ['nullable', 'string', 'max:500', 'url:http,https'],
+            'logo_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_logo' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'string', 'max:1500'],
             'certifications' => ['nullable', 'array'],
