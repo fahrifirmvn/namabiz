@@ -5,3 +5,49 @@
 [x-cloak] {
     display: none !important;
 }
+
+@layer base {
+    :root {
+        --nb-surface: #F7F8FA;
+        --nb-surface-subtle: #F3F4F6;
+        --nb-border: #E5E7EB;
+        --nb-text-primary: #111827;
+        --nb-text-secondary: #4B5563;
+        --nb-text-muted: #6B7280;
+        --nb-brand: #059669;
+        --nb-brand-soft: #ECFDF5;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        ::before,
+        ::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    .nb-focus-ring {
+        @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2;
+    }
+
+    .nb-card {
+        @apply bg-white rounded-2xl border border-gray-200 shadow-card transition-all duration-180 ease-out;
+    }
+
+    .nb-card-interactive {
+        @apply nb-card hover:-translate-y-0.5 hover:shadow-card-hover hover:border-gray-300 motion-reduce:hover:translate-y-0;
+    }
+
+    .nb-chip {
+        @apply inline-flex items-center h-6 px-2.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200/70 whitespace-nowrap;
+    }
+
+    .nb-badge-best {
+        @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200;
+    }
+}
