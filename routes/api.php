@@ -28,13 +28,16 @@ Route::prefix('v1')->group(function () {
     Route::match(['get', 'post'], '/suppliers/qr-resolve', [SupplierController::class, 'qrResolve'])->name('api.suppliers.qr-resolve');
     Route::post('/suppliers/compare', [ComparisonController::class, 'compare'])->name('api.compare');
     Route::get('/suppliers/{idOrSlug}', [SupplierController::class, 'show'])->name('api.suppliers.show');
-    Route::match(['put', 'patch', 'post'], '/suppliers/{id}', [SupplierController::class, 'update'])->name('api.suppliers.update');
 
     // Documents (public/freemium handled inside controller)
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('api.documents.download');
 
     // Protected Routes (Sanctum Token required)
     Route::middleware('auth:sanctum')->group(function () {
+        Route::match(['put', 'patch', 'post'], '/suppliers/{id}', [SupplierController::class, 'update'])
+            ->middleware('can:access-admin')
+            ->name('api.suppliers.update');
+
         Route::get('/auth/user', [AuthController::class, 'user'])->name('api.auth.user');
         Route::get('/auth/me', [AuthController::class, 'user'])->name('api.auth.me');
         Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.auth.logout');

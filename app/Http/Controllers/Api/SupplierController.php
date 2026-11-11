@@ -188,16 +188,32 @@ class SupplierController extends Controller
      */
     public function update(Request $request, int $id): JsonResponse
     {
+        if (! $request->user()?->can('access-admin')) {
+            return ApiResponse::error('Forbidden.', 403);
+        }
+
         $supplier = Supplier::find($id);
         if (! $supplier) {
             return ApiResponse::error('Supplier not found', 404);
         }
 
-        $supplier->update($request->only([
-            'name', 'slug', 'logo', 'tagline', 'description',
-            'country', 'city', 'industry_category', 'is_verified',
-            'moq', 'production_capacity', 'avg_lead_time', 'website',
-        ]));
+        $validated = $request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'slug' => ['sometimes', 'required', 'string', 'max:255', 'alpha_dash'],
+            'logo' => ['nullable', 'string', 'max:500', 'url:http,https'],
+            'tagline' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'country' => ['sometimes', 'required', 'string', 'max:100'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'industry_category' => ['sometimes', 'required', 'string', 'max:100'],
+            'is_verified' => ['sometimes', 'boolean'],
+            'moq' => ['nullable', 'string', 'max:100'],
+            'production_capacity' => ['nullable', 'string', 'max:100'],
+            'avg_lead_time' => ['nullable', 'string', 'max:100'],
+            'website' => ['nullable', 'string', 'max:255', 'url:http,https'],
+        ]);
+
+        $supplier->update($validated);
 
         return ApiResponse::success(new SupplierResource($supplier), 'Supplier updated successfully');
     }
