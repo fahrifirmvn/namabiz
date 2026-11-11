@@ -1,9 +1,7 @@
 @props(['supplier'])
 
 @php
-    $freeDocsCount = $supplier->documents->where('is_premium', false)->count();
-    $premiumDocsCount = $supplier->documents->where('is_premium', true)->count();
-    $totalDocsCount = $supplier->documents->count();
+    $totalDocsCount = $supplier->documents_count ?? $supplier->documents->count();
     $isVerified = (bool) $supplier->is_verified;
     $initial = strtoupper(substr($supplier->name, 0, 2));
 @endphp

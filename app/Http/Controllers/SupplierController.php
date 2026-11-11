@@ -9,19 +9,18 @@ class SupplierController extends Controller
 {
     public function show(Supplier $supplier): View
     {
-        $supplier->load([
-            'tags',
-            'documents',
-            'certifications.certification',
-            'reviews' => fn ($q) => $q->latest()->with('user'),
-        ]);
-        $supplier->loadCount('reviews');
+        $supplier->load(['tags', 'documents', 'certifications.certification']);
+
+        $reviewStats = $supplier->reviewStats();
+        $supplier->setRelation('reviews', $supplier->reviews()->with('user')->latest()->limit(20)->get());
+        $supplier->setAttribute('reviews_count', $reviewStats['count']);
+        $supplier->setAttribute('reviews_avg_rating', $reviewStats['average']);
 
         $isSaved = auth()->check()
             && $supplier->savedBy()->where('user_id', auth()->id())->exists();
 
         $userReview = auth()->check()
-            ? $supplier->reviews->firstWhere('user_id', auth()->id())
+            ? $supplier->reviews()->where('user_id', auth()->id())->first()
             : null;
 
         $similarSuppliers = Supplier::with(['tags', 'certifications.certification'])
@@ -30,6 +29,6 @@ class SupplierController extends Controller
             ->limit(3)
             ->get();
 
-        return view('suppliers.show', compact('supplier', 'isSaved', 'similarSuppliers', 'userReview'));
+        return view('suppliers.show', compact('supplier', 'isSaved', 'similarSuppliers', 'userReview', 'reviewStats'));
     }
 }

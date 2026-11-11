@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\CatalogCacheObserver;
 use Database\Factories\SupplierFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy(CatalogCacheObserver::class)]
 class Supplier extends Model
 {
     /** @use HasFactory<SupplierFactory> */
@@ -22,6 +26,14 @@ class Supplier extends Model
         'is_verified' => 'boolean',
         'founded_year' => 'integer',
     ];
+
+    /**
+     * Load only the aggregates needed by supplier cards instead of whole relations.
+     */
+    public function scopeWithCardStats(Builder $query): Builder
+    {
+        return $query->withCount(['documents', 'reviews'])->withAvg('reviews', 'rating');
+    }
 
     public function getWhatsappUrlAttribute(): ?string
     {
@@ -64,9 +76,47 @@ class Supplier extends Model
         return $this->hasMany(SupplierReview::class);
     }
 
+    /**
+     * Aggregate rating statistics without loading review rows.
+     *
+     * @return array{count: int, average: ?float, quality: ?float, delivery: ?float, service: ?float, breakdown: array<int, int>}
+     */
+    public function reviewStats(): array
+    {
+        $totals = $this->reviews()
+            ->selectRaw('count(*) as total, avg(rating) as avg_rating, avg(quality_rating) as avg_quality, avg(delivery_rating) as avg_delivery, avg(service_rating) as avg_service')
+            ->toBase()
+            ->first();
+
+        $perStar = $this->reviews()
+            ->selectRaw('rating, count(*) as total')
+            ->groupBy('rating')
+            ->toBase()
+            ->pluck('total', 'rating');
+
+        $count = (int) ($totals->total ?? 0);
+        $breakdown = [];
+        foreach ([5, 4, 3, 2, 1] as $star) {
+            $breakdown[$star] = $count > 0 ? (int) round(((int) ($perStar[$star] ?? 0) / $count) * 100) : 0;
+        }
+
+        $round = fn ($value): ?float => $count > 0 ? round((float) $value, 1) : null;
+
+        return [
+            'count' => $count,
+            'average' => $round($totals->avg_rating ?? 0),
+            'quality' => $round($totals->avg_quality ?? 0),
+            'delivery' => $round($totals->avg_delivery ?? 0),
+            'service' => $round($totals->avg_service ?? 0),
+            'breakdown' => $breakdown,
+        ];
+    }
+
     public function getAverageRatingAttribute(): ?float
     {
-        if ($this->relationLoaded('reviews')) {
+        if (array_key_exists('reviews_avg_rating', $this->attributes)) {
+            $avg = $this->attributes['reviews_avg_rating'];
+        } elseif ($this->relationLoaded('reviews')) {
             $avg = $this->reviews->avg('rating');
         } else {
             $avg = $this->reviews()->avg('rating');

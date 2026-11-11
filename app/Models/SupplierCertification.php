@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Observers\CatalogCacheObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy(CatalogCacheObserver::class)]
 class SupplierCertification extends Model
 {
     public $timestamps = false;

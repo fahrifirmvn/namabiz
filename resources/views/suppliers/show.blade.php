@@ -350,12 +350,12 @@
                 <!-- 6. Tab Ulasan & Evaluasi Rekanan -->
                 <div x-show="activeTab === 'ulasan'" class="space-y-8">
                     @php
-                        $totalReviews = $supplier->reviews->count();
-                        $avgRating = $supplier->average_rating;
-                        $avgQuality = $totalReviews > 0 ? round($supplier->reviews->avg('quality_rating'), 1) : null;
-                        $avgDelivery = $totalReviews > 0 ? round($supplier->reviews->avg('delivery_rating'), 1) : null;
-                        $avgService = $totalReviews > 0 ? round($supplier->reviews->avg('service_rating'), 1) : null;
-                        $breakdown = $supplier->ratingBreakdown();
+                        $totalReviews = $reviewStats['count'];
+                        $avgRating = $reviewStats['average'];
+                        $avgQuality = $reviewStats['quality'];
+                        $avgDelivery = $reviewStats['delivery'];
+                        $avgService = $reviewStats['service'];
+                        $breakdown = $reviewStats['breakdown'];
                     @endphp
 
                     <!-- Summary Scorecard -->
@@ -590,7 +590,7 @@
                     <!-- Reviews List Feed -->
                     <div class="space-y-4">
                         <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-base text-gray-900">Ulasan Pembeli ({{ $supplier->reviews->count() }})</h3>
+                            <h3 class="font-bold text-base text-gray-900">Ulasan Pembeli ({{ $supplier->reviews_count }})</h3>
                         </div>
 
                         @forelse($supplier->reviews as $rev)

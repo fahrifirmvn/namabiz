@@ -4,6 +4,9 @@ namespace App\Livewire;
 
 use App\Models\Certification;
 use App\Models\Supplier;
+use App\Observers\CatalogCacheObserver;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -132,9 +135,16 @@ class DiscoverSearch extends Component
     #[Computed]
     public function recommendedSuppliers()
     {
-        return Supplier::with(['tags', 'certifications.certification', 'documents', 'reviews'])
+        $ids = Cache::remember(CatalogCacheObserver::RECOMMENDED_KEY, 600, fn () => Supplier::query()
             ->orderByDesc('is_verified')
             ->limit(3)
+            ->pluck('id')
+            ->all());
+
+        return Supplier::withCardStats()
+            ->with(['tags', 'certifications.certification'])
+            ->whereIn('id', $ids)
+            ->orderByDesc('is_verified')
             ->get();
     }
 
@@ -144,10 +154,33 @@ class DiscoverSearch extends Component
         return Supplier::whereIn('id', $this->compareIds)->get(['id', 'name']);
     }
 
+    /**
+     * Filter option lists change rarely; cached and invalidated by CatalogCacheObserver.
+     *
+     * @return array{locations: Collection, categories: Collection, certifications: Collection}
+     */
+    private function filterOptions(): array
+    {
+        return Cache::remember(CatalogCacheObserver::FILTER_OPTIONS_KEY, 600, fn () => [
+            'locations' => Supplier::select('country')
+                ->selectRaw('count(*) as count')
+                ->groupBy('country')
+                ->orderBy('country')
+                ->get(),
+            'categories' => Supplier::select('industry_category')
+                ->selectRaw('count(*) as count')
+                ->groupBy('industry_category')
+                ->orderBy('industry_category')
+                ->get(),
+            'certifications' => Certification::withCount('suppliers')->get(),
+        ]);
+    }
+
     public function render()
     {
         $suppliersQuery = Supplier::query()
-            ->with(['tags', 'certifications.certification', 'documents', 'reviews'])
+            ->withCardStats()
+            ->with(['tags', 'certifications.certification'])
             ->when($this->query !== '', function ($q) {
                 $keyword = trim($this->query);
                 $q->where(function ($sub) use ($keyword) {
@@ -170,27 +203,13 @@ class DiscoverSearch extends Component
             default => $suppliersQuery->orderByDesc('is_verified')->orderBy('name'),
         };
 
-        $suppliers = $suppliersQuery->paginate(12);
-
-        $locationOptions = Supplier::select('country')
-            ->selectRaw('count(*) as count')
-            ->groupBy('country')
-            ->orderBy('country')
-            ->get();
-
-        $categoryOptions = Supplier::select('industry_category')
-            ->selectRaw('count(*) as count')
-            ->groupBy('industry_category')
-            ->orderBy('industry_category')
-            ->get();
-
-        $certificationOptions = Certification::withCount('suppliers')->get();
+        $options = $this->filterOptions();
 
         return view('livewire.discover-search', [
-            'suppliers' => $suppliers,
-            'locationOptions' => $locationOptions,
-            'categoryOptions' => $categoryOptions,
-            'certificationOptions' => $certificationOptions,
+            'suppliers' => $suppliersQuery->paginate(12),
+            'locationOptions' => $options['locations'],
+            'categoryOptions' => $options['categories'],
+            'certificationOptions' => $options['certifications'],
         ]);
     }
 }

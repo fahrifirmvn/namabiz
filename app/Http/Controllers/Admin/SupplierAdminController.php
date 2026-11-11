@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\IndustryCategory;
 use App\Models\Supplier;
 use App\Models\SupplierReview;
+use App\Observers\CatalogCacheObserver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -123,7 +124,9 @@ class SupplierAdminController extends Controller
      */
     public function edit(Supplier $supplier): View
     {
-        $supplier->load(['documents', 'tags', 'certifications.certification', 'reviews.user']);
+        $supplier->load(['documents', 'tags', 'certifications.certification']);
+        $supplier->loadCount('reviews')->loadAvg('reviews', 'rating');
+        $supplier->setRelation('reviews', $supplier->reviews()->with('user')->latest()->limit(50)->get());
         $categories = IndustryCategory::orderBy('name')->get();
         $certifications = Certification::orderBy('category')->orderBy('name')->get();
 
@@ -150,6 +153,8 @@ class SupplierAdminController extends Controller
                 ]);
             }
         }
+
+        CatalogCacheObserver::flush();
 
         return redirect()->route('admin.suppliers.edit', $supplier)
             ->with('success', 'Daftar sertifikasi standar pemasok berhasil diperbarui.');

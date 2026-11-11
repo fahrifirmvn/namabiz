@@ -407,7 +407,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-full">
-                        ★ {{ $supplier->average_rating ? number_format($supplier->average_rating, 1) : '0.0' }} ({{ $supplier->reviews->count() }} ulasan)
+                        ★ {{ $supplier->average_rating ? number_format($supplier->average_rating, 1) : '0.0' }} ({{ $supplier->reviews_count }} ulasan)
                     </span>
                 </div>
             </div>
