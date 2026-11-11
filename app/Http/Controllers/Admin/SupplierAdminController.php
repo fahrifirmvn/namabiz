@@ -10,6 +10,7 @@ use App\Models\IndustryCategory;
 use App\Models\Supplier;
 use App\Models\SupplierReview;
 use App\Observers\CatalogCacheObserver;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -39,16 +40,18 @@ class SupplierAdminController extends Controller
 
         $suppliers = Supplier::query()
             ->withCount(['documents', 'tags', 'certifications'])
-            ->when($request->filled('q'), function ($query) use ($request) {
-                $keyword = $request->input('q');
-                $query->where(function ($q) use ($keyword) {
-                    $q->where('name', 'like', "%{$keyword}%")
-                        ->orWhere('industry_category', 'like', "%{$keyword}%")
-                        ->orWhere('country', 'like', "%{$keyword}%")
-                        ->orWhere('city', 'like', "%{$keyword}%")
-                        ->orWhere('whatsapp', 'like', "%{$keyword}%")
-                        ->orWhere('email', 'like', "%{$keyword}%");
-                });
+            ->when($request->filled('q') && is_string($request->input('q')), function ($query) use ($request) {
+                $pattern = SqlLike::pattern($request->input('q'));
+                if ($pattern !== null) {
+                    $query->where(function ($q) use ($pattern) {
+                        $q->where('name', 'like', $pattern)
+                            ->orWhere('industry_category', 'like', $pattern)
+                            ->orWhere('country', 'like', $pattern)
+                            ->orWhere('city', 'like', $pattern)
+                            ->orWhere('whatsapp', 'like', $pattern)
+                            ->orWhere('email', 'like', $pattern);
+                    });
+                }
             })
             ->when($request->filled('category'), fn ($query) => $query->where('industry_category', $request->input('category')))
             ->when($request->input('status') === 'verified', fn ($query) => $query->where('is_verified', true))

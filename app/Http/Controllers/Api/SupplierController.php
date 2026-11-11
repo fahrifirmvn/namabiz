@@ -7,6 +7,7 @@ use App\Http\Resources\SupplierResource;
 use App\Models\SavedSupplier;
 use App\Models\Supplier;
 use App\Support\ApiResponse;
+use App\Support\SqlLike;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,37 +21,46 @@ class SupplierController extends Controller
         $query = Supplier::query()->with(['tags']);
 
         if ($request->filled('q') || $request->filled('search')) {
-            $keyword = $request->input('q', $request->input('search'));
-            $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('industry_category', 'like', "%{$keyword}%")
-                    ->orWhere('country', 'like', "%{$keyword}%")
-                    ->orWhere('description', 'like', "%{$keyword}%");
+            $rawKeyword = is_scalar($request->input('q', $request->input('search')))
+                ? (string) $request->input('q', $request->input('search'))
+                : '';
+            $pattern = SqlLike::pattern($rawKeyword);
+
+            if ($pattern !== null) {
+                $query->where(function ($q) use ($pattern) {
+                    $q->where('name', 'like', $pattern)
+                        ->orWhere('industry_category', 'like', $pattern)
+                        ->orWhere('country', 'like', $pattern)
+                        ->orWhere('description', 'like', $pattern);
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        if ($request->filled('country') && is_string($request->input('country'))) {
+            $query->where('country', mb_substr($request->input('country'), 0, 100));
+        }
+
+        if ($request->filled('category') && is_string($request->input('category'))) {
+            $query->where('industry_category', mb_substr($request->input('category'), 0, 100));
+        }
+
+        if ($request->filled('certification_id') && is_numeric($request->input('certification_id'))) {
+            $certId = (int) $request->input('certification_id');
+            $query->whereHas('certifications', function ($q) use ($certId) {
+                $q->where('certification_id', $certId);
             });
         }
 
-        if ($request->filled('country')) {
-            $query->where('country', $request->input('country'));
-        }
-
-        if ($request->filled('category')) {
-            $query->where('industry_category', $request->input('category'));
-        }
-
-        if ($request->filled('certification_id')) {
-            $query->whereHas('certifications', function ($q) use ($request) {
-                $q->where('certification_id', $request->input('certification_id'));
-            });
-        }
-
-        $sortBy = $request->input('sort_by', 'relevance');
+        $sortBy = is_string($request->input('sort_by')) ? $request->input('sort_by') : 'relevance';
         match ($sortBy) {
             'newest' => $query->latest(),
             'company_size' => $query->orderByDesc('company_size'),
             default => $query->orderByDesc('is_verified')->orderBy('name'),
         };
 
-        $perPage = min((int) $request->input('per_page', 12), 50);
+        $perPage = max(1, min((int) $request->input('per_page', 12), 50));
         $suppliers = $query->paginate($perPage);
 
         return ApiResponse::success(
@@ -76,8 +86,12 @@ class SupplierController extends Controller
     {
         $supplier = Supplier::query()
             ->with(['tags', 'documents', 'certifications.certification'])
-            ->where('slug', $idOrSlug)
-            ->orWhere('id', $idOrSlug)
+            ->where(function ($q) use ($idOrSlug) {
+                $q->where('slug', $idOrSlug);
+                if (ctype_digit($idOrSlug)) {
+                    $q->orWhere('id', (int) $idOrSlug);
+                }
+            })
             ->first();
 
         if (! $supplier) {
@@ -96,7 +110,7 @@ class SupplierController extends Controller
     public function qrResolve(Request $request): JsonResponse
     {
         $request->validate([
-            'code' => ['required', 'string'],
+            'code' => ['required', 'string', 'max:500'],
         ]);
 
         $rawCode = trim($request->input('code'));
@@ -115,12 +129,16 @@ class SupplierController extends Controller
 
         $supplier = Supplier::query()
             ->with(['tags', 'documents', 'certifications.certification'])
-            ->where('slug', $slugOrId)
-            ->orWhere('id', $slugOrId)
+            ->where(function ($q) use ($slugOrId) {
+                $q->where('slug', $slugOrId);
+                if (ctype_digit((string) $slugOrId)) {
+                    $q->orWhere('id', (int) $slugOrId);
+                }
+            })
             ->first();
 
         if (! $supplier) {
-            return ApiResponse::error("Supplier with code '{$rawCode}' not found.", 404);
+            return ApiResponse::error('Supplier not found for the provided QR code.', 404);
         }
 
         return ApiResponse::success(

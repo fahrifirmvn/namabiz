@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SavedSupplier;
 use App\Models\Supplier;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,14 +38,16 @@ class SavedSupplierController extends Controller
             $activeCollection = $collections->firstWhere('id', (int) $activeCollectionId);
         }
 
-        if ($request->filled('q')) {
-            $keyword = trim($request->query('q'));
-            $query->whereHas('supplier', function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('industry_category', 'like', "%{$keyword}%")
-                    ->orWhere('city', 'like', "%{$keyword}%")
-                    ->orWhere('country', 'like', "%{$keyword}%");
-            });
+        if ($request->filled('q') && is_string($request->query('q'))) {
+            $pattern = SqlLike::pattern($request->query('q'));
+            if ($pattern !== null) {
+                $query->whereHas('supplier', function ($q) use ($pattern) {
+                    $q->where('name', 'like', $pattern)
+                        ->orWhere('industry_category', 'like', $pattern)
+                        ->orWhere('city', 'like', $pattern)
+                        ->orWhere('country', 'like', $pattern);
+                });
+            }
         }
 
         $savedSuppliers = $query->paginate(12)->withQueryString();

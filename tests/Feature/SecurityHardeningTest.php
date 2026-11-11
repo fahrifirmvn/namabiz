@@ -125,4 +125,24 @@ class SecurityHardeningTest extends TestCase
         $this->assertNull($supplier->safe_website_url);
         $this->assertNull($supplier->whatsapp_url);
     }
+
+    public function test_sec_007_parameterized_search_handles_sql_metacharacters_and_wildcards_safely(): void
+    {
+        Supplier::factory()->create(['name' => 'PT Baja Murni Nusantara']);
+
+        foreach (["' OR '1'='1", '; DROP TABLE suppliers; --', 'UNION SELECT NULL', '%%%%%'] as $input) {
+            $this->getJson(route('api.suppliers.index', ['q' => $input]))
+                ->assertOk()
+                ->assertJsonPath('meta.pagination.total', 0);
+        }
+
+        // Negative or excessive per_page is clamped between 1 and 50
+        $this->getJson(route('api.suppliers.index', ['per_page' => -10]))
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.per_page', 1);
+
+        $this->getJson(route('api.suppliers.index', ['per_page' => 9999]))
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.per_page', 50);
+    }
 }

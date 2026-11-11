@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Supplier;
 use App\Support\PremiumAccess;
+use App\Support\SqlLike;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -75,11 +76,12 @@ class ComparisonTable extends Component
     #[Computed]
     public function searchResults()
     {
-        if ($this->search === '') {
+        $pattern = SqlLike::pattern($this->search);
+        if ($pattern === null) {
             return collect();
         }
 
-        return Supplier::where('name', 'like', "%{$this->search}%")
+        return Supplier::where('name', 'like', $pattern)
             ->whereNotIn('id', $this->supplierIds)
             ->limit(5)
             ->get();

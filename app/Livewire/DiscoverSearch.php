@@ -6,6 +6,7 @@ use App\Models\Certification;
 use App\Models\IndustryCategory;
 use App\Models\Supplier;
 use App\Observers\CatalogCacheObserver;
+use App\Support\SqlLike;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -237,15 +238,15 @@ class DiscoverSearch extends Component
         $suppliersQuery = Supplier::query()
             ->withCardStats()
             ->with(['tags', 'certifications.certification'])
-            ->when($this->query !== '', function ($q) {
-                $keyword = trim($this->query);
-                $q->where(function ($sub) use ($keyword) {
-                    $sub->where('name', 'like', "%{$keyword}%")
-                        ->orWhere('industry_category', 'like', "%{$keyword}%")
-                        ->orWhere('country', 'like', "%{$keyword}%")
-                        ->orWhere('city', 'like', "%{$keyword}%")
-                        ->orWhere('description', 'like', "%{$keyword}%")
-                        ->orWhereHas('tags', fn ($tagQuery) => $tagQuery->where('tag_name', 'like', "%{$keyword}%"));
+            ->when(SqlLike::pattern($this->query) !== null, function ($q) {
+                $pattern = SqlLike::pattern($this->query);
+                $q->where(function ($sub) use ($pattern) {
+                    $sub->where('name', 'like', $pattern)
+                        ->orWhere('industry_category', 'like', $pattern)
+                        ->orWhere('country', 'like', $pattern)
+                        ->orWhere('city', 'like', $pattern)
+                        ->orWhere('description', 'like', $pattern)
+                        ->orWhereHas('tags', fn ($tagQuery) => $tagQuery->where('tag_name', 'like', $pattern));
                 });
             })
             ->when(! empty($this->locations), fn ($q) => $q->whereIn('country', (array) $this->locations))
