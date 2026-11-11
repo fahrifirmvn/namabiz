@@ -96,7 +96,7 @@
                                 <td class="p-4 sm:p-5 text-gray-900">
                                     <div class="flex items-center gap-2">
                                         <span>2,5 juta unit/bln</span>
-                                        <span class="px-2 py-0.5 text-2xs font-bold bg-black text-white rounded">TERBAIK</span>
+                                        <span class="nb-badge-best">TERBAIK</span>
                                     </div>
                                 </td>
                                 <td class="p-4 sm:p-5 text-gray-700">1,2 juta unit/bln</td>
@@ -109,7 +109,7 @@
                                 <td class="p-4 sm:p-5 text-gray-900">
                                     <div class="flex items-center gap-2">
                                         <span>1.000 unit</span>
-                                        <span class="px-2 py-0.5 text-2xs font-bold bg-black text-white rounded">TERBAIK</span>
+                                        <span class="nb-badge-best">TERBAIK</span>
                                     </div>
                                 </td>
                             </tr>
@@ -120,7 +120,7 @@
                                 <td class="p-4 sm:p-5 text-gray-900">
                                     <div class="flex items-center gap-2">
                                         <span>2-3 minggu</span>
-                                        <span class="px-2 py-0.5 text-2xs font-bold bg-black text-white rounded">TERBAIK</span>
+                                        <span class="nb-badge-best">TERBAIK</span>
                                     </div>
                                 </td>
                             </tr>
