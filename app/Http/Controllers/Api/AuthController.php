@@ -71,21 +71,28 @@ class AuthController extends Controller
      */
     public function google(Request $request): JsonResponse
     {
+        if (app()->environment('production') && ! $request->filled('id_token')) {
+            return ApiResponse::error('Google ID token verification is required.', 403);
+        }
+
         $validated = $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
-            'avatar' => ['nullable', 'string', 'url'],
+            'avatar' => ['nullable', 'string', 'max:500', 'url:http,https'],
             'device_name' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $user = User::firstOrCreate(
-            ['email' => $validated['email']],
-            [
-                'name' => $validated['name'],
-                'password' => Hash::make(Str::random(32)),
-                'avatar' => $validated['avatar'] ?? null,
-            ]
-        );
+        $existingUser = User::where('email', $validated['email'])->first();
+        if ($existingUser && $existingUser->isAdmin()) {
+            return ApiResponse::error('Administrator accounts cannot authenticate via unverified social login.', 403);
+        }
+
+        $user = $existingUser ?? User::create([
+            'email' => $validated['email'],
+            'name' => $validated['name'],
+            'password' => Hash::make(Str::random(32)),
+            'avatar' => $validated['avatar'] ?? null,
+        ]);
 
         $deviceName = $validated['device_name'] ?? 'android-google-auth';
         $token = $user->createToken($deviceName)->plainTextToken;
