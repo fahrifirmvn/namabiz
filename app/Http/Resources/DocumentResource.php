@@ -26,7 +26,7 @@ class DocumentResource extends JsonResource
             'is_premium' => (bool) $this->is_premium,
             'can_download' => $canDownload,
             'download_url' => route('api.documents.download', ['document' => $this->id]),
-            'external_url' => $this->external_url,
+            'external_url' => $canDownload ? $this->external_url : null,
         ];
     }
 }

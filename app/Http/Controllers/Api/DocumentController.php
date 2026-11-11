@@ -34,11 +34,26 @@ class DocumentController extends Controller
         }
 
         if ($document->external_url) {
+            $scheme = strtolower((string) parse_url($document->external_url, PHP_URL_SCHEME));
+            if (! in_array($scheme, ['http', 'https'], true) || ! filter_var($document->external_url, FILTER_VALIDATE_URL)) {
+                return ApiResponse::error('Document URL is invalid.', 404);
+            }
+
             return redirect()->away($document->external_url);
         }
 
-        if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
-            return Storage::disk('public')->download($document->file_path, $document->title);
+        $filePath = (string) $document->file_path;
+        if ($filePath !== '' && ! str_contains($filePath, '..')) {
+            $safeTitle = trim((string) preg_replace('/[^\w\s\.\-\(\)]/u', '', (string) $document->title)) ?: 'document';
+            $headers = ['X-Content-Type-Options' => 'nosniff'];
+
+            if (Storage::disk('local')->exists($filePath)) {
+                return Storage::disk('local')->download($filePath, $safeTitle, $headers);
+            }
+
+            if (Storage::disk('public')->exists($filePath)) {
+                return Storage::disk('public')->download($filePath, $safeTitle, $headers);
+            }
         }
 
         return ApiResponse::error('Document file not available on the server.', 404);

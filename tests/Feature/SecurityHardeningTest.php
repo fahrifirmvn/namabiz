@@ -69,4 +69,32 @@ class SecurityHardeningTest extends TestCase
 
         $this->assertFalse($user->fresh()->isAdmin());
     }
+
+    public function test_sec_003_document_download_masks_premium_external_url_and_blocks_unsafe_schemes(): void
+    {
+        $supplier = Supplier::factory()->create(['slug' => 'doc-sec-supplier']);
+        $premiumDoc = $supplier->documents()->create([
+            'title' => 'Audit Rahasia 2026',
+            'type' => 'PDF',
+            'external_url' => 'https://cdn.example.com/secret-audit.pdf',
+            'is_premium' => true,
+        ]);
+
+        $unsafeDoc = $supplier->documents()->create([
+            'title' => 'Unsafe Scheme Doc',
+            'type' => 'PDF',
+            'external_url' => 'javascript:alert(1)',
+            'is_premium' => false,
+        ]);
+
+        // Free/Guest API call must NOT leak external_url of a premium document
+        $this->getJson(route('api.suppliers.show', ['idOrSlug' => $supplier->slug]))
+            ->assertOk()
+            ->assertJsonPath('data.documents.0.can_download', false)
+            ->assertJsonPath('data.documents.0.external_url', null);
+
+        // Unsafe javascript: scheme in external_url is blocked on download
+        $this->get(route('documents.download', $unsafeDoc))->assertStatus(404);
+        $this->getJson(route('api.documents.download', ['document' => $unsafeDoc->id]))->assertStatus(404);
+    }
 }
