@@ -12,6 +12,10 @@
 /.phpunit.cache
 /.vscode
 /.zed
+/.pi
+/.claude
+/AGENTS.md
+/CLAUDE.md
 /auth.json
 /node_modules
 /public/build
