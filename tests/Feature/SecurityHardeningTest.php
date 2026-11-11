@@ -160,4 +160,49 @@ class SecurityHardeningTest extends TestCase
             'password' => 'wrong-password',
         ])->assertStatus(429);
     }
+
+    public function test_sec_009_responses_include_security_headers_and_enforce_idor_protection(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertOk()
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
+            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+            ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+
+        $this->assertStringContainsString(
+            "default-src 'self'",
+            (string) $response->headers->get('Content-Security-Policy')
+        );
+
+        // Two-account IDOR check: User B cannot modify or delete User A's resources
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $supplier = Supplier::factory()->create(['slug' => 'idor-check-factory']);
+
+        $collectionA = $userA->procurementCollections()->create(['name' => 'Koleksi A']);
+        $savedA = $userA->savedSuppliers()->create([
+            'supplier_id' => $supplier->id,
+            'procurement_collection_id' => $collectionA->id,
+        ]);
+        $reviewA = $supplier->reviews()->create([
+            'user_id' => $userA->id,
+            'rating' => 5,
+            'title' => 'Kualitas Stabil',
+            'comment' => 'Sangat direkomendasikan untuk produksi skala besar.',
+        ]);
+
+        $this->actingAs($userB)
+            ->delete(route('saved.destroy', $savedA))
+            ->assertForbidden();
+
+        $this->actingAs($userB)
+            ->put(route('collections.update', $collectionA), ['name' => 'Dibajak User B'])
+            ->assertForbidden();
+
+        $this->actingAs($userB)
+            ->delete(route('suppliers.reviews.destroy', [$supplier, $reviewA]))
+            ->assertForbidden();
+    }
 }
