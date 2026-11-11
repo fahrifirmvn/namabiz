@@ -3,9 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\Certification;
+use App\Models\IndustryCategory;
 use App\Models\Supplier;
 use App\Observers\CatalogCacheObserver;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -143,7 +143,7 @@ class DiscoverSearch extends Component
 
         return Supplier::withCardStats()
             ->with(['tags', 'certifications.certification'])
-            ->whereIn('id', $ids)
+            ->whereIn('id', is_array($ids) ? $ids : [])
             ->orderByDesc('is_verified')
             ->get();
     }
@@ -155,25 +155,81 @@ class DiscoverSearch extends Component
     }
 
     /**
-     * Filter option lists change rarely; cached and invalidated by CatalogCacheObserver.
+     * Filter option lists change rarely; stored as plain primitive arrays so cache drivers
+     * remain compatible with `cache.serializable_classes => false`.
      *
-     * @return array{locations: Collection, categories: Collection, certifications: Collection}
+     * @return array{
+     *     locations: array<int, array{country: string, count: int}>,
+     *     categories: array<int, array{industry_category: string, count: int}>,
+     *     certifications: array<int, array{name: string, suppliers_count: int}>,
+     *     hubCategories: array<int, array{name: string, count: int}>
+     * }
      */
     private function filterOptions(): array
     {
-        return Cache::remember(CatalogCacheObserver::FILTER_OPTIONS_KEY, 600, fn () => [
-            'locations' => Supplier::select('country')
-                ->selectRaw('count(*) as count')
-                ->groupBy('country')
-                ->orderBy('country')
-                ->get(),
-            'categories' => Supplier::select('industry_category')
+        $options = Cache::remember(CatalogCacheObserver::FILTER_OPTIONS_KEY, 600, function (): array {
+            $categoryRows = Supplier::select('industry_category')
                 ->selectRaw('count(*) as count')
                 ->groupBy('industry_category')
                 ->orderBy('industry_category')
-                ->get(),
-            'certifications' => Certification::withCount('suppliers')->get(),
-        ]);
+                ->toBase()
+                ->get();
+
+            $categoryCounts = $categoryRows->pluck('count', 'industry_category');
+
+            $hubCategories = IndustryCategory::orderBy('name')
+                ->pluck('name')
+                ->map(fn (string $name): array => [
+                    'name' => $name,
+                    'count' => (int) ($categoryCounts[$name] ?? 0),
+                ])
+                ->all();
+
+            if (empty($hubCategories)) {
+                $hubCategories = $categoryRows
+                    ->map(fn (object $row): array => [
+                        'name' => (string) $row->industry_category,
+                        'count' => (int) $row->count,
+                    ])
+                    ->all();
+            }
+
+            return [
+                'locations' => Supplier::select('country')
+                    ->selectRaw('count(*) as count')
+                    ->groupBy('country')
+                    ->orderBy('country')
+                    ->toBase()
+                    ->get()
+                    ->map(fn (object $row): array => [
+                        'country' => (string) $row->country,
+                        'count' => (int) $row->count,
+                    ])
+                    ->all(),
+                'categories' => $categoryRows
+                    ->map(fn (object $row): array => [
+                        'industry_category' => (string) $row->industry_category,
+                        'count' => (int) $row->count,
+                    ])
+                    ->all(),
+                'certifications' => Certification::withCount('suppliers')
+                    ->orderBy('name')
+                    ->get()
+                    ->map(fn (Certification $cert): array => [
+                        'name' => (string) $cert->name,
+                        'suppliers_count' => (int) $cert->suppliers_count,
+                    ])
+                    ->all(),
+                'hubCategories' => $hubCategories,
+            ];
+        });
+
+        return is_array($options) ? $options : [
+            'locations' => [],
+            'categories' => [],
+            'certifications' => [],
+            'hubCategories' => [],
+        ];
     }
 
     public function render()
@@ -188,7 +244,8 @@ class DiscoverSearch extends Component
                         ->orWhere('industry_category', 'like', "%{$keyword}%")
                         ->orWhere('country', 'like', "%{$keyword}%")
                         ->orWhere('city', 'like', "%{$keyword}%")
-                        ->orWhere('description', 'like', "%{$keyword}%");
+                        ->orWhere('description', 'like', "%{$keyword}%")
+                        ->orWhereHas('tags', fn ($tagQuery) => $tagQuery->where('tag_name', 'like', "%{$keyword}%"));
                 });
             })
             ->when(! empty($this->locations), fn ($q) => $q->whereIn('country', (array) $this->locations))
@@ -207,9 +264,10 @@ class DiscoverSearch extends Component
 
         return view('livewire.discover-search', [
             'suppliers' => $suppliersQuery->paginate(12),
-            'locationOptions' => $options['locations'],
-            'categoryOptions' => $options['categories'],
-            'certificationOptions' => $options['certifications'],
+            'locationOptions' => $options['locations'] ?? [],
+            'categoryOptions' => $options['categories'] ?? [],
+            'certificationOptions' => $options['certifications'] ?? [],
+            'hubCategories' => $options['hubCategories'] ?? [],
         ]);
     }
 }

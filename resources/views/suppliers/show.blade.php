@@ -289,13 +289,8 @@
                                 <p class="text-2xs text-gray-500 mt-0.5">{{ $cert->certification?->category ?? 'Standar Mutu Internasional' }}</p>
                             </div>
                         @empty
-                            <div class="p-4 rounded-xl bg-surface border border-gray-200">
-                                <div class="flex items-center gap-2 mb-2 text-emerald-700">
-                                    <x-heroicon-s-check-circle class="w-4 h-4" />
-                                    <span class="text-xs font-bold">TERVERIFIKASI</span>
-                                </div>
-                                <h4 class="font-bold text-sm text-gray-900">ISO 9001:2015</h4>
-                                <p class="text-2xs text-gray-500 mt-0.5">Manajemen Mutu Pabrik</p>
+                            <div class="col-span-full py-6 text-center text-xs text-gray-400 bg-surface rounded-xl border border-dashed border-gray-200">
+                                Belum ada sertifikasi yang tercatat untuk pemasok ini.
                             </div>
                         @endforelse
                     </div>
@@ -558,17 +553,20 @@
                                     </button>
 
                                     @if($userReview)
-                                        <form method="POST" action="{{ route('suppliers.reviews.destroy', [$supplier->slug, $userReview]) }}"
-                                              onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-xs text-rose-600 hover:text-rose-800 font-semibold underline">
-                                                Hapus ulasan saya
-                                            </button>
-                                        </form>
+                                        <button type="submit" form="delete-own-review-form" class="text-xs text-rose-600 hover:text-rose-800 font-semibold underline">
+                                            Hapus ulasan saya
+                                        </button>
                                     @endif
                                 </div>
                             </form>
+
+                            @if($userReview)
+                                <form id="delete-own-review-form" method="POST" action="{{ route('suppliers.reviews.destroy', [$supplier->slug, $userReview]) }}"
+                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?')" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            @endif
                         @else
                             <div class="text-center py-6">
                                 <div class="w-12 h-12 rounded-2xl bg-gray-100 text-gray-600 flex items-center justify-center mx-auto mb-3">
@@ -785,7 +783,7 @@
                                             <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                                         </a>
                                     @else
-                                        <button type="button" @click="$dispatch('open-premium-modal', { title: '{{ $doc->title }}' })" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Terkunci untuk akun Premium">
+                                        <button type="button" x-on:click="Livewire.dispatch('open-premium-modal', { documentTitle: @js($doc->title) })" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Terkunci untuk akun Premium">
                                             <x-heroicon-s-lock-closed class="w-4 h-4" />
                                         </button>
                                     @endif

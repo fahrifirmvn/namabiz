@@ -65,6 +65,7 @@ class ComparisonTable extends Component
     public function suppliers()
     {
         return Supplier::with(['certifications.certification', 'documents', 'tags'])
+            ->withCardStats()
             ->whereIn('id', $this->supplierIds)
             ->get()
             ->sortBy(fn ($supplier) => array_search($supplier->id, $this->supplierIds))
@@ -92,7 +93,24 @@ class ComparisonTable extends Component
 
     public function certificationFor(Supplier $supplier, string $name): ?object
     {
-        return $supplier->certifications->first(fn ($c) => $c->certification?->name === $name);
+        $needle = mb_strtolower($name);
+
+        return $supplier->certifications->first(
+            fn ($c): bool => $c->certification !== null
+                && str_starts_with(mb_strtolower($c->certification->name), $needle)
+        );
+    }
+
+    /**
+     * Determine whether a row should be shown when "Tampilkan perbedaan saja" is enabled.
+     */
+    public function shouldShowRow(callable $extractor): bool
+    {
+        if (! $this->onlyDifferences || $this->suppliers->count() <= 1) {
+            return true;
+        }
+
+        return $this->suppliers->map($extractor)->unique()->count() > 1;
     }
 
     public function documentFor(Supplier $supplier, string $title): ?object

@@ -19,9 +19,19 @@
 
             <div>
                 <label for="industry_category" class="block text-xs font-bold text-gray-700 mb-1">Kategori Industri <span class="text-red-500">*</span></label>
+                @php
+                    $selectedCategory = old('industry_category', $supplier->industry_category);
+                    $categoryNames = $categories->pluck('name');
+                @endphp
                 <select id="industry_category" name="industry_category" required class="w-full text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
+                    @if($categories->isEmpty())
+                        <option value="">Pilih kategori...</option>
+                    @endif
+                    @if($selectedCategory && ! $categoryNames->contains($selectedCategory))
+                        <option value="{{ $selectedCategory }}" selected>{{ $selectedCategory }}</option>
+                    @endif
                     @foreach($categories as $cat)
-                        <option value="{{ $cat->name }}" @selected(old('industry_category', $supplier->industry_category) === $cat->name)>{{ $cat->name }}</option>
+                        <option value="{{ $cat->name }}" @selected($selectedCategory === $cat->name)>{{ $cat->name }}</option>
                     @endforeach
                 </select>
                 @error('industry_category') <p class="text-2xs text-red-600 mt-1">{{ $message }}</p> @enderror

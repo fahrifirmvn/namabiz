@@ -293,36 +293,55 @@
                     <h2 class="mt-2 text-3xl font-extrabold text-gray-900 tracking-tight">Jelajahi berdasarkan kategori</h2>
                 </div>
                 <a href="{{ route('discover.index') }}" class="text-sm font-semibold text-gray-900 hover:text-black flex items-center gap-1 group">
-                    Lihat semua 38 sektor <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    Lihat semua sektor <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
                 </a>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 @php
-                    $categories = [
-                        ['name' => 'Kemasan', 'icon' => 'archive-box', 'count' => '1.240 pemasok'],
-                        ['name' => 'Resin', 'icon' => 'beaker', 'count' => '1.240 pemasok'],
-                        ['name' => 'Mesin', 'icon' => 'cog-6-tooth', 'count' => '1.240 pemasok'],
-                        ['name' => 'Tekstil', 'icon' => 'sparkles', 'count' => '1.240 pemasok'],
-                        ['name' => 'Bahan makanan', 'icon' => 'cake', 'count' => '1.240 pemasok'],
-                        ['name' => 'Elektronik', 'icon' => 'cpu-chip', 'count' => '1.240 pemasok'],
-                        ['name' => 'Bahan kimia', 'icon' => 'funnel', 'count' => '1.240 pemasok'],
-                        ['name' => 'Material konstruksi', 'icon' => 'building-office', 'count' => '1.240 pemasok'],
+                    $categoryIcons = [
+                        'Packaging Manufacturer' => 'archive-box',
+                        'Distributor & Converter' => 'truck',
+                        'Contract Manufacturer' => 'cog-6-tooth',
+                        'Raw Material Supplier' => 'beaker',
+                        'Chemical & Ingredients' => 'funnel',
+                        'Spices & Coconut' => 'sparkles',
+                        'Logistics & Warehousing' => 'building-office',
                     ];
                 @endphp
 
-                @foreach($categories as $cat)
-                    <a href="{{ route('discover.index', ['category' => $cat['name']]) }}"
-                       class="p-5 rounded-2xl bg-surface hover:bg-gray-100 border border-gray-200 transition group flex flex-col justify-between">
-                        <div class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-800 mb-4 shadow-2xs group-hover:scale-105 transition-transform">
-                            <x-dynamic-component :component="'heroicon-o-' . $cat['icon']" class="w-5 h-5 text-gray-700" />
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900 text-base group-hover:text-black">{{ $cat['name'] }}</h3>
-                            <p class="text-xs text-gray-500 mt-1">{{ $cat['count'] }}</p>
-                        </div>
-                    </a>
-                @endforeach
+                @if(isset($categories) && $categories->isNotEmpty())
+                    @foreach($categories as $cat)
+                        <a href="{{ route('discover.index', ['category' => $cat->name]) }}"
+                           class="p-5 rounded-2xl bg-surface hover:bg-gray-100 border border-gray-200 transition group flex flex-col justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-800 mb-4 shadow-2xs group-hover:scale-105 transition-transform">
+                                <x-dynamic-component :component="'heroicon-o-' . ($categoryIcons[$cat->name] ?? 'building-office-2')" class="w-5 h-5 text-gray-700" />
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-base group-hover:text-black">{{ $cat->name }}</h3>
+                                <p class="text-xs text-gray-500 mt-1">{{ $cat->suppliers_count }} pemasok</p>
+                            </div>
+                        </a>
+                    @endforeach
+                @else
+                    @foreach([
+                        ['name' => 'Packaging Manufacturer', 'icon' => 'archive-box'],
+                        ['name' => 'Distributor & Converter', 'icon' => 'truck'],
+                        ['name' => 'Contract Manufacturer', 'icon' => 'cog-6-tooth'],
+                        ['name' => 'Raw Material Supplier', 'icon' => 'beaker'],
+                    ] as $cat)
+                        <a href="{{ route('discover.index', ['category' => $cat['name']]) }}"
+                           class="p-5 rounded-2xl bg-surface hover:bg-gray-100 border border-gray-200 transition group flex flex-col justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-800 mb-4 shadow-2xs group-hover:scale-105 transition-transform">
+                                <x-dynamic-component :component="'heroicon-o-' . $cat['icon']" class="w-5 h-5 text-gray-700" />
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-base group-hover:text-black">{{ $cat['name'] }}</h3>
+                                <p class="text-xs text-gray-500 mt-1">Lihat pemasok</p>
+                            </div>
+                        </a>
+                    @endforeach
+                @endif
             </div>
         </div>
     </section>

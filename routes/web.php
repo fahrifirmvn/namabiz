@@ -11,6 +11,7 @@ use App\Http\Controllers\SavedSupplierController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierReviewController;
+use App\Models\IndustryCategory;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,13 @@ Route::prefix('admin')
     });
 
 Route::get('/', function () {
-    return view('landing');
+    $categories = IndustryCategory::withCount('suppliers')
+        ->orderByDesc('suppliers_count')
+        ->orderBy('name')
+        ->limit(8)
+        ->get();
+
+    return view('landing', compact('categories'));
 })->name('home');
 
 Route::get('/discover', [DiscoverController::class, 'index'])->name('discover.index');
@@ -75,14 +82,19 @@ Route::middleware('auth')->group(function () {
 
 Route::get('dashboard', function () {
     $user = auth()->user();
+    $savedCount = $user->savedSuppliers()->count();
     $savedSuppliers = $user->savedSuppliers()->with('supplier.tags')->get()->pluck('supplier')->filter();
     if ($savedSuppliers->isEmpty()) {
         $savedSuppliers = Supplier::with('tags')->limit(4)->get();
     }
     $recentlyViewed = Supplier::with('tags')->inRandomOrder()->limit(3)->get();
     $recommended = Supplier::with('tags')->latest()->limit(3)->get();
+    $preferredCategories = IndustryCategory::withCount('suppliers')
+        ->orderByDesc('suppliers_count')
+        ->limit(3)
+        ->get();
 
-    return view('dashboard', compact('savedSuppliers', 'recentlyViewed', 'recommended'));
+    return view('dashboard', compact('savedSuppliers', 'savedCount', 'recentlyViewed', 'recommended', 'preferredCategories'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::view('profile', 'profile')

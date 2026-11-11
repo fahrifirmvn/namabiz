@@ -33,12 +33,11 @@
             <div class="mt-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-gray-400 font-semibold uppercase tracking-wider text-2xs">PREFERENSI ANDA:</span>
-                    <a href="{{ route('discover.index', ['category' => 'Kemasan']) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium">
-                        Kemasan <x-heroicon-m-adjustments-vertical class="w-3.5 h-3.5 text-gray-400" />
-                    </a>
-                    <a href="{{ route('discover.index', ['category' => 'Resin']) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium">
-                        Resin <x-heroicon-m-adjustments-vertical class="w-3.5 h-3.5 text-gray-400" />
-                    </a>
+                    @foreach(($preferredCategories ?? collect()) as $pref)
+                        <a href="{{ route('discover.index', ['category' => $pref->name]) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium">
+                            {{ $pref->name }} <x-heroicon-m-adjustments-vertical class="w-3.5 h-3.5 text-gray-400" />
+                        </a>
+                    @endforeach
                 </div>
                 <a href="{{ route('discover.index') }}" class="font-semibold text-gray-700 hover:text-black">
                     Lihat semua kategori &rarr;
@@ -49,16 +48,16 @@
         <!-- 3. Metrics Summary (3 Cards) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Pemasok Tersimpan -->
-            <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs flex flex-col justify-between">
+            <a href="{{ route('saved.index') }}" class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs flex flex-col justify-between hover:border-black transition group">
                 <div class="flex items-start justify-between">
-                    <span class="text-xs font-semibold text-gray-500">Pemasok tersimpan</span>
-                    <x-heroicon-m-arrow-up-right class="w-4 h-4 text-gray-400" />
+                    <span class="text-xs font-semibold text-gray-500 group-hover:text-black">Pemasok tersimpan</span>
+                    <x-heroicon-m-arrow-up-right class="w-4 h-4 text-gray-400 group-hover:text-black" />
                 </div>
                 <div class="mt-4">
-                    <span class="text-3xl font-extrabold text-gray-900">{{ count($savedSuppliers) }}</span>
-                    <p class="text-xs text-gray-400 mt-1">{{ count($savedSuppliers) }} berkas terverifikasi</p>
+                    <span class="text-3xl font-extrabold text-gray-900">{{ $savedCount ?? count($savedSuppliers) }}</span>
+                    <p class="text-xs text-gray-400 mt-1">Rekanan dalam koleksi Anda</p>
                 </div>
-            </div>
+            </a>
 
             <!-- Perbandingan Aktif -->
             <a href="{{ route('compare.index') }}" class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs flex flex-col justify-between hover:border-black transition group">

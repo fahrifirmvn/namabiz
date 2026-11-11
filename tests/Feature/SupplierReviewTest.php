@@ -213,4 +213,29 @@ class SupplierReviewTest extends TestCase
             ->assertSee('Rekomendasi terbaik untuk kemasan eco-friendly')
             ->assertSee('Terima kasih atas kepercayaan rekan CV Organik!');
     }
+
+    public function test_user_with_existing_review_gets_separate_delete_form_and_valid_premium_modal_dispatch(): void
+    {
+        $user = User::factory()->create();
+        $supplier = Supplier::factory()->create();
+        $supplier->documents()->create([
+            'title' => "Brochure '26",
+            'type' => 'PDF',
+            'file_path' => 'documents/test.pdf',
+            'is_premium' => true,
+        ]);
+        SupplierReview::factory()->create([
+            'supplier_id' => $supplier->id,
+            'user_id' => $user->id,
+            'title' => 'Ulasan awal',
+            'comment' => 'Sudah baik.',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('suppliers.show', $supplier->slug));
+
+        $response->assertOk()
+            ->assertSee('id="delete-own-review-form"', false)
+            ->assertSee('form="delete-own-review-form"', false)
+            ->assertSee('documentTitle:', false);
+    }
 }

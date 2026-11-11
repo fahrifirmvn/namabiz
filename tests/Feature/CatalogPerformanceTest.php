@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\DiscoverSearch;
 use App\Models\Certification;
+use App\Models\IndustryCategory;
 use App\Models\Supplier;
 use App\Models\SupplierReview;
 use App\Observers\CatalogCacheObserver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class CatalogPerformanceTest extends TestCase
@@ -52,6 +55,33 @@ class CatalogPerformanceTest extends TestCase
         Cache::put(CatalogCacheObserver::FILTER_OPTIONS_KEY, 'stale');
         Certification::factory()->create(['name' => 'ISO 9001', 'category' => 'Mutu']);
         $this->assertFalse(Cache::has(CatalogCacheObserver::FILTER_OPTIONS_KEY));
+    }
+
+    public function test_filter_options_work_with_database_cache_when_serializable_classes_disabled(): void
+    {
+        config()->set('cache.default', 'database');
+        config()->set('cache.serializable_classes', false);
+        Cache::forgetDriver('database');
+
+        IndustryCategory::create(['name' => 'Packaging Manufacturer', 'slug' => 'packaging-manufacturer']);
+        Supplier::factory()->create([
+            'name' => 'PT Kemasan Cache Test',
+            'country' => 'Indonesia',
+            'industry_category' => 'Packaging Manufacturer',
+        ]);
+        Certification::create(['name' => 'ISO 9001:2015', 'category' => 'Quality Management']);
+
+        // First render populates database cache
+        Livewire::test(DiscoverSearch::class)
+            ->call('selectCategory', 'Packaging Manufacturer')
+            ->assertSee('PT Kemasan Cache Test')
+            ->assertSee('Indonesia');
+
+        // Second render reads serialized entry from database cache
+        $this->get(route('discover.index', ['category' => 'Packaging Manufacturer']))
+            ->assertOk()
+            ->assertSee('PT Kemasan Cache Test')
+            ->assertSee('ISO 9001:2015');
     }
 
     public function test_review_stats_match_review_rows(): void

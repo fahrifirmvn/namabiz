@@ -99,9 +99,13 @@
                                     </p>
 
                                     <div class="mt-3 flex items-center justify-between text-2xs">
-                                        <span class="font-bold text-gray-900 flex items-center gap-1">
-                                            ★ 4.9 <span class="text-gray-400 font-normal">(tervalidasi)</span>
-                                        </span>
+                                        @if($supplier->average_rating)
+                                            <span class="font-bold text-gray-900 flex items-center gap-1">
+                                                ★ {{ number_format($supplier->average_rating, 1) }} <span class="text-gray-400 font-normal">({{ $supplier->reviews_count ?? 0 }} ulasan)</span>
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400">Belum ada ulasan</span>
+                                        @endif
                                         <a href="{{ route('suppliers.show', $supplier->slug) }}" class="font-semibold text-black underline hover:text-gray-600">
                                             Buka Profil &rarr;
                                         </a>
@@ -153,6 +157,7 @@
                             1. Parameter Profil Vendor
                         </td>
                     </tr>
+                    @if($this->shouldShowRow(fn ($s) => (string) $s->founded_year))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">Tahun Berdiri</td>
                         @foreach($this->suppliers as $s)
@@ -162,15 +167,19 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
+                    @if($this->shouldShowRow(fn ($s) => (string) $s->company_size))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">Ukuran Perusahaan</td>
                         @foreach($this->suppliers as $s)
                             <td class="p-5 text-gray-900 font-medium">
-                                {{ $s->company_size ?? '100-500 karyawan' }}
+                                {{ $s->company_size ?? 'Tidak tercatat' }}
                             </td>
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
+                    @if($this->shouldShowRow(fn ($s) => $s->tags->pluck('tag_name')->implode(',')))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">Kemampuan Utama</td>
                         @foreach($this->suppliers as $s)
@@ -186,6 +195,7 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
 
                     <!-- SECTION 2: METRIK OPERASIONAL & SKALA -->
                     <tr class="bg-gray-50/60 font-bold text-gray-700 text-2xs uppercase tracking-wider">
@@ -194,6 +204,7 @@
                             <span class="text-gray-400 normal-case font-normal">Sorotan Otomatis Aktif (3 Kriteria)</span>
                         </td>
                     </tr>
+                    @if($this->shouldShowRow(fn ($s) => (string) $s->production_capacity))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">
                             <span>Kapasitas Produksi</span>
@@ -203,8 +214,8 @@
                             <td class="p-5 text-gray-900">
                                 @if($this->isPremium)
                                     <div class="flex items-center gap-2">
-                                        <span class="font-bold text-sm">{{ $s->production_capacity ?? '2,5 juta unit/bln' }}</span>
-                                        @if($i === 0)
+                                        <span class="font-bold text-sm">{{ $s->production_capacity ?? 'Tidak tercatat' }}</span>
+                                        @if($i === 0 && $s->production_capacity)
                                             <span class="px-1.5 py-0.5 text-2xs font-bold bg-black text-white rounded">TERBAIK</span>
                                         @endif
                                     </div>
@@ -216,6 +227,8 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
+                    @if($this->shouldShowRow(fn ($s) => (string) $s->moq))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">
                             <span>MOQ (Pesanan Minimal)</span>
@@ -225,8 +238,8 @@
                             <td class="p-5 text-gray-900">
                                 @if($this->isPremium)
                                     <div class="flex items-center gap-2">
-                                        <span class="font-bold text-sm">{{ $s->moq ?? '5.000 unit' }}</span>
-                                        @if($i === 1)
+                                        <span class="font-bold text-sm">{{ $s->moq ?? 'Sesuai diskusi' }}</span>
+                                        @if($i === 1 && $s->moq)
                                             <span class="px-1.5 py-0.5 text-2xs font-bold bg-black text-white rounded">TERBAIK</span>
                                         @endif
                                     </div>
@@ -238,6 +251,8 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
+                    @if($this->shouldShowRow(fn ($s) => (string) $s->avg_lead_time))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">
                             <span>Waktu Siklus (Lead Time)</span>
@@ -247,8 +262,8 @@
                             <td class="p-5 text-gray-900">
                                 @if($this->isPremium)
                                     <div class="flex items-center gap-2">
-                                        <span class="font-bold text-sm">{{ $s->avg_lead_time ?? '2-3 minggu' }}</span>
-                                        @if($i === 2)
+                                        <span class="font-bold text-sm">{{ $s->avg_lead_time ?? 'Tidak tercatat' }}</span>
+                                        @if($i === 2 && $s->avg_lead_time)
                                             <span class="px-1.5 py-0.5 text-2xs font-bold bg-black text-white rounded">TERBAIK</span>
                                         @endif
                                     </div>
@@ -260,6 +275,7 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
 
                     <!-- SECTION 3: KEPATUHAN & KEBERLANJUTAN -->
                     <tr class="bg-gray-50/60 font-bold text-gray-700 text-2xs uppercase tracking-wider">
@@ -267,14 +283,23 @@
                             3. Kepatuhan & Keberlanjutan (4 Kriteria)
                         </td>
                     </tr>
+                    @if($this->shouldShowRow(fn ($s) => $this->certificationFor($s, 'ISO 9001')?->status ?? 'none'))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">ISO 9001 (Manajemen Mutu)</td>
                         @foreach($this->suppliers as $s)
                             @php $has9001 = $this->certificationFor($s, 'ISO 9001'); @endphp
                             <td class="p-5 font-medium">
-                                @if($has9001)
+                                @if($has9001 && $has9001->status === 'verified')
                                     <span class="text-emerald-700 inline-flex items-center gap-1.5 font-semibold">
                                         <x-heroicon-s-check-circle class="w-4 h-4" /> Bersertifikat aktif
+                                    </span>
+                                @elseif($has9001 && $has9001->status === 'partial')
+                                    <span class="text-amber-700 inline-flex items-center gap-1.5 font-semibold">
+                                        <x-heroicon-s-clock class="w-4 h-4" /> Dalam proses audit
+                                    </span>
+                                @elseif($has9001)
+                                    <span class="text-gray-500 inline-flex items-center gap-1">
+                                        &mdash; Belum terverifikasi
                                     </span>
                                 @else
                                     <span class="text-gray-400 inline-flex items-center gap-1">
@@ -285,14 +310,20 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
+                    @if($this->shouldShowRow(fn ($s) => $this->certificationFor($s, 'ISO 14001')?->status ?? 'none'))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">ISO 14001 (Lingkungan)</td>
                         @foreach($this->suppliers as $s)
                             @php $has14001 = $this->certificationFor($s, 'ISO 14001'); @endphp
                             <td class="p-5 font-medium">
-                                @if($has14001)
+                                @if($has14001 && $has14001->status === 'verified')
                                     <span class="text-emerald-700 inline-flex items-center gap-1.5 font-semibold">
-                                        <x-heroicon-s-check-circle class="w-4 h-4" /> Bersertifikat
+                                        <x-heroicon-s-check-circle class="w-4 h-4" /> Bersertifikat aktif
+                                    </span>
+                                @elseif($has14001 && $has14001->status === 'partial')
+                                    <span class="text-amber-700 inline-flex items-center gap-1.5 font-semibold">
+                                        <x-heroicon-s-clock class="w-4 h-4" /> Dalam proses audit
                                     </span>
                                 @else
                                     <span class="text-gray-400">&mdash; Belum bersertifikat</span>
@@ -301,14 +332,20 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
+                    @if($this->shouldShowRow(fn ($s) => $this->certificationFor($s, 'HACCP')?->status ?? 'none'))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">HACCP (Kualitas Food-Grade)</td>
                         @foreach($this->suppliers as $s)
                             @php $hasHaccp = $this->certificationFor($s, 'HACCP'); @endphp
                             <td class="p-5 font-medium">
-                                @if($hasHaccp)
+                                @if($hasHaccp && $hasHaccp->status === 'verified')
                                     <span class="text-emerald-700 inline-flex items-center gap-1.5 font-semibold">
                                         <x-heroicon-s-check-circle class="w-4 h-4" /> Bersertifikat (Food Safe)
+                                    </span>
+                                @elseif($hasHaccp && $hasHaccp->status === 'partial')
+                                    <span class="text-amber-700 inline-flex items-center gap-1.5 font-semibold">
+                                        <x-heroicon-s-clock class="w-4 h-4" /> Dalam proses audit
                                     </span>
                                 @else
                                     <span class="text-gray-400">&mdash; Tidak diungkapkan</span>
@@ -317,12 +354,14 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
+                    @if($this->shouldShowRow(fn ($s) => (string) $s->carbon_footprint_report))
                     <tr class="divide-x divide-gray-100 hover:bg-gray-50/30">
                         <td class="p-5 text-gray-500 font-semibold">Laporan Emisi & Jejak Karbon</td>
                         @foreach($this->suppliers as $s)
                             <td class="p-5 font-medium">
                                 @if($this->isPremium)
-                                    <span class="text-gray-900 font-semibold">{{ $s->carbon_footprint_report ?? 'Tersedia Publik (2023)' }}</span>
+                                    <span class="text-gray-900 font-semibold">{{ $s->carbon_footprint_report ?? 'Belum dipublikasikan' }}</span>
                                 @else
                                     <x-locked-field />
                                 @endif
@@ -330,6 +369,7 @@
                         @endforeach
                         @if(count($this->suppliers) < 4) <td class="p-5 text-gray-300 text-center">—</td> @endif
                     </tr>
+                    @endif
 
                     <!-- SECTION 4: TINDAKAN LANJUTAN -->
                     <tr class="divide-x divide-gray-100 bg-gray-50/40">

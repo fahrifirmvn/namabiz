@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\IndustryCategory;
 use App\Models\Supplier;
+use App\Observers\CatalogCacheObserver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -97,6 +98,7 @@ class CategoryAdminController extends Controller
             Supplier::where('industry_category', $oldName)->update([
                 'industry_category' => $validated['name'],
             ]);
+            CatalogCacheObserver::flush();
         }
 
         return redirect()->route('admin.categories.index')
@@ -119,6 +121,7 @@ class CategoryAdminController extends Controller
         }
 
         $category->delete();
+        CatalogCacheObserver::flush();
 
         return redirect()->route('admin.categories.index')
             ->with('success', "Kategori '{$name}' berhasil dihapus.");

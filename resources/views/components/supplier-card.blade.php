@@ -109,7 +109,7 @@
         <div class="mt-3.5 flex items-center justify-between text-xs text-gray-500">
             <span class="flex items-center gap-1.5">
                 <x-heroicon-o-document-text class="w-4 h-4 text-gray-400" />
-                <span>{{ $totalDocsCount ?: 3 }} berkas tervalidasi</span>
+                <span>{{ $totalDocsCount }} berkas tervalidasi</span>
             </span>
             <span class="text-2xs text-gray-400">Respons: &lt; 2 jam</span>
         </div>

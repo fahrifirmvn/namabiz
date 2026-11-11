@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 
 class CatalogCacheObserver
 {
-    public const FILTER_OPTIONS_KEY = 'discover.filter_options';
+    public const FILTER_OPTIONS_KEY = 'discover.filter_options.v2';
 
     public const RECOMMENDED_KEY = 'discover.recommended_ids';
 

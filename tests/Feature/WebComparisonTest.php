@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\ComparisonTable;
+use App\Models\Certification;
 use App\Models\Document;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class WebComparisonTest extends TestCase
@@ -93,5 +96,26 @@ class WebComparisonTest extends TestCase
 
         $response->assertOk();
         $this->assertStringContainsString('Katalog Produk 2025', (string) $response->headers->get('Content-Disposition'));
+    }
+
+    public function test_comparison_table_matches_versioned_iso_certification_and_filters_identical_rows(): void
+    {
+        $iso = Certification::create(['name' => 'ISO 9001:2015', 'category' => 'Quality Management']);
+
+        $supplierA = Supplier::factory()->create(['founded_year' => 2010, 'company_size' => '100-500 karyawan']);
+        $supplierB = Supplier::factory()->create(['founded_year' => 2010, 'company_size' => '500-1000 karyawan']);
+
+        $supplierA->certifications()->create([
+            'certification_id' => $iso->id,
+            'status' => 'verified',
+            'is_premium_field' => false,
+        ]);
+
+        Livewire::test(ComparisonTable::class, ['supplierIds' => [$supplierA->id, $supplierB->id]])
+            ->assertSee('Bersertifikat aktif')
+            ->assertSee('Tahun Berdiri')
+            ->call('toggleDifferences')
+            ->assertDontSee('Tahun Berdiri')
+            ->assertSee('Ukuran Perusahaan');
     }
 }

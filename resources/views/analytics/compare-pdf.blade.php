@@ -261,7 +261,7 @@
                         @if($s->email)
                             <span class="val-highlight">{{ $s->email }}</span>
                         @elseif($s->website)
-                            <span>sales@{{ ltrim($s->website, 'https://http://') }}</span>
+                            <span>sales@{{ ltrim(parse_url(\Illuminate\Support\Str::startsWith($s->website, ['http://', 'https://']) ? $s->website : 'https://' . $s->website, PHP_URL_HOST) ?? $s->website, 'www.') }}</span>
                         @else
                             <span style="color: #9ca3af;">Tidak tertera</span>
                         @endif

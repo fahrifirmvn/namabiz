@@ -49,39 +49,42 @@
             <div>
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-bold text-gray-900">Kategori industri</h2>
-                    <span class="text-xs font-semibold text-gray-400">8 Sektor Terdaftar</span>
+                    <span class="text-xs font-semibold text-gray-400">{{ count($hubCategories) }} Sektor Terdaftar</span>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                    @php
-                        $hubCategories = [
-                            ['name' => 'Kemasan', 'icon' => 'archive-box', 'count' => '1.240 pemasok'],
-                            ['name' => 'Resin', 'icon' => 'beaker', 'count' => '1.240 pemasok'],
-                            ['name' => 'Mesin', 'icon' => 'cog-6-tooth', 'count' => '1.240 pemasok'],
-                            ['name' => 'Tekstil', 'icon' => 'sparkles', 'count' => '1.240 pemasok'],
-                            ['name' => 'Bahan makanan', 'icon' => 'cake', 'count' => '1.240 pemasok'],
-                            ['name' => 'Elektronik', 'icon' => 'cpu-chip', 'count' => '1.240 pemasok'],
-                            ['name' => 'Bahan kimia', 'icon' => 'funnel', 'count' => '1.240 pemasok'],
-                            ['name' => 'Material konstruksi', 'icon' => 'building-office', 'count' => '1.240 pemasok'],
-                        ];
-                    @endphp
+                @php
+                    $categoryIcons = [
+                        'Packaging Manufacturer' => 'archive-box',
+                        'Distributor & Converter' => 'truck',
+                        'Contract Manufacturer' => 'cog-6-tooth',
+                        'Raw Material Supplier' => 'beaker',
+                        'Chemical & Ingredients' => 'funnel',
+                        'Spices & Coconut' => 'sparkles',
+                        'Logistics & Warehousing' => 'building-office',
+                    ];
+                @endphp
 
-                    @foreach($hubCategories as $cat)
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                    @forelse($hubCategories as $cat)
                         <button type="button"
-                                wire:click="selectCategory('{{ $cat['name'] }}')"
+                                wire:click="selectCategory(@js($cat['name']))"
                                 class="p-5 rounded-2xl bg-white hover:bg-gray-50 border border-gray-200 transition text-left group flex items-center justify-between shadow-2xs">
-                            <div class="flex items-center gap-3.5">
-                                <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-700 group-hover:scale-105 transition-transform">
-                                    <x-dynamic-component :component="'heroicon-o-' . $cat['icon']" class="w-5 h-5 text-gray-700" />
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-700 group-hover:scale-105 transition-transform shrink-0">
+                                    <x-dynamic-component :component="'heroicon-o-' . ($categoryIcons[$cat['name']] ?? 'building-office-2')" class="w-5 h-5 text-gray-700" />
                                 </div>
-                                <div>
-                                    <h3 class="font-bold text-gray-900 text-sm group-hover:text-black">{{ $cat['name'] }}</h3>
-                                    <p class="text-xs text-gray-400 mt-0.5">{{ $cat['count'] }}</p>
+                                <div class="min-w-0">
+                                    <h3 class="font-bold text-gray-900 text-sm group-hover:text-black truncate">{{ $cat['name'] }}</h3>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ $cat['count'] }} pemasok</p>
                                 </div>
                             </div>
-                            <x-heroicon-s-chevron-right class="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition-transform" />
+                            <x-heroicon-s-chevron-right class="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
                         </button>
-                    @endforeach
+                    @empty
+                        <div class="col-span-full py-8 text-center text-xs text-gray-400 bg-white rounded-2xl border border-dashed border-gray-200">
+                            Belum ada kategori industri yang terdaftar.
+                        </div>
+                    @endforelse
                 </div>
             </div>
 
@@ -154,10 +157,10 @@
                                 @foreach($locationOptions as $loc)
                                     <label class="flex items-center justify-between text-xs text-gray-700 hover:text-gray-900 cursor-pointer">
                                         <span class="flex items-center gap-2">
-                                            <input type="checkbox" wire:model.live="locations" value="{{ $loc->country }}" class="rounded border-gray-300 text-black focus:ring-black">
-                                            <span>{{ $loc->country }}</span>
+                                            <input type="checkbox" wire:model.live="locations" value="{{ $loc['country'] }}" class="rounded border-gray-300 text-black focus:ring-black">
+                                            <span>{{ $loc['country'] }}</span>
                                         </span>
-                                        <span class="text-gray-400 text-2xs">{{ $loc->count }}</span>
+                                        <span class="text-gray-400 text-2xs">{{ $loc['count'] }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -170,10 +173,10 @@
                                 @foreach($categoryOptions as $cat)
                                     <label class="flex items-center justify-between text-xs text-gray-700 hover:text-gray-900 cursor-pointer">
                                         <span class="flex items-center gap-2">
-                                            <input type="checkbox" wire:model.live="categories" value="{{ $cat->industry_category }}" class="rounded border-gray-300 text-black focus:ring-black">
-                                            <span class="truncate max-w-[150px]">{{ $cat->industry_category }}</span>
+                                            <input type="checkbox" wire:model.live="categories" value="{{ $cat['industry_category'] }}" class="rounded border-gray-300 text-black focus:ring-black">
+                                            <span class="truncate max-w-[150px]">{{ $cat['industry_category'] }}</span>
                                         </span>
-                                        <span class="text-gray-400 text-2xs">{{ $cat->count }}</span>
+                                        <span class="text-gray-400 text-2xs">{{ $cat['count'] }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -186,10 +189,10 @@
                                 @foreach($certificationOptions as $cert)
                                     <label class="flex items-center justify-between text-xs text-gray-700 hover:text-gray-900 cursor-pointer">
                                         <span class="flex items-center gap-2">
-                                            <input type="checkbox" wire:model.live="certifications" value="{{ $cert->name }}" class="rounded border-gray-300 text-black focus:ring-black">
-                                            <span>{{ $cert->name }}</span>
+                                            <input type="checkbox" wire:model.live="certifications" value="{{ $cert['name'] }}" class="rounded border-gray-300 text-black focus:ring-black">
+                                            <span>{{ $cert['name'] }}</span>
                                         </span>
-                                        <span class="text-gray-400 text-2xs">{{ $cert->suppliers_count }}</span>
+                                        <span class="text-gray-400 text-2xs">{{ $cert['suppliers_count'] }}</span>
                                     </label>
                                 @endforeach
                             </div>
