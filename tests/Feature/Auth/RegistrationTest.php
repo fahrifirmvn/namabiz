@@ -17,8 +17,11 @@ class RegistrationTest extends TestCase
         $response
             ->assertOk()
             ->assertSeeVolt('pages.auth.register')
-            ->assertSee('Buat Akun Pembeli Baru')
-            ->assertSee('Gunakan minimal 8 karakter')
+            ->assertSee('Buat akun gratis')
+            ->assertSee('Temukan pabrik yang pas untuk bisnismu, lebih cepat.')
+            ->assertSee('12.400+ pemasok')
+            ->assertSee('Minimal 8 karakter')
+            ->assertSee('Kombinasi huruf dan angka')
             ->assertSee('Masuk di sini');
     }
 

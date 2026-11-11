@@ -18,7 +18,8 @@ class AuthenticationTest extends TestCase
         $response
             ->assertOk()
             ->assertSeeVolt('pages.auth.login')
-            ->assertSee('Masuk ke Akun Anda')
+            ->assertSee('Selamat datang kembali')
+            ->assertSee('Temukan pabrik yang pas untuk bisnismu, lebih cepat.')
             ->assertSee('Daftar sekarang');
     }
 
