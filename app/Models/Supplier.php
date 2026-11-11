@@ -35,6 +35,50 @@ class Supplier extends Model
         return $query->withCount(['documents', 'reviews'])->withAvg('reviews', 'rating');
     }
 
+    /**
+     * Score how complete the public profile is.
+     *
+     * @return array{percent: int, missing: array<int, string>}
+     */
+    public function profileCompleteness(): array
+    {
+        $count = function (string $relation): int {
+            if (array_key_exists($relation.'_count', $this->attributes)) {
+                return (int) $this->attributes[$relation.'_count'];
+            }
+
+            if ($this->relationLoaded($relation)) {
+                return $this->getRelation($relation)->count();
+            }
+
+            return $this->{$relation}()->count();
+        };
+
+        $checks = [
+            'Logo' => filled($this->logo),
+            'Tagline' => filled($this->tagline),
+            'Deskripsi / Tentang' => filled($this->about) || filled($this->description),
+            'Kontak WhatsApp atau Email' => filled($this->whatsapp) || filled($this->email),
+            'Website' => filled($this->website),
+            'Kota' => filled($this->city),
+            'MOQ' => filled($this->moq),
+            'Kapasitas produksi' => filled($this->production_capacity),
+            'Lead time' => filled($this->avg_lead_time),
+            'Ukuran perusahaan' => filled($this->company_size),
+            'Tahun berdiri' => filled($this->founded_year),
+            'Kemampuan inti (tag)' => $count('tags') > 0,
+            'Sertifikasi' => $count('certifications') > 0,
+            'Dokumen' => $count('documents') > 0,
+        ];
+
+        $missing = array_keys(array_filter($checks, fn (bool $done): bool => ! $done));
+
+        return [
+            'percent' => (int) round((count($checks) - count($missing)) / count($checks) * 100),
+            'missing' => $missing,
+        ];
+    }
+
     public function getWhatsappUrlAttribute(): ?string
     {
         if (empty($this->whatsapp)) {

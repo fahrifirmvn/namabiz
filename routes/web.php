@@ -22,6 +22,8 @@ Route::prefix('admin')
     ->group(function () {
         Route::resource('suppliers', SupplierAdminController::class)->except(['show']);
         Route::post('suppliers/{supplier}/documents', [SupplierAdminController::class, 'storeDocument'])->name('suppliers.documents.store');
+        Route::post('suppliers/{supplier}/documents/bulk', [SupplierAdminController::class, 'storeDocuments'])->name('suppliers.documents.bulk');
+        Route::patch('suppliers/{supplier}/verify', [SupplierAdminController::class, 'toggleVerification'])->name('suppliers.verify');
         Route::delete('suppliers/{supplier}/documents/{document}', [SupplierAdminController::class, 'destroyDocument'])->name('suppliers.documents.destroy');
         Route::post('suppliers/{supplier}/certifications', [SupplierAdminController::class, 'syncCertifications'])->name('suppliers.certifications.sync');
         Route::post('suppliers/{supplier}/reviews/{review}/reply', [SupplierAdminController::class, 'replyReview'])->name('suppliers.reviews.reply');

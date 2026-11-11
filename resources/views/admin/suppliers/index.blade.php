@@ -34,25 +34,35 @@
         <div class="bg-white overflow-hidden shadow-xs rounded-2xl border border-gray-200">
             <div class="p-6">
                 <!-- Search bar & Filter -->
-                <form method="GET" action="{{ route('admin.suppliers.index') }}" class="mb-6 flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-1">
+                <form method="GET" action="{{ route('admin.suppliers.index') }}" class="mb-6 grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div class="relative md:col-span-5">
                         <x-heroicon-o-magnifying-glass class="w-5 h-5 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                            type="text"
-                            name="q"
-                            value="{{ request('q') }}"
-                            placeholder="Cari nama pemasok, WhatsApp, email, kategori, atau kota..."
-                            class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black"
-                        />
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama, WhatsApp, email, kategori, atau kota..."
+                               class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black" />
                     </div>
-                    <button type="submit" class="px-5 py-2.5 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition text-xs shadow-xs">
-                        Cari
-                    </button>
-                    @if(request('q'))
-                        <a href="{{ route('admin.suppliers.index') }}" class="px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition text-xs flex items-center justify-center">
-                            Reset
-                        </a>
-                    @endif
+                    <select name="category" onchange="this.form.submit()" class="md:col-span-3 text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
+                        <option value="">Semua kategori</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}" @selected(request('category') === $cat)>{{ $cat }}</option>
+                        @endforeach
+                    </select>
+                    <select name="status" onchange="this.form.submit()" class="md:col-span-2 text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
+                        <option value="">Semua status</option>
+                        <option value="verified" @selected(request('status') === 'verified')>Terverifikasi</option>
+                        <option value="standard" @selected(request('status') === 'standard')>Standar</option>
+                    </select>
+                    <select name="sort" onchange="this.form.submit()" class="md:col-span-2 text-sm rounded-xl border-gray-300 shadow-xs focus:border-black focus:ring-black">
+                        <option value="newest" @selected(request('sort', 'newest') === 'newest')>Terbaru</option>
+                        <option value="oldest" @selected(request('sort') === 'oldest')>Terlama</option>
+                        <option value="name" @selected(request('sort') === 'name')>Nama A-Z</option>
+                    </select>
+                    <div class="md:col-span-12 flex items-center gap-3">
+                        <button type="submit" class="px-5 py-2 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition text-xs shadow-xs">Cari</button>
+                        @if(request()->hasAny(['q', 'category', 'status', 'sort']))
+                            <a href="{{ route('admin.suppliers.index') }}" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition text-xs">Reset</a>
+                        @endif
+                        <span class="text-2xs text-gray-400 ml-auto">{{ $suppliers->total() }} pemasok</span>
+                    </div>
                 </form>
 
                 <div class="overflow-x-auto">
@@ -63,6 +73,7 @@
                                 <th class="px-5 py-3.5 text-left font-bold text-xs text-gray-600 uppercase tracking-wider">Kategori & Lokasi</th>
                                 <th class="px-5 py-3.5 text-left font-bold text-xs text-gray-600 uppercase tracking-wider">Kontak Langsung</th>
                                 <th class="px-5 py-3.5 text-center font-bold text-xs text-gray-600 uppercase tracking-wider">Dokumen</th>
+                                <th class="px-5 py-3.5 text-left font-bold text-xs text-gray-600 uppercase tracking-wider">Kelengkapan</th>
                                 <th class="px-5 py-3.5 text-left font-bold text-xs text-gray-600 uppercase tracking-wider">Status</th>
                                 <th class="px-5 py-3.5 text-right font-bold text-xs text-gray-600 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -113,15 +124,29 @@
                                         </span>
                                     </td>
                                     <td class="px-5 py-4 whitespace-nowrap">
-                                        @if($supplier->is_verified)
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-2xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                <x-heroicon-s-check-circle class="w-3 h-3" /> Terverifikasi
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-2xs font-medium bg-gray-100 text-gray-600">
-                                                Standar
-                                            </span>
-                                        @endif
+                                        @php
+                                            $completeness = $supplier->profileCompleteness();
+                                        @endphp
+                                        <div class="flex items-center gap-2" title="Belum diisi: {{ implode(', ', $completeness['missing']) ?: '-' }}">
+                                            <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                <div class="h-full rounded-full {{ $completeness['percent'] >= 80 ? 'bg-emerald-500' : 'bg-gray-800' }}" style="width: {{ $completeness['percent'] }}%"></div>
+                                            </div>
+                                            <span class="text-2xs font-semibold text-gray-600">{{ $completeness['percent'] }}%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4 whitespace-nowrap">
+                                        <form method="POST" action="{{ route('admin.suppliers.verify', $supplier) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" title="Klik untuk mengubah status verifikasi"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-2xs font-bold border transition {{ $supplier->is_verified ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200' }}">
+                                                @if($supplier->is_verified)
+                                                    <x-heroicon-s-check-circle class="w-3 h-3" /> Terverifikasi
+                                                @else
+                                                    Standar
+                                                @endif
+                                            </button>
+                                        </form>
                                     </td>
                                     <td class="px-5 py-4 whitespace-nowrap text-right text-xs">
                                         <div class="flex items-center justify-end gap-1.5">
@@ -143,8 +168,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-400 text-xs">
-                                        Tidak ditemukan pemasok yang sesuai dengan pencarian.
+                                    <td colspan="7" class="px-6 py-12 text-center text-gray-400 text-xs">
+                                        Tidak ditemukan pemasok yang sesuai dengan filter.
                                     </td>
                                 </tr>
                             @endforelse

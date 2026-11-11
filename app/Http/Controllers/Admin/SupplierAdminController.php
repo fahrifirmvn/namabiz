@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SupplierRequest;
 use App\Models\Certification;
 use App\Models\Document;
 use App\Models\IndustryCategory;
@@ -11,6 +12,7 @@ use App\Models\SupplierReview;
 use App\Observers\CatalogCacheObserver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -18,27 +20,50 @@ use Illuminate\View\View;
 class SupplierAdminController extends Controller
 {
     /**
+     * Columns that are copied straight from the validated request onto the supplier.
+     *
+     * @var array<int, string>
+     */
+    private const PROFILE_FIELDS = [
+        'name', 'tagline', 'description', 'about', 'country', 'city', 'industry_category',
+        'whatsapp', 'email', 'website', 'company_size', 'founded_year', 'moq',
+        'production_capacity', 'avg_lead_time', 'carbon_footprint_report',
+    ];
+
+    /**
      * Display a listing of suppliers for admin.
      */
     public function index(Request $request): View
     {
-        $query = Supplier::query()->withCount('documents')->latest();
+        $sort = $request->input('sort', 'newest');
 
-        if ($request->filled('q')) {
-            $keyword = $request->input('q');
-            $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('industry_category', 'like', "%{$keyword}%")
-                    ->orWhere('country', 'like', "%{$keyword}%")
-                    ->orWhere('city', 'like', "%{$keyword}%")
-                    ->orWhere('whatsapp', 'like', "%{$keyword}%")
-                    ->orWhere('email', 'like', "%{$keyword}%");
-            });
-        }
+        $suppliers = Supplier::query()
+            ->withCount(['documents', 'tags', 'certifications'])
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $keyword = $request->input('q');
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%")
+                        ->orWhere('industry_category', 'like', "%{$keyword}%")
+                        ->orWhere('country', 'like', "%{$keyword}%")
+                        ->orWhere('city', 'like', "%{$keyword}%")
+                        ->orWhere('whatsapp', 'like', "%{$keyword}%")
+                        ->orWhere('email', 'like', "%{$keyword}%");
+                });
+            })
+            ->when($request->filled('category'), fn ($query) => $query->where('industry_category', $request->input('category')))
+            ->when($request->input('status') === 'verified', fn ($query) => $query->where('is_verified', true))
+            ->when($request->input('status') === 'standard', fn ($query) => $query->where('is_verified', false))
+            ->when(
+                $sort === 'name',
+                fn ($query) => $query->orderBy('name'),
+                fn ($query) => $sort === 'oldest' ? $query->oldest() : $query->latest()
+            )
+            ->paginate(15)
+            ->withQueryString();
 
-        $suppliers = $query->paginate(15);
+        $categories = IndustryCategory::orderBy('name')->pluck('name');
 
-        return view('admin.suppliers.index', compact('suppliers'));
+        return view('admin.suppliers.index', compact('suppliers', 'categories'));
     }
 
     /**
@@ -47,36 +72,18 @@ class SupplierAdminController extends Controller
     public function create(): View
     {
         $categories = IndustryCategory::orderBy('name')->get();
+        $certifications = Certification::orderBy('category')->orderBy('name')->get();
+        $supplier = new Supplier(['country' => 'Indonesia']);
 
-        return view('admin.suppliers.create', compact('categories'));
+        return view('admin.suppliers.create', compact('categories', 'certifications', 'supplier'));
     }
 
     /**
      * Store a newly created supplier in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(SupplierRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'tagline' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'about' => ['nullable', 'string'],
-            'country' => ['required', 'string', 'max:100'],
-            'city' => ['nullable', 'string', 'max:100'],
-            'industry_category' => ['required', 'string', 'max:100'],
-            'whatsapp' => ['nullable', 'string', 'max:50'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'website' => ['nullable', 'string', 'max:255'],
-            'company_size' => ['nullable', 'string', 'max:100'],
-            'founded_year' => ['nullable', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
-            'moq' => ['nullable', 'string', 'max:100'],
-            'production_capacity' => ['nullable', 'string', 'max:100'],
-            'avg_lead_time' => ['nullable', 'string', 'max:100'],
-            'carbon_footprint_report' => ['nullable', 'string', 'max:100'],
-            'is_verified' => ['nullable', 'boolean'],
-            'logo_url' => ['nullable', 'string', 'max:500'],
-            'logo_file' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         $baseSlug = Str::slug($validated['name']);
         $slug = $baseSlug ?: 'supplier-'.Str::random(6);
@@ -86,37 +93,21 @@ class SupplierAdminController extends Controller
             $counter++;
         }
 
-        $logoPath = null;
-        if ($request->hasFile('logo_file')) {
-            $logoPath = $request->file('logo_file')->store('suppliers', 'public');
-        } elseif (! empty($validated['logo_url'])) {
-            $logoPath = $validated['logo_url'];
+        $supplier = new Supplier(['slug' => $slug]);
+        $this->fillProfile($supplier, $request);
+        $supplier->save();
+
+        $this->syncTags($supplier, $request->input('tags'));
+        $this->syncCertificationInput($supplier, (array) $request->input('certifications', []));
+        $uploaded = $this->storeUploadedDocuments($supplier, $request);
+
+        $message = "Pemasok '{$supplier->name}' berhasil ditambahkan";
+        if ($uploaded > 0) {
+            $message .= " beserta {$uploaded} dokumen";
         }
 
-        $supplier = Supplier::create([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'tagline' => $validated['tagline'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'about' => $validated['about'] ?? null,
-            'country' => $validated['country'],
-            'city' => $validated['city'] ?? null,
-            'industry_category' => $validated['industry_category'],
-            'whatsapp' => $validated['whatsapp'] ?? null,
-            'email' => $validated['email'] ?? null,
-            'website' => $validated['website'] ?? null,
-            'company_size' => $validated['company_size'] ?? null,
-            'founded_year' => $validated['founded_year'] ?? null,
-            'moq' => $validated['moq'] ?? null,
-            'production_capacity' => $validated['production_capacity'] ?? null,
-            'avg_lead_time' => $validated['avg_lead_time'] ?? null,
-            'carbon_footprint_report' => $validated['carbon_footprint_report'] ?? null,
-            'is_verified' => $request->has('is_verified'),
-            'logo' => $logoPath,
-        ]);
-
         return redirect()->route('admin.suppliers.edit', $supplier)
-            ->with('success', "Pemasok '{$supplier->name}' berhasil ditambahkan. Anda dapat menambahkan dokumen profil sekarang.");
+            ->with('success', $message.'.');
     }
 
     /**
@@ -127,10 +118,12 @@ class SupplierAdminController extends Controller
         $supplier->load(['documents', 'tags', 'certifications.certification']);
         $supplier->loadCount('reviews')->loadAvg('reviews', 'rating');
         $supplier->setRelation('reviews', $supplier->reviews()->with('user')->latest()->limit(50)->get());
+
         $categories = IndustryCategory::orderBy('name')->get();
         $certifications = Certification::orderBy('category')->orderBy('name')->get();
+        $completeness = $supplier->profileCompleteness();
 
-        return view('admin.suppliers.edit', compact('supplier', 'categories', 'certifications'));
+        return view('admin.suppliers.edit', compact('supplier', 'categories', 'certifications', 'completeness'));
     }
 
     /**
@@ -138,85 +131,42 @@ class SupplierAdminController extends Controller
      */
     public function syncCertifications(Request $request, Supplier $supplier): RedirectResponse
     {
-        $submitted = $request->input('certifications', []);
-
-        // Delete existing certifications and recreate from submitted active ones
-        $supplier->certifications()->delete();
-
-        foreach ($submitted as $certId => $data) {
-            if (! empty($data['active'])) {
-                $status = in_array($data['status'] ?? '', ['verified', 'partial', 'not_verified']) ? $data['status'] : 'verified';
-                $supplier->certifications()->create([
-                    'certification_id' => (int) $certId,
-                    'status' => $status,
-                    'is_premium_field' => ! empty($data['is_premium_field']),
-                ]);
-            }
-        }
+        $this->syncCertificationInput($supplier, (array) $request->input('certifications', []));
 
         CatalogCacheObserver::flush();
 
         return redirect()->route('admin.suppliers.edit', $supplier)
-            ->with('success', 'Daftar sertifikasi standar pemasok berhasil diperbarui.');
+            ->with('success', 'Daftar sertifikasi standar pemasok berhasil diperbarui.')
+            ->with('tab', 'sertifikasi');
     }
 
     /**
      * Update the specified supplier in storage.
      */
-    public function update(Request $request, Supplier $supplier): RedirectResponse
+    public function update(SupplierRequest $request, Supplier $supplier): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'tagline' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'about' => ['nullable', 'string'],
-            'country' => ['required', 'string', 'max:100'],
-            'city' => ['nullable', 'string', 'max:100'],
-            'industry_category' => ['required', 'string', 'max:100'],
-            'whatsapp' => ['nullable', 'string', 'max:50'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'website' => ['nullable', 'string', 'max:255'],
-            'company_size' => ['nullable', 'string', 'max:100'],
-            'founded_year' => ['nullable', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
-            'moq' => ['nullable', 'string', 'max:100'],
-            'production_capacity' => ['nullable', 'string', 'max:100'],
-            'avg_lead_time' => ['nullable', 'string', 'max:100'],
-            'carbon_footprint_report' => ['nullable', 'string', 'max:100'],
-            'is_verified' => ['nullable', 'boolean'],
-            'logo_url' => ['nullable', 'string', 'max:500'],
-            'logo_file' => ['nullable', 'image', 'max:2048'],
-        ]);
-
-        $supplier->name = $validated['name'];
-        $supplier->tagline = $validated['tagline'] ?? $supplier->tagline;
-        $supplier->description = $validated['description'] ?? $supplier->description;
-        $supplier->about = $validated['about'] ?? $supplier->about;
-        $supplier->country = $validated['country'];
-        $supplier->city = $validated['city'] ?? $supplier->city;
-        $supplier->industry_category = $validated['industry_category'];
-        $supplier->whatsapp = $validated['whatsapp'] ?? $supplier->whatsapp;
-        $supplier->email = $validated['email'] ?? $supplier->email;
-        $supplier->website = $validated['website'] ?? $supplier->website;
-        $supplier->company_size = $validated['company_size'] ?? $supplier->company_size;
-        $supplier->founded_year = $validated['founded_year'] ?? $supplier->founded_year;
-        $supplier->moq = $validated['moq'] ?? $supplier->moq;
-        $supplier->production_capacity = $validated['production_capacity'] ?? $supplier->production_capacity;
-        $supplier->avg_lead_time = $validated['avg_lead_time'] ?? $supplier->avg_lead_time;
-        $supplier->carbon_footprint_report = $validated['carbon_footprint_report'] ?? $supplier->carbon_footprint_report;
-        $supplier->is_verified = $request->has('is_verified');
-
-        // Handle logo file upload or URL
-        if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('suppliers', 'public');
-            $supplier->logo = $path;
-        } elseif (! empty($validated['logo_url'])) {
-            $supplier->logo = $validated['logo_url'];
-        }
-
+        $this->fillProfile($supplier, $request);
         $supplier->save();
+
+        if ($request->has('tags')) {
+            $this->syncTags($supplier, $request->input('tags'));
+        }
 
         return redirect()->route('admin.suppliers.edit', $supplier)
             ->with('success', "Data pemasok '{$supplier->name}' berhasil diperbarui.");
+    }
+
+    /**
+     * Quickly flip the verified badge from the supplier list.
+     */
+    public function toggleVerification(Supplier $supplier): RedirectResponse
+    {
+        $supplier->is_verified = ! $supplier->is_verified;
+        $supplier->save();
+
+        $state = $supplier->is_verified ? 'diverifikasi' : 'dicabut verifikasinya';
+
+        return back()->with('success', "Pemasok '{$supplier->name}' berhasil {$state}.");
     }
 
     /**
@@ -265,7 +215,29 @@ class SupplierAdminController extends Controller
         ]);
 
         return redirect()->route('admin.suppliers.edit', $supplier)
-            ->with('success', "Dokumen '{$validated['title']}' berhasil diunggah.");
+            ->with('success', "Dokumen '{$validated['title']}' berhasil diunggah.")
+            ->with('tab', 'dokumen');
+    }
+
+    /**
+     * Upload several documents at once.
+     */
+    public function storeDocuments(Request $request, Supplier $supplier): RedirectResponse
+    {
+        $request->validate([
+            'documents' => ['required', 'array', 'min:1', 'max:20'],
+            'documents.*' => ['file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:15360'],
+            'doc_titles.*' => ['nullable', 'string', 'max:255'],
+        ], [
+            'documents.*.mimes' => 'Dokumen harus berformat PDF, DOC, DOCX, XLS, atau XLSX.',
+            'documents.*.max' => 'Ukuran setiap dokumen maksimal 15 MB.',
+        ]);
+
+        $uploaded = $this->storeUploadedDocuments($supplier, $request);
+
+        return redirect()->route('admin.suppliers.edit', $supplier)
+            ->with('success', "{$uploaded} dokumen berhasil diunggah.")
+            ->with('tab', 'dokumen');
     }
 
     /**
@@ -285,7 +257,8 @@ class SupplierAdminController extends Controller
         $document->delete();
 
         return redirect()->route('admin.suppliers.edit', $supplier)
-            ->with('success', "Dokumen '{$title}' berhasil dihapus.");
+            ->with('success', "Dokumen '{$title}' berhasil dihapus.")
+            ->with('tab', 'dokumen');
     }
 
     /**
@@ -306,7 +279,8 @@ class SupplierAdminController extends Controller
         $review->save();
 
         return redirect()->route('admin.suppliers.edit', $supplier)
-            ->with('success', 'Tanggapan resmi pemasok berhasil dipublikasikan.');
+            ->with('success', 'Tanggapan resmi pemasok berhasil dipublikasikan.')
+            ->with('tab', 'ulasan');
     }
 
     /**
@@ -321,6 +295,92 @@ class SupplierAdminController extends Controller
         $review->delete();
 
         return redirect()->route('admin.suppliers.edit', $supplier)
-            ->with('success', 'Ulasan pembeli berhasil dihapus.');
+            ->with('success', 'Ulasan pembeli berhasil dihapus.')
+            ->with('tab', 'ulasan');
+    }
+
+    /**
+     * Copy validated profile data and the logo onto the supplier without saving it.
+     * Fields that were submitted blank are cleared; fields that were not submitted are untouched.
+     */
+    private function fillProfile(Supplier $supplier, SupplierRequest $request): void
+    {
+        $supplier->fill(Arr::only($request->validated(), self::PROFILE_FIELDS));
+        $supplier->about ??= '';
+        $supplier->is_verified = $request->boolean('is_verified');
+
+        $previousLogo = $supplier->logo;
+
+        if ($request->hasFile('logo_file')) {
+            $supplier->logo = $request->file('logo_file')->store('suppliers', 'public');
+        } elseif ($request->filled('logo_url')) {
+            $supplier->logo = $request->input('logo_url');
+        } elseif ($request->boolean('remove_logo')) {
+            $supplier->logo = null;
+        }
+
+        if ($previousLogo && $previousLogo !== $supplier->logo && ! str_starts_with($previousLogo, 'http')) {
+            Storage::disk('public')->delete($previousLogo);
+        }
+    }
+
+    /**
+     * Replace the supplier's tags using a comma or newline separated list.
+     */
+    private function syncTags(Supplier $supplier, ?string $raw): void
+    {
+        $names = collect(preg_split('/[,\n]+/', (string) $raw))
+            ->map(fn (string $name): string => Str::limit(trim($name), 50, ''))
+            ->filter()
+            ->unique(fn (string $name): string => mb_strtolower($name))
+            ->take(20)
+            ->values();
+
+        $supplier->tags()->delete();
+        $supplier->tags()->createMany($names->map(fn (string $name): array => ['tag_name' => $name])->all());
+    }
+
+    /**
+     * @param  array<int|string, array<string, mixed>>  $submitted
+     */
+    private function syncCertificationInput(Supplier $supplier, array $submitted): void
+    {
+        $supplier->certifications()->delete();
+
+        foreach ($submitted as $certId => $data) {
+            if (empty($data['active'])) {
+                continue;
+            }
+
+            $status = in_array($data['status'] ?? '', ['verified', 'partial', 'not_verified'], true) ? $data['status'] : 'verified';
+            $supplier->certifications()->create([
+                'certification_id' => (int) $certId,
+                'status' => $status,
+                'is_premium_field' => ! empty($data['is_premium_field']),
+            ]);
+        }
+    }
+
+    /**
+     * Store every uploaded file in `documents[]`, deriving title and type when not provided.
+     */
+    private function storeUploadedDocuments(Supplier $supplier, Request $request): int
+    {
+        $files = $request->file('documents', []);
+        $titles = (array) $request->input('doc_titles', []);
+        $premium = (array) $request->input('doc_premium', []);
+
+        foreach ($files as $index => $file) {
+            $supplier->documents()->create([
+                'title' => filled($titles[$index] ?? null)
+                    ? $titles[$index]
+                    : Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->replace(['_', '-'], ' ')->title()->toString(),
+                'type' => strtoupper($file->getClientOriginalExtension()),
+                'file_path' => $file->store('documents', 'public'),
+                'is_premium' => isset($premium[$index]),
+            ]);
+        }
+
+        return count($files);
     }
 }

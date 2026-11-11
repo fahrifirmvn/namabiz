@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Certification;
 use App\Models\Document;
 use App\Models\Supplier;
 use App\Models\User;
@@ -193,5 +194,198 @@ class AdminSupplierTest extends TestCase
             'id' => $document->id,
         ]);
         Storage::disk('public')->assertMissing($document->file_path);
+    }
+
+    public function test_admin_can_create_supplier_in_one_step_with_tags_certifications_and_documents(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $certification = Certification::create([
+            'name' => 'ISO 9001:2015',
+            'category' => 'Quality Management',
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.suppliers.store'), [
+            'name' => 'PT Satu Langkah Maju',
+            'country' => 'Indonesia',
+            'industry_category' => 'Packaging Manufacturer',
+            'tags' => 'Rotogravure, Standing Pouch, rotogravure',
+            'certifications' => [
+                $certification->id => [
+                    'active' => '1',
+                    'status' => 'verified',
+                    'is_premium_field' => '1',
+                ],
+            ],
+            'documents' => [
+                UploadedFile::fake()->create('company_profile.pdf', 200, 'application/pdf'),
+                UploadedFile::fake()->create('spesifikasi-teknis_2026.xlsx', 150),
+            ],
+            'doc_titles' => [
+                0 => 'Profil Perusahaan Resmi',
+                1 => '',
+            ],
+            'doc_premium' => [
+                1 => '1',
+            ],
+        ]);
+
+        $supplier = Supplier::where('slug', 'pt-satu-langkah-maju')->firstOrFail();
+
+        $response->assertRedirect(route('admin.suppliers.edit', $supplier))
+            ->assertSessionHas('success');
+
+        $this->assertSame(['Rotogravure', 'Standing Pouch'], $supplier->tags()->pluck('tag_name')->all());
+
+        $this->assertDatabaseHas('supplier_certifications', [
+            'supplier_id' => $supplier->id,
+            'certification_id' => $certification->id,
+            'status' => 'verified',
+            'is_premium_field' => 1,
+        ]);
+
+        $documents = $supplier->documents()->orderBy('id')->get();
+        $this->assertCount(2, $documents);
+        $this->assertSame('Profil Perusahaan Resmi', $documents[0]->title);
+        $this->assertSame('PDF', $documents[0]->type);
+        $this->assertFalse($documents[0]->is_premium);
+        $this->assertSame('Spesifikasi Teknis 2026', $documents[1]->title);
+        $this->assertSame('XLSX', $documents[1]->type);
+        $this->assertTrue($documents[1]->is_premium);
+    }
+
+    public function test_admin_can_clear_nullable_fields_and_remove_logo_on_update(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $oldLogoPath = UploadedFile::fake()->image('logo.png')->store('suppliers', 'public');
+
+        $supplier = Supplier::factory()->create([
+            'name' => 'PT Bersih Data',
+            'country' => 'Indonesia',
+            'city' => 'Surabaya',
+            'tagline' => 'Tagline Lama',
+            'whatsapp' => '08123456789',
+            'industry_category' => 'Packaging',
+            'logo' => $oldLogoPath,
+        ]);
+        $supplier->tags()->create(['tag_name' => 'Tag Lama']);
+
+        $response = $this->actingAs($admin)->put(route('admin.suppliers.update', $supplier), [
+            'name' => 'PT Bersih Data',
+            'country' => 'Indonesia',
+            'city' => '',
+            'tagline' => '',
+            'whatsapp' => '',
+            'industry_category' => 'Packaging',
+            'remove_logo' => '1',
+            'tags' => 'Injeksi Plastik, Blow Molding',
+        ]);
+
+        $response->assertRedirect(route('admin.suppliers.edit', $supplier));
+
+        $supplier->refresh();
+        $this->assertNull($supplier->city);
+        $this->assertNull($supplier->tagline);
+        $this->assertNull($supplier->whatsapp);
+        $this->assertNull($supplier->logo);
+        Storage::disk('public')->assertMissing($oldLogoPath);
+        $this->assertSame(['Injeksi Plastik', 'Blow Molding'], $supplier->tags()->pluck('tag_name')->all());
+    }
+
+    public function test_admin_can_toggle_supplier_verification_badge(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $supplier = Supplier::factory()->create(['is_verified' => false]);
+
+        $this->actingAs($admin)
+            ->from(route('admin.suppliers.index'))
+            ->patch(route('admin.suppliers.verify', $supplier))
+            ->assertRedirect(route('admin.suppliers.index'));
+
+        $this->assertTrue($supplier->fresh()->is_verified);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.suppliers.verify', $supplier));
+
+        $this->assertFalse($supplier->fresh()->is_verified);
+    }
+
+    public function test_admin_can_filter_suppliers_by_category_and_verification_status(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Supplier::factory()->create([
+            'name' => 'PT Kemas Terverifikasi',
+            'industry_category' => 'Packaging Manufacturer',
+            'is_verified' => true,
+        ]);
+        Supplier::factory()->create([
+            'name' => 'PT Tekstil Standar',
+            'industry_category' => 'Textile Mill',
+            'is_verified' => false,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.suppliers.index', [
+            'category' => 'Packaging Manufacturer',
+            'status' => 'verified',
+        ]));
+
+        $response->assertOk()
+            ->assertSee('PT Kemas Terverifikasi')
+            ->assertDontSee('PT Tekstil Standar');
+    }
+
+    public function test_admin_can_bulk_upload_documents_and_rejects_invalid_formats(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $supplier = Supplier::factory()->create();
+
+        $this->actingAs($admin)->post(route('admin.suppliers.documents.bulk', $supplier), [
+            'documents' => [
+                UploadedFile::fake()->create('malware.exe', 100),
+            ],
+        ])->assertSessionHasErrors('documents.0');
+
+        $response = $this->actingAs($admin)->post(route('admin.suppliers.documents.bulk', $supplier), [
+            'documents' => [
+                UploadedFile::fake()->create('katalog_2026.pdf', 300, 'application/pdf'),
+                UploadedFile::fake()->create('daftar_harga.docx', 200),
+            ],
+            'doc_titles' => [
+                0 => 'Katalog Lengkap 2026',
+            ],
+        ]);
+
+        $response->assertRedirect(route('admin.suppliers.edit', $supplier))
+            ->assertSessionHas('tab', 'dokumen');
+
+        $this->assertSame(2, $supplier->documents()->count());
+    }
+
+    public function test_supplier_profile_completeness_scores_filled_and_missing_sections(): void
+    {
+        $sparse = Supplier::factory()->create([
+            'logo' => null,
+            'tagline' => null,
+            'about' => '',
+            'description' => null,
+            'whatsapp' => null,
+            'email' => null,
+            'website' => null,
+            'city' => null,
+            'moq' => null,
+            'production_capacity' => null,
+            'avg_lead_time' => null,
+            'company_size' => null,
+            'founded_year' => null,
+        ]);
+
+        $result = $sparse->profileCompleteness();
+
+        $this->assertSame(0, $result['percent']);
+        $this->assertContains('Logo', $result['missing']);
+        $this->assertContains('Kemampuan inti (tag)', $result['missing']);
+        $this->assertContains('Dokumen', $result['missing']);
     }
 }
