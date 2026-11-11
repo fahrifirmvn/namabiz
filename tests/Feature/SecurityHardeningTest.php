@@ -44,4 +44,29 @@ class SecurityHardeningTest extends TestCase
                 'is_verified' => true,
             ])->assertOk();
     }
+
+    public function test_sec_002_google_auth_endpoint_blocks_admin_account_takeover(): void
+    {
+        $admin = User::factory()->create([
+            'email' => 'admin@namabiz.com',
+            'is_admin' => true,
+        ]);
+
+        $this->postJson(route('api.auth.google'), [
+            'email' => $admin->email,
+            'name' => 'Attacker',
+        ])->assertStatus(403);
+    }
+
+    public function test_sec_004_user_model_prevents_is_admin_mass_assignment(): void
+    {
+        $user = User::create([
+            'name' => 'Regular Buyer',
+            'email' => 'buyer@example.com',
+            'password' => 'password123',
+            'is_admin' => true,
+        ]);
+
+        $this->assertFalse($user->fresh()->isAdmin());
+    }
 }
