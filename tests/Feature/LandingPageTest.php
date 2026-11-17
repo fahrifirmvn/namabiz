@@ -14,10 +14,11 @@ class LandingPageTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk()
-            ->assertSee('Temukan pemasok yang tepat, lebih cepat.')
-            ->assertSee('INFRASTRUKTUR PENGADAAN B2B INDONESIA')
+            ->assertSee('Pemasok tepat,')
+            ->assertSee('lebih cepat.')
+            ->assertDontSee('INFRASTRUKTUR PENGADAAN B2B INDONESIA')
             ->assertSee('Pratinjau Lembar Komparasi')
-            ->assertSee('Alur pencarian yang terstandarisasi')
+            ->assertSee('Dari pencarian ke percakapan.')
             ->assertSee('Jelajahi berdasarkan kategori')
             ->assertSee('Mulai gratis. Upgrade saat Anda butuh data lengkap.')
             ->assertSee('Pertanyaan yang sering diajukan');

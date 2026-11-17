@@ -28,18 +28,18 @@ export default {
             },
             colors: {
                 surface: {
-                    DEFAULT: '#F7F8FA',
+                    DEFAULT: '#F8FAFC',
                     subtle: '#F3F4F6',
                     elevated: '#FFFFFF',
                 },
                 border: {
-                    DEFAULT: '#E5E7EB',
+                    DEFAULT: '#E2E8F0',
                     subtle: '#F3F4F6',
                     strong: '#D1D5DB',
                 },
-                'text-primary': '#111827',
-                'text-secondary': '#4B5563',
-                'text-muted': '#6B7280',
+                'text-primary': '#0F172A',
+                'text-secondary': '#334155',
+                'text-muted': '#64748B',
                 brand: {
                     50: '#ECFDF5',
                     100: '#D1FAE5',
@@ -49,9 +49,9 @@ export default {
                     700: '#047857',
                     800: '#065F46',
                 },
-                success: '#059669',
-                warning: '#D97706',
-                danger: '#DC2626',
+                success: '#047857',
+                warning: '#B45309',
+                danger: '#B91C1C',
             },
             boxShadow: {
                 '2xs': '0 1px 2px 0 rgb(17 24 39 / 0.04)',

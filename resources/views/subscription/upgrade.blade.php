@@ -1,74 +1,32 @@
 <x-app-layout>
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        @if (session('status'))
-            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3 mb-8 text-xs font-semibold">
-                {{ session('status') }}
+    <section class="nb-section relative overflow-hidden">
+        <div class="pointer-events-none absolute inset-x-0 top-0 h-80 nb-grid-bg nb-grid-mask" aria-hidden="true"></div>
+        <div class="nb-container relative">
+            <p class="nb-eyebrow">PAKET NAMABIZ</p>
+            <h1 class="nb-h1 mt-3">Kenali akses Premium.</h1>
+            <p class="mt-4 max-w-[720px] text-base leading-[26px] text-text-muted">Pelajari metrik operasional dan dokumen yang tersedia pada profil pemasok sebelum menentukan pilihan.</p>
+            @if(session('paywall_triggered'))<p role="status" class="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">Fitur atau dokumen tersebut memerlukan akses Premium aktif.</p>@endif
+            <div class="mt-8 grid items-start gap-6 md:grid-cols-2">
+                <article class="nb-premium-card p-6 md:p-8" data-reveal>
+                    <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-900">Akses data lebih lengkap</span>
+                    <h2 class="mt-6 text-2xl font-bold text-white">Premium</h2>
+                    <x-premium-price class="mt-3" />
+                    <ul class="mt-6 mb-8 space-y-4 text-sm">
+                        @foreach(['Metrik operasional sesuai data profil', 'Informasi sertifikasi yang tersedia', 'Dokumen sesuai hak akses Premium', 'Ekspor PDF perbandingan pemasok'] as $feature)<li class="flex gap-3 text-white"><x-heroicon-o-check-circle class="h-5 w-5 shrink-0 text-emerald-200" />{{ $feature }}</li>@endforeach
+                    </ul>
+                    @if(auth()->user()?->isPremium())
+                        <p class="mb-5 rounded-xl bg-brand-50 p-4 text-sm text-brand-700" role="status">Akun Anda memiliki akses Premium aktif.@if(auth()->user()->premium_expires_at) Berlaku hingga {{ auth()->user()->premium_expires_at->format('d-m-Y') }}.@endif</p>
+                    @endif
+                    <x-premium-purchase id="upgrade-premium" :show-price="false" :inverse="true" />
+                </article>
+                <article class="nb-card p-6 md:p-8">
+                    <p class="text-xs font-semibold text-amber-800">{{ config('namabiz.draft.label') }}</p>
+                    <h2 class="mt-3 text-xl font-semibold">Pembayaran & langganan</h2>
+                    <p class="mt-4 text-sm leading-[22px] text-text-muted">{{ config('namabiz.draft.payments') }}</p>
+                    <p class="mt-4 text-sm leading-[22px] text-text-muted">{{ config('namabiz.draft.cancellation') }}</p>
+                    <a href="{{ \App\Support\PortalContent::pageUrl('help') }}" class="nb-secondary mt-6 w-full">Baca panduan dan sumber resmi</a>
+                </article>
             </div>
-        @endif
-
-        @if (session('paywall_triggered'))
-            <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 mb-8 text-xs font-semibold flex items-center justify-center gap-2">
-                <x-heroicon-s-lock-closed class="w-4 h-4 text-amber-600" />
-                Fitur atau dokumen tersebut memerlukan langganan paket Premium aktif.
-            </div>
-        @endif
-
-        <div class="w-16 h-16 bg-black text-white rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-sm">
-            <x-heroicon-s-sparkles class="w-8 h-8 text-amber-300" />
         </div>
-
-        <span class="text-xs font-semibold text-gray-400 uppercase tracking-widest">PAKET LANGGANAN NAMABIZ</span>
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mt-1">
-            Upgrade ke Premium
-        </h1>
-        <p class="text-sm text-gray-600 mt-2 max-w-xl mx-auto">
-            Buka visibilitas parameter analitis mendalam, validasi audit pabrik resmi, dan ekspor perbandingan tanpa batasan.
-        </p>
-
-        <div class="bg-white border-2 border-black rounded-2xl p-8 mt-8 text-left shadow-lg">
-            <div class="flex items-center justify-between pb-6 border-b border-gray-100">
-                <div>
-                    <h3 class="text-xl font-bold text-gray-900">Paket Enterprise / Pengadaan</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Akses penuh untuk tim sourcing dan manajemen rantai pasok.</p>
-                </div>
-                <span class="px-3 py-1 bg-black text-white text-2xs uppercase tracking-wider font-bold rounded-full">
-                    Rekomendasi
-                </span>
-            </div>
-
-            <ul class="space-y-3.5 text-xs sm:text-sm text-gray-800 mt-6">
-                <li class="flex items-center gap-3">
-                    <x-heroicon-s-check-circle class="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Seluruh metrik operasional terpasang (Kapasitas riil, MOQ terendah, Lead time pengiriman)</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <x-heroicon-s-check-circle class="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Laporan kepatuhan lengkap &amp; sertifikasi resmi (ISO 9001, ISO 14001, HACCP, Halal)</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <x-heroicon-s-check-circle class="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Pustaka dokumen tervalidasi &amp; laporan audit pihak ketiga tanpa batas</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <x-heroicon-s-check-circle class="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Ekspor lembar komparasi pemasok ke berkas PDF resmi</span>
-                </li>
-            </ul>
-
-            @if(auth()->user()?->isPremium())
-                <div class="mt-8 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-                    <p class="text-xs font-bold text-emerald-800">Akun Anda saat ini memiliki akses Premium aktif.</p>
-                    <p class="text-2xs text-emerald-600 mt-0.5">Berlaku hingga {{ auth()->user()->premium_expires_at?->format('d M Y') ?? '1 tahun ke depan' }}.</p>
-                </div>
-            @else
-                <form method="POST" action="{{ route('upgrade.checkout') }}" class="mt-8">
-                    @csrf
-                    <button type="submit" class="w-full bg-black text-white hover:bg-gray-800 rounded-xl py-3.5 font-bold text-sm transition shadow-sm">
-                        Aktivasi Akses Premium Sekarang &rarr;
-                    </button>
-                    <p class="text-2xs text-gray-400 text-center mt-2.5">Simulasi checkout langsung aktif tanpa kartu kredit untuk keperluan evaluasi.</p>
-                </form>
-            @endif
-        </div>
-    </div>
+    </section>
 </x-app-layout>

@@ -1,10 +1,24 @@
-<x-app-layout>
+@php
+    $seoDescription = \Illuminate\Support\Str::limit(
+        trim(strip_tags((string) ($supplier->tagline ?: $supplier->description ?: $supplier->about ?: $supplier->name.' — '.\App\Support\SupplierFormat::category($supplier->industry_category)))),
+        155
+    );
+    $seoOgImage = $supplier->logo && ! str_contains($supplier->logo, 'placeholder')
+        ? (str_starts_with($supplier->logo, 'http') ? $supplier->logo : asset('storage/'.$supplier->logo))
+        : null;
+@endphp
+<x-app-layout
+    :title="$supplier->name"
+    :description="$seoDescription"
+    :canonical="route('suppliers.show', $supplier->slug)"
+    :og-image="$seoOgImage"
+>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ activeTab: '{{ request('tab', 'ringkasan') }}' }">
         <!-- Breadcrumbs -->
         <nav class="text-xs text-gray-500 mb-6 flex items-center gap-2">
             <a href="{{ route('discover.index') }}" class="hover:text-gray-900">Jelajahi</a>
             <span>/</span>
-            <a href="{{ route('discover.index', ['category' => $supplier->industry_category]) }}" class="hover:text-gray-900">{{ $supplier->industry_category }}</a>
+            <a href="{{ route('discover.index', ['category' => $supplier->industry_category]) }}" class="hover:text-gray-900">{{ \App\Support\SupplierFormat::category($supplier->industry_category) }}</a>
             <span>/</span>
             <span class="font-semibold text-gray-900 truncate max-w-xs">{{ $supplier->name }}</span>
         </nav>
@@ -21,11 +35,14 @@
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <!-- Left: Logo & Info -->
                 <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-black text-white font-extrabold flex items-center justify-center shrink-0 text-2xl shadow-sm">
-                        @if($supplier->logo && !str_contains($supplier->logo, 'placeholder'))
+                    @php
+                        $hasLogo = $supplier->logo && ! str_contains($supplier->logo, 'placeholder');
+                    @endphp
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shrink-0 shadow-sm overflow-hidden {{ $hasLogo ? 'bg-white border border-gray-200 p-2' : 'bg-black text-white font-extrabold text-2xl' }}">
+                        @if($hasLogo)
                             <img src="{{ str_starts_with($supplier->logo, 'http') ? $supplier->logo : asset('storage/' . $supplier->logo) }}"
                                  alt="{{ $supplier->name }}"
-                                 class="w-full h-full object-cover rounded-2xl" />
+                                 class="w-full h-full object-contain" />
                         @else
                             {{ strtoupper(substr($supplier->name, 0, 2)) }}
                         @endif
@@ -37,9 +54,7 @@
                                 {{ $supplier->name }}
                             </h1>
                             @if($supplier->is_verified)
-                                <span class="inline-flex items-center gap-1 text-xs bg-black text-white px-2.5 py-0.5 rounded font-medium">
-                                    <x-heroicon-s-check class="w-3.5 h-3.5 text-emerald-400" /> Terverifikasi
-                                </span>
+                                <x-ui.verified />
                             @endif
 
                             @if($supplier->average_rating)
@@ -57,7 +72,7 @@
                         </div>
 
                         <p class="text-xs sm:text-sm text-gray-600 mt-1">
-                            {{ $supplier->industry_category }} &bull; {{ $supplier->city ? $supplier->city . ', ' : '' }}{{ $supplier->country }}
+                            {{ \App\Support\SupplierFormat::category($supplier->industry_category) }} &bull; {{ $supplier->city ? $supplier->city . ', ' : '' }}{{ $supplier->country }}
                         </p>
 
                         <!-- Metadata Badges -->
@@ -69,7 +84,7 @@
                             @endif
                             @if($supplier->company_size)
                                 <span class="inline-flex items-center gap-1.5">
-                                    <x-heroicon-o-user-group class="w-4 h-4 text-gray-400" /> {{ $supplier->company_size }}
+                                    <x-heroicon-o-user-group class="w-4 h-4 text-gray-400" /> {{ \App\Support\SupplierFormat::text($supplier->company_size) }}
                                 </span>
                             @endif
                             @if($supplier->safe_website_url)
@@ -106,14 +121,13 @@
                         </a>
                     @endif
 
-                    @php
-                        $contactEmail = $supplier->email ?: ($supplier->website ? 'sales@' . ltrim(parse_url($websiteUrl ?? $supplier->website, PHP_URL_HOST) ?? $supplier->website, 'www.') : 'contact@namabiz.com');
-                    @endphp
-                    <a href="mailto:{{ $contactEmail }}"
+                    @if($supplier->email)
+                    <a href="mailto:{{ $supplier->email }}"
                        class="px-4 py-2.5 bg-black hover:bg-gray-800 text-white font-medium text-xs rounded-xl shadow-xs transition inline-flex items-center gap-2">
                         <x-heroicon-o-envelope class="w-4 h-4" />
                         <span>Kirim Email</span>
                     </a>
+                    @endif
 
                     @auth
                         <form method="POST" action="{{ route('suppliers.save', $supplier) }}">
@@ -138,32 +152,37 @@
             </div>
 
             <!-- Tab Navigation Bar -->
-            <div class="mt-8 pt-4 border-t border-gray-100 flex items-center gap-8 text-sm font-medium overflow-x-auto">
+            <div class="mt-8 border-t border-gray-100 flex items-center gap-6 sm:gap-8 text-sm font-medium overflow-x-auto">
                 <button type="button" @click="activeTab = 'ringkasan'"
-                        :class="activeTab === 'ringkasan' ? 'border-b-2 border-black font-bold text-gray-900 pb-2' : 'text-gray-500 hover:text-gray-900 pb-2'">
+                        :class="activeTab === 'ringkasan' ? 'border-b-2 border-gray-900 font-bold text-gray-900' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-900'"
+                        class="pt-4 pb-3 whitespace-nowrap transition-colors nb-focus-ring">
                     Ringkasan
                 </button>
                 <button type="button" @click="activeTab = 'kemampuan'"
-                        :class="activeTab === 'kemampuan' ? 'border-b-2 border-black font-bold text-gray-900 pb-2' : 'text-gray-500 hover:text-gray-900 pb-2'">
+                        :class="activeTab === 'kemampuan' ? 'border-b-2 border-gray-900 font-bold text-gray-900' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-900'"
+                        class="pt-4 pb-3 whitespace-nowrap transition-colors nb-focus-ring">
                     Kemampuan
                 </button>
                 <button type="button" @click="activeTab = 'sertifikasi'"
-                        :class="activeTab === 'sertifikasi' ? 'border-b-2 border-black font-bold text-gray-900 pb-2' : 'text-gray-500 hover:text-gray-900 pb-2'">
+                        :class="activeTab === 'sertifikasi' ? 'border-b-2 border-gray-900 font-bold text-gray-900' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-900'"
+                        class="pt-4 pb-3 whitespace-nowrap transition-colors nb-focus-ring">
                     Sertifikasi
                 </button>
                 <button type="button" @click="activeTab = 'dokumen'"
-                        :class="activeTab === 'dokumen' ? 'border-b-2 border-black font-bold text-gray-900 pb-2' : 'text-gray-500 hover:text-gray-900 pb-2'">
+                        :class="activeTab === 'dokumen' ? 'border-b-2 border-gray-900 font-bold text-gray-900' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-900'"
+                        class="pt-4 pb-3 whitespace-nowrap transition-colors nb-focus-ring">
                     Dokumen
                 </button>
                 <button type="button" @click="activeTab = 'ulasan'"
-                        :class="activeTab === 'ulasan' ? 'border-b-2 border-black font-bold text-gray-900 pb-2' : 'text-gray-500 hover:text-gray-900 pb-2'">
+                        :class="activeTab === 'ulasan' ? 'border-b-2 border-gray-900 font-bold text-gray-900' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-900'"
+                        class="pt-4 pb-3 whitespace-nowrap transition-colors nb-focus-ring">
                     Ulasan ({{ $supplier->reviews_count }})
                 </button>
             </div>
         </div>
 
         <!-- 2 Column Layout (Content & Sidebar) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <!-- Left Main Column (2 spans) -->
             <div class="lg:col-span-2 space-y-8">
                 <!-- 1. Tentang (About) -->
@@ -180,7 +199,7 @@
                     <div class="flex flex-wrap gap-2">
                         @forelse($supplier->tags as $tag)
                             <span class="px-3.5 py-1.5 rounded-lg bg-gray-100 text-xs font-medium text-gray-800">
-                                {{ $tag->tag_name }}
+                                {{ \App\Support\SupplierFormat::tag($tag->tag_name) }}
                             </span>
                         @empty
                             <span class="text-xs text-gray-500">Belum ada tag spesialisasi khusus.</span>
@@ -199,13 +218,12 @@
                         @endunless
                     </div>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 tabular-nums">
                         <!-- Kapasitas Produksi -->
-                        <div class="bg-surface rounded-xl p-4 border border-gray-100">
+                        <div class="rounded-xl p-4 border {{ auth()->user()?->isPremium() ? 'bg-surface border-gray-100' : 'bg-surface/90 border-gray-200/80 nb-striped-locked' }}">
                             <span class="text-2xs text-gray-400 font-semibold uppercase">Kapasitas produksi</span>
                             @if(auth()->user()?->isPremium())
-                                <p class="text-xl font-extrabold text-gray-900 mt-1">{{ $supplier->production_capacity ?? 'N/A' }}</p>
-                                <span class="text-2xs text-gray-500">unit / bulan</span>
+                                <p class="text-xl font-extrabold text-gray-900 mt-1">{{ \App\Support\SupplierFormat::capacity($supplier->production_capacity) }}</p>
                             @else
                                 <div class="mt-2 filter blur-xs select-none">
                                     <p class="text-xl font-bold text-gray-400">2,5 juta</p>
@@ -215,11 +233,10 @@
                         </div>
 
                         <!-- MOQ -->
-                        <div class="bg-surface rounded-xl p-4 border border-gray-100">
+                        <div class="rounded-xl p-4 border {{ auth()->user()?->isPremium() ? 'bg-surface border-gray-100' : 'bg-surface/90 border-gray-200/80 nb-striped-locked' }}">
                             <span class="text-2xs text-gray-400 font-semibold uppercase">MOQ (Pesanan Min)</span>
                             @if(auth()->user()?->isPremium())
-                                <p class="text-xl font-extrabold text-gray-900 mt-1">{{ $supplier->moq ?? 'N/A' }}</p>
-                                <span class="text-2xs text-gray-500">unit</span>
+                                <p class="text-xl font-extrabold text-gray-900 mt-1">{{ \App\Support\SupplierFormat::moq($supplier->moq) }}</p>
                             @else
                                 <div class="mt-2 filter blur-xs select-none">
                                     <p class="text-xl font-bold text-gray-400">10.000</p>
@@ -229,11 +246,10 @@
                         </div>
 
                         <!-- Lead Time -->
-                        <div class="bg-surface rounded-xl p-4 border border-gray-100">
+                        <div class="rounded-xl p-4 border {{ auth()->user()?->isPremium() ? 'bg-surface border-gray-100' : 'bg-surface/90 border-gray-200/80 nb-striped-locked' }}">
                             <span class="text-2xs text-gray-400 font-semibold uppercase">Lead time standar</span>
                             @if(auth()->user()?->isPremium())
-                                <p class="text-xl font-extrabold text-gray-900 mt-1">{{ $supplier->avg_lead_time ?? 'N/A' }}</p>
-                                <span class="text-2xs text-gray-500">minggu</span>
+                                <p class="text-xl font-extrabold text-gray-900 mt-1">{{ \App\Support\SupplierFormat::leadTime($supplier->avg_lead_time) }}</p>
                             @else
                                 <div class="mt-2 filter blur-xs select-none">
                                     <p class="text-xl font-bold text-gray-400">4-6</p>
@@ -243,7 +259,7 @@
                         </div>
 
                         <!-- Fasilitas / Jejak Karbon -->
-                        <div class="bg-surface rounded-xl p-4 border border-gray-100">
+                        <div class="rounded-xl p-4 border {{ auth()->user()?->isPremium() ? 'bg-surface border-gray-100' : 'bg-surface/90 border-gray-200/80 nb-striped-locked' }}">
                             <span class="text-2xs text-gray-400 font-semibold uppercase">Audit Jejak Karbon</span>
                             @if(auth()->user()?->isPremium())
                                 <p class="text-sm font-bold text-gray-900 mt-1">{{ $supplier->carbon_footprint_report ?? 'Tersedia 2024' }}</p>
@@ -259,10 +275,10 @@
                     @unless(auth()->user()?->isPremium())
                         <div class="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-4">
                             <div class="flex items-center gap-2.5 text-xs text-amber-900">
-                                <x-heroicon-s-sparkles class="w-4 h-4 text-amber-600 shrink-0" />
-                                <span>Buka data operasional penuh untuk verifikasi kapasitas fisik & batas minimum order.</span>
+                                <x-heroicon-s-lock-open class="w-4 h-4 text-amber-700 shrink-0" />
+                                <span>Buka data operasional penuh untuk verifikasi kapasitas fisik &amp; batas minimum order.</span>
                             </div>
-                            <a href="{{ route('upgrade') }}" class="px-3 py-1.5 bg-black text-white rounded-lg text-xs font-semibold hover:bg-gray-800 shrink-0">
+                            <a href="{{ route('upgrade') }}" class="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-semibold hover:bg-black shrink-0 nb-focus-ring">
                                 Upgrade
                             </a>
                         </div>
@@ -308,9 +324,9 @@
 
                     <div class="space-y-3">
                         @forelse($supplier->documents as $doc)
-                            <div class="flex items-center justify-between p-4 rounded-xl bg-surface border border-gray-200 hover:border-gray-300 transition">
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-surface hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-2xs transition-all">
                                 <div class="flex items-center gap-3.5 min-w-0">
-                                    <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                                    <div class="w-10 h-10 rounded-xl bg-white border border-gray-200/80 flex items-center justify-center shrink-0">
                                         <x-heroicon-o-document-text class="w-5 h-5 text-gray-600" />
                                     </div>
                                     <div class="min-w-0">
@@ -320,12 +336,12 @@
                                 </div>
                                 <div class="shrink-0 ml-4">
                                     @if(!$doc->is_premium || auth()->user()?->isPremium())
-                                        <a href="{{ route('documents.download', $doc) }}" class="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition">
+                                        <a href="{{ route('documents.download', $doc) }}" class="px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition nb-focus-ring">
                                             <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                                             <span>Unduh</span>
                                         </a>
                                     @else
-                                        <a href="{{ route('upgrade') }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition">
+                                        <a href="{{ route('upgrade') }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition nb-focus-ring">
                                             <x-heroicon-s-lock-closed class="w-4 h-4" />
                                             <span>Buka Akses</span>
                                         </a>
@@ -352,7 +368,7 @@
                     @endphp
 
                     <!-- Summary Scorecard -->
-                    <div class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 shadow-xs">
+                    <div class="nb-card p-6 sm:p-8 tabular-nums">
                         <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 pb-6 border-b border-gray-100">
                             <!-- Overall Score -->
                             <div class="flex items-center gap-5">
@@ -379,7 +395,7 @@
                                     <div class="flex items-center gap-2">
                                         <span class="w-6 text-gray-600 font-medium">{{ $star }} ★</span>
                                         <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                            <div class="h-full bg-amber-400 rounded-full" style="width: {{ $breakdown[$star] ?? 0 }}%"></div>
+                                            <div class="h-full bg-amber-400 rounded-full transition-all duration-300" style="width: {{ $breakdown[$star] ?? 0 }}%"></div>
                                         </div>
                                         <span class="w-8 text-right text-2xs text-gray-400">{{ $breakdown[$star] ?? 0 }}%</span>
                                     </div>
@@ -390,7 +406,7 @@
                         <!-- Parameter Ratings -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
                             <div class="bg-surface rounded-xl p-4 border border-gray-100 text-center">
-                                <span class="text-2xs uppercase tracking-wider text-gray-400 font-semibold block">Kualitas Bahan & Produk</span>
+                                <span class="text-2xs uppercase tracking-wider text-gray-400 font-semibold block">Kualitas Bahan &amp; Produk</span>
                                 <div class="text-2xl font-extrabold text-gray-900 mt-1">
                                     {{ $avgQuality ? number_format($avgQuality, 1) : '-' }} <span class="text-xs text-gray-400 font-normal">/ 5</span>
                                 </div>
@@ -402,11 +418,11 @@
                                 <div class="text-2xl font-extrabold text-gray-900 mt-1">
                                     {{ $avgDelivery ? number_format($avgDelivery, 1) : '-' }} <span class="text-xs text-gray-400 font-normal">/ 5</span>
                                 </div>
-                                <span class="text-2xs text-gray-500">Kesiapan pengiriman & jadwal</span>
+                                <span class="text-2xs text-gray-500">Kesiapan pengiriman &amp; jadwal</span>
                             </div>
 
                             <div class="bg-surface rounded-xl p-4 border border-gray-100 text-center">
-                                <span class="text-2xs uppercase tracking-wider text-gray-400 font-semibold block">Layanan & Komunikasi</span>
+                                <span class="text-2xs uppercase tracking-wider text-gray-400 font-semibold block">Layanan &amp; Komunikasi</span>
                                 <div class="text-2xl font-extrabold text-gray-900 mt-1">
                                     {{ $avgService ? number_format($avgService, 1) : '-' }} <span class="text-xs text-gray-400 font-normal">/ 5</span>
                                 </div>
@@ -733,55 +749,55 @@
             </div>
 
             <!-- Right Sidebar Column -->
-            <aside class="space-y-6">
+            <aside class="space-y-6 lg:sticky lg:top-24">
                 <!-- Status Paket Pengguna Widget -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
+                <div class="nb-card p-6">
                     <div class="flex items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl {{ auth()->user()?->isPremium() ? 'bg-amber-100 text-amber-900' : 'bg-gray-100 text-gray-700' }} flex items-center justify-center">
-                                <x-heroicon-s-sparkles class="w-5 h-5" />
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-xl {{ auth()->user()?->isPremium() ? 'bg-amber-100 text-amber-900' : 'bg-surface-subtle text-gray-700 border border-gray-200/70' }} flex items-center justify-center shrink-0">
+                                <x-heroicon-s-shield-check class="w-5 h-5" />
                             </div>
-                            <div>
-                                <h3 class="font-bold text-sm text-gray-900">
+                            <div class="min-w-0">
+                                <h3 class="font-bold text-sm text-gray-900 truncate">
                                     {{ auth()->user()?->isPremium() ? 'Akses Premium Aktif' : 'Paket Gratis' }}
                                 </h3>
-                                <p class="text-2xs text-gray-500">
+                                <p class="text-2xs text-gray-500 truncate">
                                     {{ auth()->user()?->isPremium() ? 'Visibilitas data tidak terbatas' : 'Metrik operasional terkunci' }}
                                 </p>
                             </div>
                         </div>
-                        <a href="{{ route('upgrade') }}" class="text-xs font-semibold text-black hover:underline shrink-0">
+                        <a href="{{ route('upgrade') }}" class="text-xs font-semibold text-gray-900 hover:text-brand-700 hover:underline shrink-0 nb-focus-ring rounded">
                             {{ auth()->user()?->isPremium() ? 'Kelola' : 'Upgrade' }}
                         </a>
                     </div>
                 </div>
 
                 <!-- Pustaka Dokumen Widget -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
+                <div class="nb-card p-6">
                     <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
                         <h3 class="font-bold text-sm text-gray-900">Dokumen</h3>
-                        <span class="text-2xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full">
+                        <span class="text-2xs font-semibold bg-brand-50 border border-brand-200 text-brand-800 px-2.5 py-0.5 rounded-full">
                             Terverifikasi
                         </span>
                     </div>
 
                     <div class="space-y-3">
                         @forelse($supplier->documents as $doc)
-                            <div class="flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                            <div class="flex items-center justify-between p-2.5 rounded-xl hover:bg-surface transition border border-gray-100">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <x-heroicon-o-document-text class="w-5 h-5 text-gray-400 shrink-0" />
                                     <div class="min-w-0">
                                         <p class="text-xs font-semibold text-gray-900 truncate">{{ $doc->title }}</p>
-                                        <p class="text-2xs text-gray-400 uppercase">{{ $doc->type ?? 'PDF' }} &bull; 1,2 MB</p>
+                                        <p class="text-2xs text-gray-400 uppercase">{{ $doc->type ?? 'PDF' }} &bull; Dokumen Resmi</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
                                     @if(!$doc->is_premium || auth()->user()?->isPremium())
-                                        <a href="{{ route('documents.download', $doc) }}" class="p-1.5 text-gray-500 hover:text-black rounded-lg hover:bg-gray-100 transition" title="Unduh berkas">
+                                        <a href="{{ route('documents.download', $doc) }}" class="p-1.5 text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition nb-focus-ring" title="Unduh berkas">
                                             <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                                         </a>
                                     @else
-                                        <button type="button" x-on:click="Livewire.dispatch('open-premium-modal', { documentTitle: @js($doc->title) })" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Terkunci untuk akun Premium">
+                                        <button type="button" x-on:click="Livewire.dispatch('open-premium-modal', { documentTitle: @js($doc->title) })" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition nb-focus-ring" title="Terkunci untuk akun Premium">
                                             <x-heroicon-s-lock-closed class="w-4 h-4" />
                                         </button>
                                     @endif
@@ -792,18 +808,15 @@
                         @endforelse
                     </div>
 
-                    <p class="text-2xs text-gray-400 mt-4 text-center">{{ $supplier->documents->count() }} dokumen tervalidasi tersedia</p>
+                    <p class="text-2xs text-gray-400 mt-4 text-center tabular-nums">{{ $supplier->documents->count() }} dokumen tervalidasi tersedia</p>
                 </div>
 
                 <!-- Kantor Pusat / Map Widget -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
-                    <h3 class="font-bold text-sm text-gray-900 mb-4">Kantor pusat & pabrik</h3>
-                    <div class="relative w-full h-36 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
-                        <!-- Stylized Map Placeholder -->
-                        <div class="absolute inset-0 bg-emerald-50/40 flex items-center justify-center">
-                            <div class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center shadow-lg animate-bounce">
-                                <x-heroicon-s-map-pin class="w-4 h-4" />
-                            </div>
+                <div class="nb-card p-6">
+                    <h3 class="font-bold text-sm text-gray-900 mb-4">Kantor pusat &amp; pabrik</h3>
+                    <div class="relative w-full h-36 bg-surface rounded-xl overflow-hidden border border-gray-200 nb-grid-bg flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-card ring-4 ring-brand-500/20">
+                            <x-heroicon-s-map-pin class="w-5 h-5 text-emerald-400" />
                         </div>
                     </div>
                     <p class="text-xs text-gray-600 mt-3 leading-relaxed">
@@ -812,7 +825,7 @@
                     @php
                         $mapsQuery = urlencode($supplier->name . ' ' . $supplier->city . ' ' . $supplier->country);
                     @endphp
-                    <a href="https://www.google.com/maps/search/?api=1&query={{ $mapsQuery }}" target="_blank" rel="noopener noreferrer" class="mt-2 text-xs font-semibold text-black hover:underline inline-flex items-center gap-1">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ $mapsQuery }}" target="_blank" rel="noopener noreferrer" class="mt-2 text-xs font-semibold text-gray-900 hover:text-brand-700 hover:underline inline-flex items-center gap-1 nb-focus-ring rounded">
                         Buka di peta <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5" />
                     </a>
                 </div>
@@ -822,37 +835,37 @@
         <!-- Bottom: Pemasok Serupa -->
         @if(isset($similarSuppliers) && $similarSuppliers->isNotEmpty())
             <div class="mt-16 pt-12 border-t border-gray-200">
-                <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center justify-between mb-8 gap-4">
                     <h2 class="text-xl font-bold text-gray-900">Pemasok serupa</h2>
-                    <a href="{{ route('discover.index', ['category' => $supplier->industry_category]) }}" class="text-xs font-semibold text-gray-900 hover:underline">
+                    <a href="{{ route('discover.index', ['category' => $supplier->industry_category]) }}" class="text-xs font-semibold text-gray-900 hover:text-brand-700 hover:underline shrink-0">
                         Lihat semua {{ strtolower($supplier->industry_category) }} &rarr;
                     </a>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     @foreach($similarSuppliers as $sim)
-                        <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-2xs hover:shadow-md transition">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-black text-white font-bold flex items-center justify-center text-sm shrink-0">
-                                    {{ strtoupper(substr($sim->name, 0, 2)) }}
+                        <div class="nb-card-interactive p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start gap-3">
+                                    <x-ui.avatar size="sm" :name="$sim->name" :logo="$sim->logo" />
+                                    <div class="min-w-0">
+                                        <h3 class="font-bold text-sm text-gray-900 truncate">
+                                            <a href="{{ route('suppliers.show', $sim->slug) }}" class="hover:underline nb-focus-ring rounded">{{ $sim->name }}</a>
+                                        </h3>
+                                        <p class="text-2xs text-gray-500 mt-0.5 truncate">{{ $sim->city ? $sim->city . ', ' : '' }}{{ $sim->country }}</p>
+                                    </div>
                                 </div>
-                                <div class="min-w-0">
-                                    <h3 class="font-bold text-sm text-gray-900 truncate">
-                                        <a href="{{ route('suppliers.show', $sim->slug) }}" class="hover:underline">{{ $sim->name }}</a>
-                                    </h3>
-                                    <p class="text-2xs text-gray-500 mt-0.5 truncate">{{ $sim->city ? $sim->city . ' &bull; ' : '' }}{{ $sim->country }}</p>
+
+                                <div class="flex flex-wrap gap-1.5 mt-3">
+                                    @foreach($sim->tags->take(2) as $t)
+                                        <x-ui.chip class="h-5 text-[11px]">{{ $t->tag_name }}</x-ui.chip>
+                                    @endforeach
                                 </div>
                             </div>
 
-                            <div class="flex flex-wrap gap-1.5 mt-3">
-                                @foreach($sim->tags->take(2) as $t)
-                                    <span class="text-2xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{{ $t->tag_name }}</span>
-                                @endforeach
-                            </div>
-
-                            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                                <span class="text-gray-500 text-2xs">MOQ: {{ $sim->moq ?? '5.000 unit' }}</span>
-                                <a href="{{ route('suppliers.show', $sim->slug) }}" class="font-semibold text-black hover:underline text-2xs">Lihat profil &rarr;</a>
+                            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs tabular-nums">
+                                <span class="text-gray-500 text-2xs">MOQ: {{ \App\Support\SupplierFormat::moq($sim->moq) }}</span>
+                                <a href="{{ route('suppliers.show', $sim->slug) }}" class="font-semibold text-gray-900 hover:text-brand-700 hover:underline text-2xs nb-focus-ring rounded">Lihat profil &rarr;</a>
                             </div>
                         </div>
                     @endforeach

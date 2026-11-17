@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use App\Support\PremiumAccess;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -22,7 +23,7 @@ class SupplierResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'logo' => $this->logo ? (str_starts_with($this->logo, 'http') ? $this->logo : url('storage/'.ltrim(str_replace('storage/', '', $this->logo), '/'))) : null,
+            'logo' => $this->resolveLogoUrl(),
             'tagline' => $this->tagline,
             'description' => $this->description,
             'country' => $this->country,
@@ -31,7 +32,10 @@ class SupplierResource extends JsonResource
             'is_verified' => (bool) $this->is_verified,
             'about' => $this->about,
             'website' => $this->website,
-            'is_saved' => $user ? $this->savedBy()->where('user_id', $user->id)->exists() : false,
+            'whatsapp' => $this->whatsapp,
+            'whatsapp_url' => $this->whatsapp_url,
+            'email' => $this->email,
+            'is_saved' => $this->resolveIsSaved($user),
 
             // Premium operational data (masked if user is not premium)
             'premium_data' => [
@@ -63,5 +67,38 @@ class SupplierResource extends JsonResource
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
+    }
+
+    private function resolveLogoUrl(): ?string
+    {
+        if (! $this->logo) {
+            return null;
+        }
+
+        if (str_starts_with($this->logo, 'http')) {
+            return $this->logo;
+        }
+
+        $url = url('storage/'.ltrim(str_replace('storage/', '', $this->logo), '/'));
+        $version = $this->updated_at?->timestamp;
+
+        return $version ? "{$url}?v={$version}" : $url;
+    }
+
+    private function resolveIsSaved(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if (array_key_exists('is_saved', $this->resource->getAttributes())) {
+            return (bool) $this->resource->getAttribute('is_saved');
+        }
+
+        if ($this->resource->relationLoaded('savedBy')) {
+            return $this->savedBy->contains('user_id', $user->id);
+        }
+
+        return $this->savedBy()->where('user_id', $user->id)->exists();
     }
 }

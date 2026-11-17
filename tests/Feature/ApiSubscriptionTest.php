@@ -10,9 +10,12 @@ class ApiSubscriptionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_authenticated_user_can_verify_play_billing_purchase(): void
+    public function test_verify_play_billing_returns_503_when_verification_is_disabled(): void
     {
-        $user = User::factory()->create(['subscription_tier' => 'free']);
+        $user = User::factory()->create([
+            'subscription_tier' => 'free',
+            'premium_expires_at' => null,
+        ]);
 
         $response = $this->actingAs($user, 'sanctum')
             ->postJson(route('api.subscription.verify-play-billing'), [
@@ -21,27 +24,15 @@ class ApiSubscriptionTest extends TestCase
                 'order_id' => 'GPA.1234-5678-9012-34567',
             ]);
 
-        $response->assertStatus(200)
+        $response->assertStatus(503)
             ->assertJson([
-                'success' => true,
-                'message' => 'Google Play purchase verified. Premium membership activated.',
-                'data' => [
-                    'user' => [
-                        'subscription_tier' => 'premium',
-                        'is_premium' => true,
-                    ],
-                    'subscription' => [
-                        'tier' => 'premium',
-                        'product_id' => 'supplychain_premium_yearly',
-                        'status' => 'active',
-                    ],
-                ],
+                'success' => false,
+                'message' => 'Google Play Billing verification is not enabled.',
             ]);
 
         $user->refresh();
-        $this->assertEquals('premium', $user->subscription_tier);
-        $this->assertNotNull($user->premium_expires_at);
-        $this->assertTrue($user->premium_expires_at->isFuture());
+        $this->assertEquals('free', $user->subscription_tier);
+        $this->assertNull($user->premium_expires_at);
     }
 
     public function test_unauthenticated_user_cannot_verify_purchase(): void

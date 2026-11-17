@@ -29,6 +29,12 @@ class SupplierController extends Controller
             ->limit(3)
             ->get();
 
+        $recentIds = array_values(array_unique(array_merge(
+            [$supplier->id],
+            array_map('intval', (array) session()->get('recently_viewed_suppliers', []))
+        )));
+        session()->put('recently_viewed_suppliers', array_slice($recentIds, 0, 6));
+
         return view('suppliers.show', compact('supplier', 'isSaved', 'similarSuppliers', 'userReview', 'reviewStats'));
     }
 }

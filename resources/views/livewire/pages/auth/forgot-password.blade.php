@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
@@ -18,6 +20,17 @@ new #[Layout('layouts.guest')] #[Title('Lupa Kata Sandi')] class extends Compone
             'email' => ['required', 'string', 'email'],
         ]);
 
+        $throttleKey = 'web-password-reset|'.strtolower(trim($this->email)).'|'.request()->ip();
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => "Terlalu banyak permintaan reset kata sandi. Coba lagi dalam {$seconds} detik.",
+            ]);
+        }
+
+        RateLimiter::hit($throttleKey, 60);
+
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
@@ -31,6 +44,7 @@ new #[Layout('layouts.guest')] #[Title('Lupa Kata Sandi')] class extends Compone
             return;
         }
 
+        RateLimiter::clear($throttleKey);
         $this->reset('email');
 
         session()->flash('status', __($status));

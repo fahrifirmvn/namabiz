@@ -120,7 +120,7 @@ class WebComparisonTest extends TestCase
             ->assertSee('Ukuran Perusahaan');
     }
 
-    public function test_supplier_card_omits_verified_badge_and_renders_accessible_compare_controls(): void
+    public function test_supplier_card_shows_verified_badge_and_renders_accessible_compare_controls(): void
     {
         $suppliers = Supplier::factory()->count(5)->create([
             'is_verified' => true,
@@ -134,16 +134,17 @@ class WebComparisonTest extends TestCase
             'selected' => false,
         ])->render();
 
-        $this->assertStringNotContainsString('Terverifikasi', $cardHtml);
+        $this->assertStringContainsString('Terverifikasi', $cardHtml);
         $this->assertStringContainsString('aria-pressed="false"', $cardHtml);
-        $this->assertStringContainsString('+ Tambah ke perbandingan', $cardHtml);
+        $this->assertStringContainsString('Bandingkan', $cardHtml);
+        $this->assertStringNotContainsString('+ Tambah ke perbandingan', $cardHtml);
 
         $component = Livewire::test(DiscoverSearch::class, ['query' => 'a'])
             ->assertDontSee('Lihat perbandingan (')
             ->call('toggleCompare', $suppliers[0]->id)
-            ->assertSee('1 pemasok dipilih')
+            ->assertSee('1 dipilih')
             ->assertSee('Hapus semua')
-            ->assertSee('Lihat perbandingan (1)')
+            ->assertSee('Bandingkan')
             ->assertSeeHtml('aria-pressed="true"')
             ->assertSee('Ditambahkan');
 
@@ -151,7 +152,7 @@ class WebComparisonTest extends TestCase
             ->call('toggleCompare', $suppliers[1]->id)
             ->call('toggleCompare', $suppliers[2]->id)
             ->call('toggleCompare', $suppliers[3]->id)
-            ->assertSee('4 pemasok dipilih')
+            ->assertSee('4 dipilih')
             ->assertSeeHtml('compare-limit-reached');
     }
 }

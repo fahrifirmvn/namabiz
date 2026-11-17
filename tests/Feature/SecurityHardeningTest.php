@@ -6,6 +6,8 @@ use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class SecurityHardeningTest extends TestCase
@@ -53,9 +55,42 @@ class SecurityHardeningTest extends TestCase
             'is_admin' => true,
         ]);
 
+        // Unauthenticated request without id_token fails validation
         $this->postJson(route('api.auth.google'), [
             'email' => $admin->email,
             'name' => 'Attacker',
+        ])->assertStatus(422);
+
+        // Even with a validly signed Google ID token for an admin email, login must be blocked (403)
+        $privateKey = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
+        $csr = openssl_csr_new(['commonName' => 'test-google-certs'], $privateKey);
+        $x509 = openssl_csr_sign($csr, null, $privateKey, 1);
+        openssl_x509_export($x509, $certPem);
+
+        config()->set('services.google.client_ids', ['namabiz-android-client.apps.googleusercontent.com']);
+        Cache::flush();
+        Http::fake([
+            'https://www.googleapis.com/oauth2/v1/certs' => Http::response([
+                'sec-kid' => $certPem,
+            ], 200),
+        ]);
+
+        $encode = fn (string $data): string => rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+        $headerB64 = $encode(json_encode(['alg' => 'RS256', 'kid' => 'sec-kid', 'typ' => 'JWT'], JSON_THROW_ON_ERROR));
+        $payloadB64 = $encode(json_encode([
+            'iss' => 'https://accounts.google.com',
+            'aud' => 'namabiz-android-client.apps.googleusercontent.com',
+            'sub' => 'admin-google-sub',
+            'email' => $admin->email,
+            'email_verified' => true,
+            'name' => 'Attacker',
+            'exp' => time() + 3600,
+        ], JSON_THROW_ON_ERROR));
+        openssl_sign("{$headerB64}.{$payloadB64}", $signature, $privateKey, OPENSSL_ALGO_SHA256);
+        $idToken = "{$headerB64}.{$payloadB64}.".$encode($signature);
+
+        $this->postJson(route('api.auth.google'), [
+            'id_token' => $idToken,
         ])->assertStatus(403);
     }
 

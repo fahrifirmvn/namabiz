@@ -18,10 +18,11 @@ class RegistrationTest extends TestCase
             ->assertOk()
             ->assertSeeVolt('pages.auth.register')
             ->assertSee('Buat akun gratis')
-            ->assertSee('Temukan pabrik yang pas untuk bisnismu, lebih cepat.')
-            ->assertSee('12.400+ pemasok')
+            ->assertSee('Temukan pemasok yang pas untuk bisnis Anda.')
+            ->assertDontSee('12.400+ pemasok')
+            ->assertSee('Langkah 1/2')
             ->assertSee('Minimal 8 karakter')
-            ->assertSee('Kombinasi huruf dan angka')
+            ->assertSee('Disarankan: kombinasi huruf dan angka.')
             ->assertSee('Masuk di sini');
     }
 
@@ -37,6 +38,40 @@ class RegistrationTest extends TestCase
 
         $component->assertRedirect(route('dashboard', absolute: false));
 
+        $this->assertAuthenticated();
+    }
+
+    public function test_registration_validates_credentials_before_showing_the_second_step(): void
+    {
+        Volt::test('pages.auth.register')
+            ->set('email', 'invalid-email')
+            ->set('password', 'short')
+            ->call('nextStep')
+            ->assertHasErrors(['email', 'password'])
+            ->assertSee('Masukkan alamat email yang valid.')
+            ->assertSet('step', 1);
+
+        $this->assertDatabaseCount('users', 0);
+    }
+
+    public function test_registration_wizard_preserves_credentials_and_registers_after_the_name_is_entered(): void
+    {
+        $component = Volt::test('pages.auth.register')
+            ->set('email', 'buyer@example.com')
+            ->set('password', 'password123')
+            ->set('password_confirmation', 'password123')
+            ->call('nextStep')
+            ->assertHasNoErrors()
+            ->assertSet('step', 2)
+            ->assertSee('Nama lengkap');
+
+        $this->assertDatabaseCount('users', 0);
+
+        $component->set('name', 'Buyer Test')
+            ->call('register')
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertDatabaseHas('users', ['name' => 'Buyer Test', 'email' => 'buyer@example.com']);
         $this->assertAuthenticated();
     }
 

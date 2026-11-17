@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ApiResponse
 {
@@ -41,5 +42,34 @@ class ApiResponse
         }
 
         return response()->json($payload, $code);
+    }
+
+    /**
+     * Attach deterministic ETag and safe Cache-Control/Vary headers (returning 304 on match).
+     */
+    public static function withConditionalCache(
+        Request $request,
+        JsonResponse $response,
+        string $scope,
+        bool $isPublic = false,
+        int $maxAge = 0
+    ): JsonResponse {
+        $etag = sha1($scope.'|'.(string) $response->getContent());
+
+        if ($isPublic) {
+            $response->setPublic();
+            $response->setMaxAge($maxAge);
+        } else {
+            $response->setPrivate();
+            $response->setMaxAge($maxAge);
+            $response->headers->addCacheControlDirective('no-cache', true);
+            $response->headers->addCacheControlDirective('must-revalidate', true);
+            $response->setVary('Authorization', false);
+        }
+
+        $response->setEtag($etag);
+        $response->isNotModified($request);
+
+        return $response;
     }
 }

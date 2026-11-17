@@ -26,12 +26,14 @@ class SecurityHeaders
         $viteHttp = $isDev ? ' http://localhost:5173 http://127.0.0.1:5173' : '';
         $viteWs = $isDev ? ' ws://localhost:5173 ws://127.0.0.1:5173' : '';
 
+        $imgHttp = $isDev ? ' http:' : '';
+
         $cspDirectives = [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'{$viteHttp}",
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net{$viteHttp}",
             "font-src 'self' https://fonts.bunny.net data:",
-            "img-src 'self' data: https: http:",
+            "img-src 'self' data: https:{$imgHttp}",
             "connect-src 'self'{$viteHttp}{$viteWs}",
             "frame-ancestors 'self'",
             "base-uri 'self'",

@@ -26,8 +26,8 @@ Route::prefix('v1')->group(function () {
 
     // Public Directory Routes
     Route::get('/dashboard/home', [DashboardController::class, 'home'])->name('api.dashboard.home');
+    Route::get('/filters', [SupplierController::class, 'filters'])->name('api.filters');
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('api.suppliers.index');
-    Route::match(['get', 'post'], '/suppliers/qr-resolve', [SupplierController::class, 'qrResolve'])->name('api.suppliers.qr-resolve');
     Route::post('/suppliers/compare', [ComparisonController::class, 'compare'])->name('api.compare');
     Route::get('/suppliers/{idOrSlug}', [SupplierController::class, 'show'])->name('api.suppliers.show');
 

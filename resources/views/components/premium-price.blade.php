@@ -1,0 +1,1 @@
+<p {{ $attributes->merge(['class' => 'nb-price']) }}><span>{{ \App\Support\PortalContent::premiumPrice() }}</span><span class="nb-price-period">/ {{ config('namabiz.billing.price.period') }}</span></p>

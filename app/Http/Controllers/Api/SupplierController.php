@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SupplierResource;
+use App\Models\IndustryCategory;
 use App\Models\SavedSupplier;
 use App\Models\Supplier;
+use App\Observers\CatalogCacheObserver;
 use App\Support\ApiResponse;
 use App\Support\SqlLike;
 use Illuminate\Http\JsonResponse;
@@ -14,11 +16,35 @@ use Illuminate\Http\Request;
 class SupplierController extends Controller
 {
     /**
+     * Get dynamic filter metadata (categories, countries, certifications) for directory UIs.
+     */
+    public function filters(Request $request): JsonResponse
+    {
+        $options = CatalogCacheObserver::filterOptions();
+        $response = ApiResponse::success([
+            'categories' => $options['hubCategories'],
+            'countries' => $options['locations'],
+            'certifications' => $options['certifications'],
+        ], 'Directory filter options retrieved successfully');
+
+        return ApiResponse::withConditionalCache(
+            request: $request,
+            response: $response,
+            scope: 'public:filters',
+            isPublic: true,
+            maxAge: 120
+        );
+    }
+
+    /**
      * Display a paginated listing of suppliers with search and filters.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Supplier::query()->with(['tags']);
+        $user = $request->user('sanctum') ?? $request->user();
+        $query = Supplier::query()
+            ->with(['tags', 'documents', 'certifications.certification'])
+            ->withUserSavedStatus($user);
 
         if ($request->filled('q') || $request->filled('search')) {
             $rawKeyword = is_scalar($request->input('q', $request->input('search')))
@@ -43,7 +69,11 @@ class SupplierController extends Controller
         }
 
         if ($request->filled('category') && is_string($request->input('category'))) {
-            $query->where('industry_category', mb_substr($request->input('category'), 0, 100));
+            $rawCategory = mb_substr(trim($request->input('category')), 0, 100);
+            $resolvedCategory = IndustryCategory::query()
+                ->where('slug', $rawCategory)
+                ->value('name') ?? $rawCategory;
+            $query->where('industry_category', $resolvedCategory);
         }
 
         if ($request->filled('certification_id') && is_numeric($request->input('certification_id'))) {
@@ -51,19 +81,25 @@ class SupplierController extends Controller
             $query->whereHas('certifications', function ($q) use ($certId) {
                 $q->where('certification_id', $certId);
             });
+        } elseif ($request->filled('cert') && is_string($request->input('cert'))) {
+            $certName = mb_substr(trim($request->input('cert')), 0, 100);
+            $query->whereHas('certifications.certification', function ($q) use ($certName) {
+                $q->where('name', $certName);
+            });
         }
 
         $sortBy = is_string($request->input('sort_by')) ? $request->input('sort_by') : 'relevance';
         match ($sortBy) {
             'newest' => $query->latest(),
             'company_size' => $query->orderByDesc('company_size'),
+            'name' => $query->orderBy('name'),
             default => $query->orderByDesc('is_verified')->orderBy('name'),
         };
 
         $perPage = max(1, min((int) $request->input('per_page', 12), 50));
         $suppliers = $query->paginate($perPage);
 
-        return ApiResponse::success(
+        $response = ApiResponse::success(
             SupplierResource::collection($suppliers),
             'Suppliers retrieved successfully',
             200,
@@ -77,6 +113,16 @@ class SupplierController extends Controller
                 ],
             ]
         );
+
+        $scope = 'user:'.($user?->id ?? 'guest').'|tier:'.($user?->subscription_tier ?? 'guest');
+
+        return ApiResponse::withConditionalCache(
+            request: $request,
+            response: $response,
+            scope: $scope,
+            isPublic: false,
+            maxAge: 0
+        );
     }
 
     /**
@@ -84,8 +130,10 @@ class SupplierController extends Controller
      */
     public function show(Request $request, string $idOrSlug): JsonResponse
     {
+        $user = $request->user('sanctum') ?? $request->user();
         $supplier = Supplier::query()
             ->with(['tags', 'documents', 'certifications.certification'])
+            ->withUserSavedStatus($user)
             ->where(function ($q) use ($idOrSlug) {
                 $q->where('slug', $idOrSlug);
                 if (ctype_digit($idOrSlug)) {
@@ -98,52 +146,19 @@ class SupplierController extends Controller
             return ApiResponse::error('Supplier not found.', 404);
         }
 
-        return ApiResponse::success(
+        $response = ApiResponse::success(
             new SupplierResource($supplier),
             'Supplier details retrieved successfully'
         );
-    }
 
-    /**
-     * Resolve raw QR scan string from CameraX into a supplier record.
-     */
-    public function qrResolve(Request $request): JsonResponse
-    {
-        $request->validate([
-            'code' => ['required', 'string', 'max:500'],
-        ]);
+        $scope = 'user:'.($user?->id ?? 'guest').'|tier:'.($user?->subscription_tier ?? 'guest');
 
-        $rawCode = trim($request->input('code'));
-        $slugOrId = $rawCode;
-
-        // Check if QR contains a full URL, e.g. https://domain.com/suppliers/atlas-packaging
-        if (filter_var($rawCode, FILTER_VALIDATE_URL)) {
-            $path = parse_url($rawCode, PHP_URL_PATH);
-            $segments = array_values(array_filter(explode('/', (string) $path)));
-            $slugOrId = end($segments) ?: $rawCode;
-        } elseif (str_contains($rawCode, '://')) {
-            // Check if deep link scheme: supplychainpro://supplier/atlas-packaging
-            $parts = explode('/', $rawCode);
-            $slugOrId = end($parts) ?: $rawCode;
-        }
-
-        $supplier = Supplier::query()
-            ->with(['tags', 'documents', 'certifications.certification'])
-            ->where(function ($q) use ($slugOrId) {
-                $q->where('slug', $slugOrId);
-                if (ctype_digit((string) $slugOrId)) {
-                    $q->orWhere('id', (int) $slugOrId);
-                }
-            })
-            ->first();
-
-        if (! $supplier) {
-            return ApiResponse::error('Supplier not found for the provided QR code.', 404);
-        }
-
-        return ApiResponse::success(
-            new SupplierResource($supplier),
-            'Supplier resolved successfully from QR code'
+        return ApiResponse::withConditionalCache(
+            request: $request,
+            response: $response,
+            scope: $scope,
+            isPublic: false,
+            maxAge: 0
         );
     }
 
@@ -192,6 +207,7 @@ class SupplierController extends Controller
                 $q->where('user_id', $request->user()->id);
             })
             ->with(['tags', 'documents', 'certifications.certification'])
+            ->withUserSavedStatus($request->user())
             ->latest()
             ->get();
 

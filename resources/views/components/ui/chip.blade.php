@@ -10,6 +10,6 @@
     };
 @endphp
 
-<span {{ $attributes->merge(['class' => "inline-flex items-center h-6 rounded-lg text-xs font-medium border whitespace-nowrap shrink-0 $variantClass"]) }}>
+<span {{ $attributes->merge(['class' => "nb-chip $variantClass"]) }}>
     {{ $slot }}
 </span>

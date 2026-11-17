@@ -11,6 +11,7 @@ use App\Models\Supplier;
 use App\Models\SupplierReview;
 use App\Observers\CatalogCacheObserver;
 use App\Support\SqlLike;
+use App\Support\SupplierLogoProcessor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -181,9 +182,7 @@ class SupplierAdminController extends Controller
 
         // Delete associated document files
         foreach ($supplier->documents as $doc) {
-            if ($doc->file_path && Storage::disk('public')->exists($doc->file_path)) {
-                Storage::disk('public')->delete($doc->file_path);
-            }
+            $this->deleteDocumentFile($doc->file_path);
         }
 
         $supplier->documents()->delete();
@@ -197,7 +196,7 @@ class SupplierAdminController extends Controller
     }
 
     /**
-     * Store a document for the supplier.
+     * Store a document for the supplier on the private local disk.
      */
     public function storeDocument(Request $request, Supplier $supplier): RedirectResponse
     {
@@ -208,7 +207,7 @@ class SupplierAdminController extends Controller
             'is_premium' => ['nullable', 'boolean'],
         ]);
 
-        $path = $request->file('file')->store('documents', 'public');
+        $path = $request->file('file')->store('documents', 'local');
 
         $supplier->documents()->create([
             'title' => $validated['title'],
@@ -216,6 +215,8 @@ class SupplierAdminController extends Controller
             'file_path' => $path,
             'is_premium' => $request->has('is_premium'),
         ]);
+
+        CatalogCacheObserver::flush();
 
         return redirect()->route('admin.suppliers.edit', $supplier)
             ->with('success', "Dokumen '{$validated['title']}' berhasil diunggah.")
@@ -238,6 +239,8 @@ class SupplierAdminController extends Controller
 
         $uploaded = $this->storeUploadedDocuments($supplier, $request);
 
+        CatalogCacheObserver::flush();
+
         return redirect()->route('admin.suppliers.edit', $supplier)
             ->with('success', "{$uploaded} dokumen berhasil diunggah.")
             ->with('tab', 'dokumen');
@@ -252,12 +255,12 @@ class SupplierAdminController extends Controller
             abort(403, 'Akses tidak sah ke dokumen pemasok.');
         }
 
-        if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
-            Storage::disk('public')->delete($document->file_path);
-        }
+        $this->deleteDocumentFile($document->file_path);
 
         $title = $document->title;
         $document->delete();
+
+        CatalogCacheObserver::flush();
 
         return redirect()->route('admin.suppliers.edit', $supplier)
             ->with('success', "Dokumen '{$title}' berhasil dihapus.")
@@ -315,7 +318,7 @@ class SupplierAdminController extends Controller
         $previousLogo = $supplier->logo;
 
         if ($request->hasFile('logo_file')) {
-            $supplier->logo = $request->file('logo_file')->store('suppliers', 'public');
+            $supplier->logo = SupplierLogoProcessor::storeOptimized($request->file('logo_file'));
         } elseif ($request->filled('logo_url')) {
             $supplier->logo = $request->input('logo_url');
         } elseif ($request->boolean('remove_logo')) {
@@ -365,7 +368,7 @@ class SupplierAdminController extends Controller
     }
 
     /**
-     * Store every uploaded file in `documents[]`, deriving title and type when not provided.
+     * Store every uploaded file in `documents[]` on the private local disk, deriving title and type when not provided.
      */
     private function storeUploadedDocuments(Supplier $supplier, Request $request): int
     {
@@ -379,11 +382,28 @@ class SupplierAdminController extends Controller
                     ? $titles[$index]
                     : Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->replace(['_', '-'], ' ')->title()->toString(),
                 'type' => strtoupper($file->getClientOriginalExtension()),
-                'file_path' => $file->store('documents', 'public'),
+                'file_path' => $file->store('documents', 'local'),
                 'is_premium' => isset($premium[$index]),
             ]);
         }
 
         return count($files);
+    }
+
+    /**
+     * Delete a stored document file from private or legacy public storage without allowing traversal.
+     */
+    private function deleteDocumentFile(?string $filePath): void
+    {
+        $path = (string) $filePath;
+        if ($path === '' || str_contains($path, '..')) {
+            return;
+        }
+
+        foreach (['local', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                Storage::disk($disk)->delete($path);
+            }
+        }
     }
 }

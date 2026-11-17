@@ -4,10 +4,10 @@
 ])
 
 <div {{ $attributes->merge(['class' => 'min-w-0']) }}>
-    <span class="block text-xs uppercase tracking-wider font-medium text-text-muted truncate">
+    <dt class="block text-xs uppercase tracking-wider font-medium text-text-muted">
         {{ $label }}
-    </span>
-    <span class="block text-sm font-medium text-text-primary mt-0.5 truncate" title="{{ $value }}">
+    </dt>
+    <dd class="block text-sm font-semibold text-text-primary mt-1" title="{{ $value }}">
         {{ $value }}
-    </span>
+    </dd>
 </div>

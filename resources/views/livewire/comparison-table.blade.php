@@ -17,7 +17,7 @@
                 </h1>
                 @if($this->isPremium)
                     <span class="inline-flex items-center gap-1 text-xs font-bold bg-amber-100 text-amber-900 px-3 py-1 rounded-full uppercase tracking-wider">
-                        <x-heroicon-s-sparkles class="w-3.5 h-3.5 text-amber-600" /> Akses Premium Aktif
+                        <x-heroicon-s-shield-check class="w-3.5 h-3.5 text-amber-700" /> Akses Premium Aktif
                     </span>
                 @else
                     <span class="inline-flex items-center gap-1 text-xs font-medium bg-surface-subtle border border-border text-text-secondary px-3 py-1 rounded-full">
@@ -52,19 +52,20 @@
                 <span>Ekspor PDF</span>
             </a>
 
-            <!-- Hubungi Terpilih -->
-            <a href="mailto:contact@namabiz.com?subject=Permintaan%20Informasi%20Pemasok%20Massal"
+            @if($supportEmail = \App\Support\PortalContent::email())
+            <a href="mailto:{{ $supportEmail }}?subject=Permintaan%20Bantuan%20Evaluasi%20Pemasok"
                class="h-10 px-4 text-13 font-semibold rounded-xl bg-gray-900 text-white hover:bg-black transition inline-flex items-center gap-1.5 shadow-xs nb-focus-ring">
                 <x-heroicon-o-paper-airplane class="w-4 h-4" />
-                <span>Hubungi Terpilih ({{ count($this->suppliers) }})</span>
+                <span>Bantuan evaluasi pemasok</span>
             </a>
+            @endif
         </div>
     </div>
 
     <!-- Main Comparison Table Card -->
     <div class="nb-card overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-13 sm:text-sm border-collapse min-w-[760px]">
+            <table class="w-full text-left text-13 sm:text-sm border-collapse min-w-[760px] tabular-nums">
                 <!-- HEADER ROW -->
                 <thead>
                     <tr class="border-b border-border divide-x divide-gray-100 bg-surface/60">
@@ -125,8 +126,8 @@
                                     <div class="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center text-text-secondary mx-auto mb-2 shadow-2xs">
                                         <x-heroicon-o-plus class="w-5 h-5" />
                                     </div>
-                                    <p class="font-semibold text-sm text-text-primary">+ Tambah pemasok</p>
-                                    <p class="text-13 text-text-secondary font-normal mt-0.5">{{ 4 - count($this->suppliers) }} kuota slot tersisa</p>
+                                    <p class="font-semibold text-sm text-text-primary">Tambah pemasok</p>
+                                    <p class="text-13 text-text-secondary font-normal mt-0.5 tabular-nums">{{ 4 - count($this->suppliers) }} kuota slot tersisa</p>
 
                                     <!-- Quick Search Input -->
                                     <div class="mt-3.5 relative text-left">
@@ -163,7 +164,7 @@
                         </td>
                     </tr>
                     @if($this->shouldShowRow(fn ($s) => (string) $s->founded_year))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">Tahun Berdiri</td>
                         @foreach($this->suppliers as $s)
                             <td class="p-4 sm:p-5 text-text-primary font-medium">
@@ -174,7 +175,7 @@
                     </tr>
                     @endif
                     @if($this->shouldShowRow(fn ($s) => (string) $s->company_size))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">Ukuran Perusahaan</td>
                         @foreach($this->suppliers as $s)
                             <td class="p-4 sm:p-5 text-text-primary font-medium">
@@ -185,7 +186,7 @@
                     </tr>
                     @endif
                     @if($this->shouldShowRow(fn ($s) => $s->tags->pluck('tag_name')->implode(',')))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">Kemampuan Utama</td>
                         @foreach($this->suppliers as $s)
                             <td class="p-4 sm:p-5 text-text-primary font-medium">
@@ -207,12 +208,12 @@
                         <td colspan="{{ count($this->suppliers) + 2 }}" class="px-5 py-2.5">
                             <div class="flex items-center justify-between gap-2">
                                 <span>2. Metrik Operasional &amp; Skala</span>
-                                <span class="text-text-secondary normal-case font-normal text-13">Sorotan Otomatis Aktif (3 Kriteria)</span>
+                                <span class="text-text-secondary normal-case font-normal text-13">Data sesuai profil pemasok</span>
                             </div>
                         </td>
                     </tr>
                     @if($this->shouldShowRow(fn ($s) => (string) $s->production_capacity))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">
                             <span>Kapasitas Produksi</span>
                             <span class="block text-xs text-text-muted font-normal mt-0.5">Volume output per bulan</span>
@@ -221,10 +222,7 @@
                             <td class="p-4 sm:p-5 text-text-primary">
                                 @if($this->isPremium)
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="font-semibold text-sm">{{ $s->production_capacity ?? 'Tidak tercatat' }}</span>
-                                        @if($i === 0 && $s->production_capacity)
-                                            <span class="nb-badge-best">TERBAIK</span>
-                                        @endif
+                                        <span class="font-semibold text-sm">{{ \App\Support\SupplierFormat::capacity($s->production_capacity) }}</span>
                                     </div>
                                     <span class="text-xs text-text-secondary block mt-0.5">Skala manufaktur terpasang</span>
                                 @else
@@ -232,11 +230,11 @@
                                 @endif
                             </td>
                         @endforeach
-                        @if(count($this->suppliers) < 4) <td class="p-4 sm:p-5 text-text-muted text-center">—</td> @endif
+                        @if(count($this->suppliers) < 4) <td class="p-4 sm:p-5 text-text-muted text-center">&mdash;</td> @endif
                     </tr>
                     @endif
                     @if($this->shouldShowRow(fn ($s) => (string) $s->moq))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">
                             <span>MOQ (Pesanan Minimal)</span>
                             <span class="block text-xs text-text-muted font-normal mt-0.5">Batas terendah per order (PO)</span>
@@ -245,10 +243,7 @@
                             <td class="p-4 sm:p-5 text-text-primary">
                                 @if($this->isPremium)
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="font-semibold text-sm">{{ $s->moq ?? 'Sesuai diskusi' }}</span>
-                                        @if($i === 1 && $s->moq)
-                                            <span class="nb-badge-best">TERBAIK</span>
-                                        @endif
+                                        <span class="font-semibold text-sm">{{ \App\Support\SupplierFormat::moq($s->moq) }}</span>
                                     </div>
                                     <span class="text-xs text-text-secondary block mt-0.5">Fleksibel bagi batch uji</span>
                                 @else
@@ -256,11 +251,11 @@
                                 @endif
                             </td>
                         @endforeach
-                        @if(count($this->suppliers) < 4) <td class="p-4 sm:p-5 text-text-muted text-center">—</td> @endif
+                        @if(count($this->suppliers) < 4) <td class="p-4 sm:p-5 text-text-muted text-center">&mdash;</td> @endif
                     </tr>
                     @endif
                     @if($this->shouldShowRow(fn ($s) => (string) $s->avg_lead_time))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">
                             <span>Waktu Siklus (Lead Time)</span>
                             <span class="block text-xs text-text-muted font-normal mt-0.5">PO diterbitkan hingga pengiriman</span>
@@ -269,10 +264,7 @@
                             <td class="p-4 sm:p-5 text-text-primary">
                                 @if($this->isPremium)
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="font-semibold text-sm">{{ $s->avg_lead_time ?? 'Tidak tercatat' }}</span>
-                                        @if($i === 2 && $s->avg_lead_time)
-                                            <span class="nb-badge-best">TERBAIK</span>
-                                        @endif
+                                        <span class="font-semibold text-sm">{{ \App\Support\SupplierFormat::leadTime($s->avg_lead_time) }}</span>
                                     </div>
                                     <span class="text-xs text-text-secondary block mt-0.5">Siklus pengiriman</span>
                                 @else
@@ -280,7 +272,7 @@
                                 @endif
                             </td>
                         @endforeach
-                        @if(count($this->suppliers) < 4) <td class="p-4 sm:p-5 text-text-muted text-center">—</td> @endif
+                        @if(count($this->suppliers) < 4) <td class="p-4 sm:p-5 text-text-muted text-center">&mdash;</td> @endif
                     </tr>
                     @endif
 
@@ -291,7 +283,7 @@
                         </td>
                     </tr>
                     @if($this->shouldShowRow(fn ($s) => $this->certificationFor($s, 'ISO 9001')?->status ?? 'none'))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">ISO 9001 (Manajemen Mutu)</td>
                         @foreach($this->suppliers as $s)
                             @php $has9001 = $this->certificationFor($s, 'ISO 9001'); @endphp
@@ -319,7 +311,7 @@
                     </tr>
                     @endif
                     @if($this->shouldShowRow(fn ($s) => $this->certificationFor($s, 'ISO 14001')?->status ?? 'none'))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">ISO 14001 (Lingkungan)</td>
                         @foreach($this->suppliers as $s)
                             @php $has14001 = $this->certificationFor($s, 'ISO 14001'); @endphp
@@ -341,7 +333,7 @@
                     </tr>
                     @endif
                     @if($this->shouldShowRow(fn ($s) => $this->certificationFor($s, 'HACCP')?->status ?? 'none'))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">HACCP (Kualitas Food-Grade)</td>
                         @foreach($this->suppliers as $s)
                             @php $hasHaccp = $this->certificationFor($s, 'HACCP'); @endphp
@@ -363,7 +355,7 @@
                     </tr>
                     @endif
                     @if($this->shouldShowRow(fn ($s) => (string) $s->carbon_footprint_report))
-                    <tr class="divide-x divide-gray-100 hover:bg-surface/40">
+                    <tr class="divide-x divide-gray-100 hover:bg-surface/80 transition-colors">
                         <td class="p-4 sm:p-5 text-text-secondary font-semibold bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#E5E7EB]">Laporan Emisi &amp; Jejak Karbon</td>
                         @foreach($this->suppliers as $s)
                             <td class="p-4 sm:p-5 font-medium">
@@ -395,10 +387,12 @@
                                             WhatsApp
                                         </a>
                                     @endif
-                                    <a href="mailto:{{ $s->email ?: ($s->website ? 'sales@' . ltrim(parse_url($s->website, PHP_URL_HOST) ?? $s->website, 'www.') : 'contact@namabiz.com') }}"
+                                    @if($s->email)
+                                    <a href="mailto:{{ $s->email }}"
                                        class="h-10 px-3 bg-gray-900 hover:bg-black text-white font-semibold text-13 rounded-xl transition shadow-2xs inline-flex items-center justify-center nb-focus-ring">
                                         Email
                                     </a>
+                                    @endif
                                 </div>
                             </td>
                         @endforeach

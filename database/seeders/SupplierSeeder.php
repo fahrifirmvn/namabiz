@@ -4,302 +4,267 @@ namespace Database\Seeders;
 
 use App\Models\Certification;
 use App\Models\Supplier;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Observers\CatalogCacheObserver;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class SupplierSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Seed curated profiles of real Indonesian B2B manufacturing and logistics companies.
      */
     public function run(): void
     {
-        $iso9001 = Certification::where('name', 'ISO 9001:2015')->first();
-        $iso14001 = Certification::where('name', 'ISO 14001')->first();
-        $fssc22000 = Certification::where('name', 'FSSC 22000')->first();
-        $haccp = Certification::where('name', 'HACCP')->first();
+        $this->call([
+            IndustryCategorySeeder::class,
+            CertificationSeeder::class,
+        ]);
 
-        $named = [
-            [
-                'supplier' => [
-                    'name' => 'Atlas Packaging',
-                    'tagline' => 'Premium Packaging Solutions',
-                    'description' => 'Tier-1 manufacturer specializing in sustainable corrugated solutions.',
-                    'country' => 'Indonesia',
-                    'city' => 'Jakarta',
-                    'industry_category' => 'Packaging Manufacturer',
-                    'whatsapp' => '081288899901',
-                    'email' => 'sales@atlas-pkg.com',
-                    'is_verified' => true,
-                    'about' => 'Atlas Packaging is a leading provider of innovative and sustainable packaging solutions. With over two decades of industry experience, we specialize in developing robust industrial packaging and tailored consumer-facing designs that prioritize both durability and environmental responsibility. Our facilities are equipped with state-of-the-art machinery capable of high-volume production while maintaining stringent quality control standards.',
-                    'website' => 'atlas-pkg.com',
-                    'founded_year' => 1998,
-                    'company_size' => '500-1000 employees',
-                    'production_capacity' => '2.5M units/mo',
-                    'moq' => '10,000 units',
-                    'avg_lead_time' => '4-6 weeks',
-                    'carbon_footprint_report' => 'Available (2023)',
-                ],
-                'tags' => ['PET Bottles', 'Food Containers', 'Custom Molding'],
-                'certifications' => [
-                    [$iso9001, 'verified', false],
-                    [$iso14001, 'verified', true],
-                ],
-                'documents' => [
-                    ['title' => 'Company Profile', 'type' => 'pdf', 'is_premium' => false],
-                    ['title' => 'Product Catalog Q3 2024', 'type' => 'pdf', 'is_premium' => true],
-                    ['title' => 'Technical Datasheet', 'type' => 'pdf', 'is_premium' => true],
-                    ['title' => 'Full Brochure', 'type' => 'pdf', 'is_premium' => true],
-                ],
-            ],
-            [
-                'supplier' => [
-                    'name' => 'Nusantara Plastics Hub',
-                    'tagline' => 'Flexible Packaging Distributor',
-                    'description' => 'Distributor & converter of flexible film and shrink wrap solutions.',
-                    'country' => 'Indonesia',
-                    'city' => 'Surabaya',
-                    'industry_category' => 'Distributor & Converter',
-                    'whatsapp' => '081377766602',
-                    'email' => 'halo@nusantaraplastics.id',
-                    'is_verified' => false,
-                    'about' => 'Nusantara Plastics Hub distributes and converts flexible packaging materials for FMCG and industrial clients across Southeast Asia.',
-                    'website' => 'nusantaraplastics.id',
-                    'founded_year' => 2005,
-                    'company_size' => '100-500 employees',
-                    'production_capacity' => '1.2M units/mo',
-                    'moq' => '5,000 units',
-                    'avg_lead_time' => '3-4 weeks',
-                    'carbon_footprint_report' => null,
-                ],
-                'tags' => ['Flexible Film', 'Shrink Wrap'],
-                'certifications' => [
-                    [$iso9001, 'verified', false],
-                    [$iso14001, 'not_verified', true],
-                ],
-                'documents' => [
-                    ['title' => 'Company Profile', 'type' => 'pdf', 'is_premium' => false],
-                    ['title' => 'Product Catalog', 'type' => 'pdf', 'is_premium' => true],
-                ],
-            ],
-            [
-                'supplier' => [
-                    'name' => 'Indo-Tech Solutions',
-                    'tagline' => 'Precision Component Manufacturing',
-                    'description' => 'Contract manufacturer for electronics and industrial components.',
-                    'country' => 'Indonesia',
-                    'city' => 'Bandung',
-                    'industry_category' => 'Contract Manufacturer',
-                    'whatsapp' => '081122334403',
-                    'email' => 'contact@indo-tech.co.id',
-                    'is_verified' => false,
-                    'about' => 'Indo-Tech Solutions provides precision manufacturing services for electronics enclosures and industrial components.',
-                    'website' => 'indo-tech.co.id',
-                    'founded_year' => 2012,
-                    'company_size' => '50-100 employees',
-                    'production_capacity' => '800K units/mo',
-                    'moq' => '1,000 units',
-                    'avg_lead_time' => '2-3 weeks',
-                    'carbon_footprint_report' => null,
-                ],
-                'tags' => ['Injection Molding', 'CNC Machining'],
-                'certifications' => [
-                    [$iso9001, 'partial', false],
-                ],
-                'documents' => [
-                    ['title' => 'Company Profile', 'type' => 'pdf', 'is_premium' => false],
-                ],
-            ],
-            [
-                'supplier' => [
-                    'name' => 'Global Foundries Manufacturing',
-                    'tagline' => 'Tier 1 Metal Manufacturer',
-                    'description' => 'Large-scale metal casting and foundry operations.',
-                    'country' => 'United States',
-                    'city' => 'Austin',
-                    'industry_category' => 'Raw Material Supplier',
-                    'whatsapp' => '081555444004',
-                    'email' => 'sales@globalfoundries-mfg.com',
-                    'is_verified' => true,
-                    'about' => 'Global Foundries Manufacturing operates multiple casting facilities providing precision metal components to the automotive and aerospace industries.',
-                    'website' => 'globalfoundries-mfg.com',
-                    'founded_year' => 2009,
-                    'company_size' => '10,000+ employees',
-                    'production_capacity' => '5M units/mo',
-                    'moq' => '20,000 units',
-                    'avg_lead_time' => '6-8 weeks',
-                    'carbon_footprint_report' => 'Available (2024)',
-                ],
-                'tags' => ['Metal Casting', 'CNC Machining', 'Forging'],
-                'certifications' => [
-                    [$iso9001, 'verified', false],
-                    [$iso14001, 'verified', true],
-                    [$haccp, 'not_verified', true],
-                ],
-                'documents' => [
-                    ['title' => 'Company Profile', 'type' => 'pdf', 'is_premium' => false],
-                    ['title' => 'Audit Report', 'type' => 'pdf', 'is_premium' => true],
-                ],
-            ],
-            [
-                'supplier' => [
-                    'name' => 'Apex Manufacturing',
-                    'tagline' => 'Advanced Electronics Manufacturing',
-                    'description' => 'Electronics assembly and manufacturing services.',
-                    'country' => 'China',
-                    'city' => 'Shenzhen',
-                    'industry_category' => 'Contract Manufacturer',
-                    'whatsapp' => '081999888005',
-                    'email' => 'inquiry@apex-mfg.cn',
-                    'is_verified' => true,
-                    'about' => 'Apex Manufacturing delivers electronics assembly and PCB manufacturing at scale for global OEM clients.',
-                    'website' => 'apex-mfg.cn',
-                    'founded_year' => 2015,
-                    'company_size' => '1,000-5,000 employees',
-                    'production_capacity' => '3M units/mo',
-                    'moq' => '2,000 units',
-                    'avg_lead_time' => '3-5 weeks',
-                    'carbon_footprint_report' => 'Partial',
-                ],
-                'tags' => ['PCB Assembly', 'Electronics Manufacturing'],
-                'certifications' => [
-                    [$iso9001, 'verified', false],
-                    [$fssc22000, 'not_verified', true],
-                ],
-                'documents' => [
-                    ['title' => 'Company Profile', 'type' => 'pdf', 'is_premium' => false],
-                    ['title' => 'Product Catalog', 'type' => 'pdf', 'is_premium' => true],
-                    ['title' => 'Audit Report', 'type' => 'pdf', 'is_premium' => true],
-                ],
-            ],
-        ];
+        $certificationsByName = Certification::pluck('id', 'name');
+        $disk = Storage::disk('public');
 
-        foreach ($named as $entry) {
-            $this->createSupplier($entry['supplier'], $entry['tags'], $entry['certifications'], $entry['documents']);
-        }
+        foreach ($this->companies() as $company) {
+            $slug = $company['slug'];
+            $logoPath = null;
+            $sourceLogo = database_path("seeders/assets/suppliers/{$slug}.webp");
 
-        // Fill up to a realistic catalogue size with randomised suppliers.
-        $tagPool = ['Corrugated Boxes', 'Custom Structural Design', 'Offset Printing', 'Raw Resins', 'Steel Coils', 'Glass Bottles', 'Aluminum Cans', 'Labels & Sleeves'];
-        $certifications = [$iso9001, $iso14001, $fssc22000, $haccp];
-
-        Supplier::factory(10)->create()->each(function (Supplier $supplier) use ($tagPool, $certifications) {
-            foreach ((array) array_rand(array_flip($tagPool), rand(2, 3)) as $tag) {
-                $supplier->tags()->create(['tag_name' => $tag]);
+            if (is_file($sourceLogo)) {
+                $targetPath = "suppliers/{$slug}.webp";
+                $disk->put($targetPath, (string) file_get_contents($sourceLogo));
+                $logoPath = $targetPath;
             }
 
-            foreach ($certifications as $index => $certification) {
-                if (! $certification || rand(0, 1) === 0) {
+            $supplier = Supplier::updateOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $company['name'],
+                    'industry_category' => $company['industry_category'],
+                    'tagline' => $company['tagline'],
+                    'description' => $company['description'],
+                    'about' => $company['description'],
+                    'country' => 'Indonesia',
+                    'city' => $company['city'],
+                    'website' => $company['website'],
+                    'email' => $company['email'] ?? null,
+                    'whatsapp' => null,
+                    'founded_year' => $company['founded_year'],
+                    'company_size' => null,
+                    'production_capacity' => null,
+                    'moq' => null,
+                    'avg_lead_time' => null,
+                    'logo' => $logoPath,
+                    'is_verified' => false,
+                ]
+            );
+
+            $supplier->tags()->delete();
+            foreach ($company['tags'] as $tagName) {
+                $supplier->tags()->create(['tag_name' => $tagName]);
+            }
+
+            $supplier->certifications()->delete();
+            foreach ($company['certifications'] ?? [] as $certName) {
+                $certId = $certificationsByName->get($certName);
+                if (! $certId) {
                     continue;
                 }
 
                 $supplier->certifications()->create([
-                    'certification_id' => $certification->id,
-                    'status' => collect(['verified', 'not_verified', 'partial'])->random(),
-                    'is_premium_field' => $index !== 0,
+                    'certification_id' => $certId,
+                    'status' => 'partial',
+                    'is_premium_field' => false,
                 ]);
             }
+        }
 
-            $supplier->documents()->createMany([
-                ['title' => 'Company Profile', 'type' => 'pdf', 'is_premium' => false, 'file_path' => $this->storePlaceholderFile($supplier->name, 'Company Profile')],
-                ['title' => 'Product Catalog', 'type' => 'pdf', 'is_premium' => true, 'file_path' => $this->storePlaceholderFile($supplier->name, 'Product Catalog')],
-            ]);
-        });
+        CatalogCacheObserver::flush();
     }
 
-    private function createSupplier(array $attributes, array $tags, array $certifications, array $documents): void
+    /**
+     * Curated Indonesian B2B suppliers researched from official company websites.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function companies(): array
     {
-        $baseSlug = Str::slug($attributes['name']);
-        $slug = $baseSlug;
-        $suffix = 1;
-
-        while (Supplier::where('slug', $slug)->exists()) {
-            $slug = "{$baseSlug}-".++$suffix;
-        }
-
-        $attributes['slug'] = $slug;
-        $attributes['logo'] = null;
-
-        $supplier = Supplier::create($attributes);
-
-        foreach ($tags as $tag) {
-            $supplier->tags()->create(['tag_name' => $tag]);
-        }
-
-        foreach ($certifications as [$certification, $status, $isPremiumField]) {
-            if (! $certification) {
-                continue;
-            }
-
-            $supplier->certifications()->create([
-                'certification_id' => $certification->id,
-                'status' => $status,
-                'is_premium_field' => $isPremiumField,
-            ]);
-        }
-
-        foreach ($documents as $document) {
-            $document['file_path'] = $this->storePlaceholderFile($attributes['name'], $document['title']);
-            $supplier->documents()->create($document);
-        }
-    }
-
-    private function storePlaceholderFile(string $supplierName, string $documentTitle): string
-    {
-        $path = 'documents/'.Str::slug("{$supplierName}-{$documentTitle}").'.pdf';
-
-        $html = "
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset='utf-8'>
-            <title>".htmlspecialchars($documentTitle)."</title>
-            <style>
-                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 40px; color: #111827; line-height: 1.6; }
-                .header-table { width: 100%; border-bottom: 2px solid #111827; padding-bottom: 12px; margin-bottom: 25px; }
-                .logo { font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.5px; }
-                .badge { display: inline-block; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-                h1 { font-size: 24px; color: #111827; margin: 0 0 6px 0; font-weight: 800; }
-                .meta { font-size: 12px; color: #6b7280; margin-bottom: 25px; }
-                .card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 25px; }
-                .card-title { font-size: 14px; font-weight: bold; color: #111827; margin-top: 0; margin-bottom: 8px; }
-                .footer { font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 12px; text-align: center; margin-top: 40px; }
-            </style>
-        </head>
-        <body>
-            <table class='header-table'>
-                <tr>
-                    <td><div class='logo'>NAMABIZ DIRECTORY</div></td>
-                    <td style='text-align: right;'><span class='badge'>ARSIP TERVERIFIKASI</span></td>
-                </tr>
-            </table>
-
-            <h1>".htmlspecialchars($documentTitle)."</h1>
-            <div class='meta'>
-                Pemasok Terdaftar: <strong>".htmlspecialchars($supplierName).'</strong> &bull; Terbit: '.date('d F Y')."
-            </div>
-
-            <div class='card'>
-                <div class='card-title'>Ringkasan Dokumen Legal & Profil Pabrik</div>
-                <p>Dokumen ini merupakan publikasi resmi (".htmlspecialchars($documentTitle).') dari <strong>'.htmlspecialchars($supplierName)."</strong> yang tersimpan di arsip digital Namabiz.</p>
-                <p>Berkas ini berisi rincian kapabilitas permesinan, sertifikasi manajemen mutu internasional, portofolio produk pasokan industri, serta kontak resmi departemen pengadaan / penjualan.</p>
-            </div>
-
-            <div class='footer'>
-                Dokumen Resmi Namabiz &bull; Diunduh untuk kebutuhan evaluasi pengadaan B2B &bull; Hak Cipta &copy; ".date('Y').' '.htmlspecialchars($supplierName).'
-            </div>
-        </body>
-        </html>
-        ';
-
-        try {
-            $pdfContent = Pdf::loadHTML($html)->output();
-            Storage::disk('public')->put($path, $pdfContent);
-        } catch (\Throwable $e) {
-            Storage::disk('public')->put($path, "PDF Generated fallback for {$documentTitle}");
-        }
-
-        return $path;
+        return [
+            [
+                'name' => 'PT Berlina Tbk',
+                'slug' => 'pt-berlina-tbk',
+                'industry_category' => 'Packaging Manufacturer',
+                'city' => 'Cikarang, Bekasi',
+                'founded_year' => 1969,
+                'website' => 'https://www.berlina.co.id',
+                'tagline' => 'Produsen kemasan plastik injeksi, tiup, dan tube untuk industri.',
+                'description' => 'Perusahaan publik Indonesia yang memproduksi kemasan plastik rigid, tube plastik, sikat gigi, serta cetakan (mould) untuk sektor kosmetik, farmasi, makanan, dan otomotif.',
+                'tags' => ['Blow Moulding', 'Injection Moulding', 'Plastic Tubes', 'Packaging Mould'],
+            ],
+            [
+                'name' => 'PT Trias Sentosa Tbk',
+                'slug' => 'pt-trias-sentosa-tbk',
+                'industry_category' => 'Packaging Manufacturer',
+                'city' => 'Sidoarjo',
+                'founded_year' => 1979,
+                'website' => 'https://www.trias-sentosa.com',
+                'tagline' => 'Produsen film kemasan fleksibel BOPP dan BOPET berskala regional.',
+                'description' => 'Manufaktur Biaxially Oriented Polypropylene (BOPP) dan Polyester (BOPET) film untuk aplikasi kemasan makanan, minuman, rokok, dan laminasi industri.',
+                'tags' => ['BOPP Film', 'BOPET Film', 'Flexible Packaging', 'Metalized Film'],
+            ],
+            [
+                'name' => 'PT Fajar Surya Wisesa Tbk',
+                'slug' => 'pt-fajar-surya-wisesa-tbk',
+                'industry_category' => 'Packaging Manufacturer',
+                'city' => 'Jakarta Pusat',
+                'founded_year' => 1988,
+                'website' => 'https://www.fajarpaper.com',
+                'tagline' => 'Produsen kertas kemasan industri berbahan baku kertas daur ulang.',
+                'description' => 'Memproduksi kertas kemasan industri seperti kraft linerboard, corrugated medium paper, dan coated duplex board untuk kebutuhan kotak karton bergelombang.',
+                'tags' => ['Containerboard', 'Kraft Liner', 'Corrugated Medium', 'Duplex Board'],
+            ],
+            [
+                'name' => 'PT Suparma Tbk',
+                'slug' => 'pt-suparma-tbk',
+                'industry_category' => 'Packaging Manufacturer',
+                'city' => 'Surabaya',
+                'founded_year' => 1976,
+                'website' => 'https://www.ptsuparmatbk.com',
+                'email' => 'info@ptsuparmatbk.com',
+                'tagline' => 'Manufaktur kertas industri, kertas tisu, dan kertas pembungkus.',
+                'description' => 'Produsen kertas dan tisu berbasis di Surabaya yang memproduksi duplex, kraft, laminated wrapping kraft, serta produk tisu komersial dan rumah tangga.',
+                'tags' => ['Industrial Paper', 'Duplex Board', 'Kraft Paper', 'Commercial Tissue'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001'],
+            ],
+            [
+                'name' => 'PT Indopoly Swakarsa Industry Tbk',
+                'slug' => 'pt-indopoly-swakarsa-industry-tbk',
+                'industry_category' => 'Packaging Manufacturer',
+                'city' => 'Jakarta',
+                'founded_year' => 1995,
+                'website' => 'https://www.indopoly.co.id',
+                'tagline' => 'Produsen BOPP dan BOPET film untuk kemasan fleksibel.',
+                'description' => 'Menyuplai film kemasan fleksibel untuk industri makanan, barang konsumen, laminasi termal, serta berbagai kebutuhan kemasan industri.',
+                'tags' => ['BOPP Film', 'BOPET Film', 'Food Packaging Film', 'Thermal Lamination'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'FSSC 22000'],
+            ],
+            [
+                'name' => 'PT Alkindo Naratama Tbk',
+                'slug' => 'pt-alkindo-naratama-tbk',
+                'industry_category' => 'Distributor & Converter',
+                'city' => 'Bandung Barat',
+                'founded_year' => 1989,
+                'website' => 'https://www.alkindo.co.id',
+                'email' => 'aldopack@alkindo.co.id',
+                'tagline' => 'Konverter kertas terintegrasi untuk paper tube, core, dan honeycomb.',
+                'description' => 'Grup manufaktur dan konversi produk berbasis kertas daur ulang yang menghasilkan paper tube, paper core, edge protector, honeycomb, dan kemasan kertas.',
+                'tags' => ['Paper Core', 'Paper Tube', 'Paper Honeycomb', 'Paper Packaging'],
+                'certifications' => ['ISO 9001:2015'],
+            ],
+            [
+                'name' => 'PT Lautan Luas Tbk',
+                'slug' => 'pt-lautan-luas-tbk',
+                'industry_category' => 'Distributor & Converter',
+                'city' => 'Jakarta',
+                'founded_year' => 1951,
+                'website' => 'https://www.lautan-luas.com',
+                'email' => 'info@lautan-luas.com',
+                'tagline' => 'Distributor dan manufaktur bahan kimia dasar serta spesialisasi industri.',
+                'description' => 'Penyedia bahan baku kimia, konversi produk pangan, pengolahan air bersih, serta layanan pendukung teknis untuk berbagai sektor manufaktur di Indonesia.',
+                'tags' => ['Industrial Chemicals', 'Water Treatment', 'Food Ingredients', 'Chemical Distribution'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001'],
+            ],
+            [
+                'name' => 'PT Sat Nusapersada Tbk',
+                'slug' => 'pt-sat-nusapersada-tbk',
+                'industry_category' => 'Contract Manufacturer',
+                'city' => 'Batam',
+                'founded_year' => 1990,
+                'website' => 'https://www.satnusa.com',
+                'tagline' => 'Jasa manufaktur elektronik terintegrasi (EMS) dan perakitan OEM.',
+                'description' => 'Penyedia layanan Electronics Manufacturing Services (EMS) di Batam yang mencakup SMT assembly, plastic injection, metal stamping, hingga perakitan produk jadi.',
+                'tags' => ['Electronics Manufacturing', 'SMT Assembly', 'OEM Assembly', 'Contract Manufacturing'],
+            ],
+            [
+                'name' => 'PT Chandra Asri Pacific Tbk',
+                'slug' => 'pt-chandra-asri-pacific-tbk',
+                'industry_category' => 'Raw Material Supplier',
+                'city' => 'Jakarta',
+                'founded_year' => 1984,
+                'website' => 'https://chandra-asri.com',
+                'tagline' => 'Perusahaan solusi kimia, petrokimia, dan infrastruktur industri.',
+                'description' => 'Produsen petrokimia Indonesia yang memasok olefin, polietilena (PE), polipropilena (PP), stirena monomer, serta bahan baku kimia industri.',
+                'tags' => ['Petrochemical', 'Polypropylene', 'Polyethylene', 'Industrial Resin'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001'],
+            ],
+            [
+                'name' => 'PT Pulau Sambu',
+                'slug' => 'pt-pulau-sambu',
+                'industry_category' => 'Spices & Coconut',
+                'city' => 'Jakarta Utara',
+                'founded_year' => 1967,
+                'website' => 'https://www.sambugroup.com',
+                'email' => 'info@sambu.co.id',
+                'tagline' => 'Pengolahan kelapa terpadu untuk bahan pangan dan industri ekspor.',
+                'description' => 'Bagian dari Sambu Group yang bergerak di industri pengolahan kelapa terpadu, menghasilkan santan, air kelapa, kelapa parut kering (desiccated coconut), dan minyak kelapa.',
+                'tags' => ['Coconut Processing', 'Desiccated Coconut', 'Coconut Milk', 'Agri Exports'],
+            ],
+            [
+                'name' => 'PT Puninar Jaya',
+                'slug' => 'pt-puninar-jaya',
+                'industry_category' => 'Logistics & Warehousing',
+                'city' => 'Jakarta Timur',
+                'founded_year' => 1969,
+                'website' => 'https://www.puninar.com',
+                'tagline' => 'Layanan logistik end-to-end, pergudangan, dan distribusi kargo B2B.',
+                'description' => 'Dikenal sebagai Puninar Logistics, menyediakan manajemen rantai pasok terintegrasi meliputi freight forwarding, transportasi multimoda, custom clearance, dan pergudangan.',
+                'tags' => ['Supply Chain Logistics', 'Warehousing', 'Freight Forwarding', 'Inland Transport'],
+            ],
+            [
+                'name' => 'PT Kamadjaja Logistics',
+                'slug' => 'pt-kamadjaja-logistics',
+                'industry_category' => 'Logistics & Warehousing',
+                'city' => 'Surabaya',
+                'founded_year' => 1968,
+                'website' => 'https://www.kamadjaja.com',
+                'email' => 'info@kamadjaja.com',
+                'tagline' => 'Jaringan pergudangan modern dan distribusi logistik nasional.',
+                'description' => 'Menyediakan layanan logistik pihak ketiga (3PL), pusat distribusi K-LOG Park, manajemen inventaris, serta pengiriman domestik terintegrasi.',
+                'tags' => ['3PL Logistics', 'Distribution Center', 'Contract Warehousing', 'Domestic Freight'],
+            ],
+            [
+                'name' => 'PT Samudera Indonesia Tbk',
+                'slug' => 'pt-samudera-indonesia-tbk',
+                'industry_category' => 'Logistics & Warehousing',
+                'city' => 'Jakarta Barat',
+                'founded_year' => 1964,
+                'website' => 'https://www.samudera.id',
+                'email' => 'corporate.secretary@samudera.id',
+                'tagline' => 'Grup pelayaran kargo, operator pelabuhan, dan logistik terintegrasi.',
+                'description' => 'Mengoperasikan armada kapal kargo kontainer, curah, dan tanker bersama terminal pelabuhan serta jaringan logistik darat dan gudang berikat.',
+                'tags' => ['Container Shipping', 'Port Terminal', 'Bonded Warehouse', 'Supply Chain'],
+            ],
+            [
+                'name' => 'PT Haldin Pacific Semesta',
+                'slug' => 'pt-haldin-pacific-semesta',
+                'industry_category' => 'Chemical & Ingredients',
+                'city' => 'Bekasi',
+                'founded_year' => 1989,
+                'website' => 'https://haldin.com',
+                'tagline' => 'Produsen bahan alami, ekstrak botani, dan bahan baku rasa.',
+                'description' => 'Mengolah bahan baku pertanian Indonesia menjadi ekstrak teh, kopi, cokelat, gula kelapa, madu, serta minyak atsiri dan bahan fungsional industri.',
+                'tags' => ['Natural Extracts', 'Botanical Ingredients', 'Essential Oils', 'Food Ingredients'],
+            ],
+            [
+                'name' => 'PT Indesso Aroma',
+                'slug' => 'pt-indesso-aroma',
+                'industry_category' => 'Chemical & Ingredients',
+                'city' => 'Jakarta',
+                'founded_year' => 1968,
+                'website' => 'https://www.indesso.com',
+                'email' => 'contact@indesso.com',
+                'tagline' => 'Produsen bahan aroma kimia, minyak atsiri, dan ekstrak alami.',
+                'description' => 'Memproduksi bahan baku aroma, ekstrak rempah alami Indonesia, serta bahan perisa dan wewangian (flavor & fragrance ingredients) untuk industri pangan dan kosmetik.',
+                'tags' => ['Aroma Chemicals', 'Essential Oils', 'Natural Extracts', 'Flavor & Fragrance'],
+            ],
+        ];
     }
 }

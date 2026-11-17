@@ -195,8 +195,19 @@
     <table class="header-table">
         <tr>
             <td style="width: 55%; vertical-align: middle;">
-                <div class="brand-title">NAMABIZ</div>
-                <div class="brand-tagline">Direktori & Verifikasi Pasokan Industri B2B</div>
+                <table style="border-collapse: collapse;">
+                    <tr>
+                        @if(file_exists(public_path('images/logo-namabiz.png')))
+                            <td style="padding-right: 8pt; vertical-align: middle;">
+                                <img src="{{ public_path('images/logo-namabiz.png') }}" alt="Namabiz" style="height: 22pt; width: auto;" />
+                            </td>
+                        @endif
+                        <td style="vertical-align: middle;">
+                            <div class="brand-title">NAMABIZ</div>
+                            <div class="brand-tagline">Direktori &amp; Verifikasi Pasokan Industri B2B</div>
+                        </td>
+                    </tr>
+                </table>
             </td>
             <td style="width: 45%; vertical-align: middle;" class="report-meta">
                 <span class="badge-premium">Dokumen Resmi Pengadaan</span>
@@ -297,7 +308,7 @@
                 <td class="col-metric">Minimal Order (MOQ)</td>
                 @foreach($suppliers as $s)
                     <td>
-                        <span class="val-highlight">{{ $s->moq ?? 'Tersedia Sesuai Diskusi' }}</span>
+                        <span class="val-highlight">{{ \App\Support\SupplierFormat::moq($s->moq) }}</span>
                     </td>
                 @endforeach
             </tr>
@@ -305,7 +316,7 @@
                 <td class="col-metric">Kapasitas Produksi Bulanan</td>
                 @foreach($suppliers as $s)
                     <td>
-                        <span class="val-highlight">{{ $s->production_capacity ?? 'Kapasitas Kustom' }}</span>
+                        <span class="val-highlight">{{ \App\Support\SupplierFormat::capacity($s->production_capacity) }}</span>
                     </td>
                 @endforeach
             </tr>
@@ -313,7 +324,7 @@
                 <td class="col-metric">Lead Time Standar Siap Kirim</td>
                 @foreach($suppliers as $s)
                     <td>
-                        <span class="val-highlight">{{ $s->avg_lead_time ?? '2-4 Minggu' }}</span>
+                        <span class="val-highlight">{{ \App\Support\SupplierFormat::leadTime($s->avg_lead_time) }}</span>
                     </td>
                 @endforeach
             </tr>

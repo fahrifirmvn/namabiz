@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 184 112" fill="none" role="img" aria-label="Logo Namabiz">
+  <!-- N: monogram left pillar, bottom bar, stepped diagonal notch, and right stem -->
+  <path fill="#0F172A" d="M8 8H30L76 54H54L78 92V104H8V8ZM23 36V89H55L23 36Z"/>
+  <path fill="#0F172A" d="M74 8H106V104H91V23H74V8Z"/>
+  <!-- B: geometric double bowl matching N stroke weight -->
+  <path fill="#0F172A" fill-rule="evenodd" clip-rule="evenodd" d="M122 8H153C166 8 174 16 174 29C174 38 168 45 159 48C169 51 176 59 176 72C176 90 163 104 144 104H122V8ZM137 22V43H150C156 43 159 39 159 32C159 26 156 22 150 22H137ZM137 56V90H145C155 90 161 83 161 73C161 62 155 56 145 56H137Z"/>
+</svg>

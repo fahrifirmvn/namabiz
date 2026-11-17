@@ -19,7 +19,8 @@ class AuthenticationTest extends TestCase
             ->assertOk()
             ->assertSeeVolt('pages.auth.login')
             ->assertSee('Selamat datang kembali')
-            ->assertSee('Temukan pabrik yang pas untuk bisnismu, lebih cepat.')
+            ->assertSee('Temukan pemasok yang pas untuk bisnis Anda.')
+            ->assertDontSee('12.400+')
             ->assertSee('Daftar sekarang');
     }
 
@@ -30,6 +31,8 @@ class AuthenticationTest extends TestCase
             ->set('form.password', '')
             ->call('login')
             ->assertHasErrors(['form.email', 'form.password'])
+            ->assertSee('Alamat email wajib diisi.')
+            ->assertSee('Kata sandi wajib diisi.')
             ->assertNoRedirect();
     }
 

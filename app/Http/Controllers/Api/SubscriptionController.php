@@ -22,11 +22,14 @@ class SubscriptionController extends Controller
             'order_id' => ['nullable', 'string'],
         ]);
 
+        if (! config('namabiz.features.play_billing_verification', false)) {
+            return ApiResponse::error('Google Play Billing verification is not enabled.', 503);
+        }
+
         /** @var User $user */
         $user = $request->user();
 
-        // In production, verify with Google Play Developer API (androidpublisher v3)
-        // For development/demo, activate 1 year premium subscription
+        // Requires Google Play Developer API (androidpublisher v3) verification before enabling in production.
         $user->subscription_tier = 'premium';
         $user->premium_expires_at = now()->addYear();
         $user->save();

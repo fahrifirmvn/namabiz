@@ -60,29 +60,29 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
             <!-- Sidebar: Proyek & Kategori Koleksi -->
-            <aside class="space-y-6">
+            <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
                 <!-- Status & Filter Proyek Card -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs space-y-4">
+                <div class="nb-card p-5 space-y-4">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Navigasi Pengadaan</h3>
                     <div class="space-y-1 text-sm font-medium">
                         <a href="{{ route('saved.index') }}"
-                           class="flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ empty($activeCollectionId) ? 'bg-black text-white font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                           class="flex items-center justify-between px-3 py-2.5 rounded-xl transition nb-focus-ring {{ empty($activeCollectionId) ? 'bg-gray-900 text-white font-semibold' : 'text-gray-700 hover:bg-surface-subtle' }}">
                             <span class="flex items-center gap-2">
                                 <x-heroicon-o-bookmark class="w-4 h-4 {{ empty($activeCollectionId) ? 'text-white' : 'text-gray-400' }}" />
                                 <span>Semua Tersimpan</span>
                             </span>
-                            <span class="text-2xs font-bold px-2 py-0.5 rounded-full {{ empty($activeCollectionId) ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700' }}">
+                            <span class="text-2xs font-bold px-2 py-0.5 rounded-full tabular-nums {{ empty($activeCollectionId) ? 'bg-gray-800 text-white' : 'bg-surface-subtle text-gray-700' }}">
                                 {{ $totalSavedCount }}
                             </span>
                         </a>
 
                         <a href="{{ route('saved.index', ['collection' => 'unassigned']) }}"
-                           class="flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ $activeCollectionId === 'unassigned' ? 'bg-black text-white font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                           class="flex items-center justify-between px-3 py-2.5 rounded-xl transition nb-focus-ring {{ $activeCollectionId === 'unassigned' ? 'bg-gray-900 text-white font-semibold' : 'text-gray-700 hover:bg-surface-subtle' }}">
                             <span class="flex items-center gap-2">
                                 <x-heroicon-o-folder class="w-4 h-4 {{ $activeCollectionId === 'unassigned' ? 'text-white' : 'text-gray-400' }}" />
                                 <span>Tanpa Proyek</span>
                             </span>
-                            <span class="text-2xs font-bold px-2 py-0.5 rounded-full {{ $activeCollectionId === 'unassigned' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700' }}">
+                            <span class="text-2xs font-bold px-2 py-0.5 rounded-full tabular-nums {{ $activeCollectionId === 'unassigned' ? 'bg-gray-800 text-white' : 'bg-surface-subtle text-gray-700' }}">
                                 {{ $unassignedCount }}
                             </span>
                         </a>
@@ -90,30 +90,30 @@
                 </div>
 
                 <!-- Daftar Proyek Pengadaan Aktif -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs space-y-4">
+                <div class="nb-card p-5 space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Proyek Pengadaan</h3>
-                        <button type="button" @click="createModal = true" class="text-xs font-semibold text-black hover:underline">
+                        <button type="button" @click="createModal = true" class="text-xs font-semibold text-brand-700 hover:underline nb-focus-ring rounded">
                             + Tambah
                         </button>
                     </div>
 
                     <div class="space-y-1.5">
                         @forelse($collections as $col)
-                            <div class="group relative flex items-center justify-between p-2.5 rounded-xl border {{ $activeCollectionId == $col->id ? 'border-black bg-gray-50 font-bold' : 'border-transparent hover:bg-gray-50' }} transition">
+                            <div class="group relative flex items-center justify-between p-2.5 rounded-xl border {{ $activeCollectionId == $col->id ? 'border-gray-900 bg-surface font-semibold' : 'border-transparent hover:bg-surface' }} transition">
                                 <a href="{{ route('saved.index', ['collection' => $col->id]) }}" class="flex-1 min-w-0 pr-2">
                                     <p class="text-xs font-semibold text-gray-900 truncate">{{ $col->name }}</p>
-                                    <p class="text-2xs text-gray-400">{{ $col->saved_suppliers_count }} pemasok terdaftar</p>
+                                    <p class="text-2xs text-gray-400 tabular-nums">{{ $col->saved_suppliers_count }} pemasok terdaftar</p>
                                 </a>
 
                                 <div class="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100">
-                                    <button type="button" @click="openEdit({{ $col->id }}, '{{ addslashes($col->name) }}', '{{ addslashes($col->description ?? '') }}')" class="p-1 text-gray-400 hover:text-black rounded" title="Edit Proyek">
+                                    <button type="button" @click="openEdit({{ $col->id }}, '{{ addslashes($col->name) }}', '{{ addslashes($col->description ?? '') }}')" class="p-1 text-gray-400 hover:text-gray-900 rounded nb-focus-ring" title="Edit Proyek">
                                         <x-heroicon-o-pencil-square class="w-3.5 h-3.5" />
                                     </button>
                                     <form method="POST" action="{{ route('collections.destroy', $col) }}" onsubmit="return confirm('Hapus proyek \'{{ addslashes($col->name) }}\'? Vendor di dalamnya akan tetap tersimpan.');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1 text-gray-400 hover:text-red-600 rounded" title="Hapus Proyek">
+                                        <button type="submit" class="p-1 text-gray-400 hover:text-red-600 rounded nb-focus-ring" title="Hapus Proyek">
                                             <x-heroicon-o-trash class="w-3.5 h-3.5" />
                                         </button>
                                     </form>
@@ -122,7 +122,7 @@
                         @empty
                             <div class="py-6 text-center text-xs text-gray-400 border border-dashed border-gray-200 rounded-xl">
                                 Belum ada proyek dibuat.<br>
-                                <button type="button" @click="createModal = true" class="mt-2 text-black font-bold underline">
+                                <button type="button" @click="createModal = true" class="mt-2 text-gray-900 font-semibold underline">
                                     Buat Proyek Pertama
                                 </button>
                             </div>
@@ -134,7 +134,7 @@
             <!-- Main Content: Daftar Kartu Pemasok -->
             <div class="lg:col-span-3 space-y-6">
                 <!-- Search & Filter Bar -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="nb-card p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <form method="GET" action="{{ route('saved.index') }}" class="w-full sm:w-80 relative">
                         @if($activeCollectionId)
                             <input type="hidden" name="collection" value="{{ $activeCollectionId }}">
@@ -145,12 +145,12 @@
                             name="q"
                             value="{{ request('q') }}"
                             placeholder="Cari pemasok tersimpan..."
-                            class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border-gray-300 focus:border-black focus:ring-black"
+                            class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border-gray-200 bg-surface focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20"
                         />
                     </form>
 
                     <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                        <span class="text-xs text-gray-500">
+                        <span class="text-xs text-gray-500 tabular-nums">
                             Menampilkan <strong>{{ $savedSuppliers->total() }}</strong> rekanan
                         </span>
                         @if($activeCollection && $activeCollection->saved_suppliers_count > 1)
@@ -158,7 +158,7 @@
                                 $colSupplierIds = $activeCollection->savedSuppliers->pluck('supplier_id')->filter()->take(4)->toArray();
                             @endphp
                             <a href="{{ route('compare.index', ['suppliers' => $colSupplierIds]) }}"
-                               class="px-3.5 py-1.5 bg-black hover:bg-gray-800 text-white font-semibold text-xs rounded-xl transition inline-flex items-center gap-1 shadow-xs">
+                               class="px-3.5 py-1.5 bg-gray-900 hover:bg-black text-white font-semibold text-xs rounded-xl transition inline-flex items-center gap-1.5 shadow-2xs nb-focus-ring">
                                 <x-heroicon-o-scale class="w-3.5 h-3.5" />
                                 <span>Bandingkan Proyek</span>
                             </a>
@@ -167,13 +167,13 @@
                 </div>
 
                 @if($activeCollection)
-                    <div class="bg-surface rounded-2xl border border-gray-200 p-5 shadow-2xs">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="font-extrabold text-base text-gray-900">{{ $activeCollection->name }}</h3>
+                    <div class="bg-white rounded-2xl border border-gray-200 border-l-4 border-l-brand-600 p-5 shadow-2xs">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <h3 class="font-extrabold text-base text-gray-900 truncate">{{ $activeCollection->name }}</h3>
                                 <p class="text-xs text-gray-500 mt-0.5">{{ $activeCollection->description ?: 'Tidak ada deskripsi proyek.' }}</p>
                             </div>
-                            <span class="text-xs font-bold px-3 py-1 bg-white border border-gray-200 rounded-full text-gray-800 shadow-2xs">
+                            <span class="text-xs font-semibold px-3 py-1 bg-surface border border-gray-200 rounded-full text-gray-800 tabular-nums shrink-0">
                                 {{ $activeCollection->saved_suppliers_count }} Pemasok
                             </span>
                         </div>
@@ -186,21 +186,15 @@
                         @php
                             $s = $saved->supplier;
                         @endphp
-                        <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-2xs hover:shadow-md transition flex flex-col justify-between space-y-4">
+                        <div class="nb-card-interactive p-5 flex flex-col justify-between space-y-4">
                             <!-- Card Header -->
                             <div>
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex items-start gap-3 min-w-0">
-                                        <div class="w-11 h-11 rounded-xl border border-gray-200 bg-surface flex items-center justify-center font-extrabold text-sm text-gray-900 shrink-0">
-                                            @if($s->logo)
-                                                <img src="{{ str_starts_with($s->logo, 'http') ? $s->logo : asset('storage/' . $s->logo) }}" alt="{{ $s->name }}" class="w-full h-full object-cover rounded-xl" />
-                                            @else
-                                                {{ strtoupper(substr($s->name, 0, 2)) }}
-                                            @endif
-                                        </div>
+                                        <x-ui.avatar size="sm" :name="$s->name" :logo="$s->logo" />
                                         <div class="min-w-0">
                                             <h4 class="font-bold text-sm text-gray-900 truncate">
-                                                <a href="{{ route('suppliers.show', $s->slug) }}" class="hover:underline">{{ $s->name }}</a>
+                                                <a href="{{ route('suppliers.show', $s->slug) }}" class="hover:underline nb-focus-ring rounded">{{ $s->name }}</a>
                                             </h4>
                                             <p class="text-2xs text-gray-500 mt-0.5 truncate">{{ $s->city ? $s->city . ', ' : '' }}{{ $s->country }} &bull; {{ $s->industry_category }}</p>
                                         </div>
@@ -209,7 +203,7 @@
                                     <form method="POST" action="{{ route('saved.destroy', $saved) }}" onsubmit="return confirm('Hapus pemasok ini dari arsip simpan?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1 text-gray-400 hover:text-red-600 rounded-lg transition" title="Hapus dari tersimpan">
+                                        <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg transition nb-focus-ring" title="Hapus dari tersimpan">
                                             <x-heroicon-o-bookmark-slash class="w-4 h-4" />
                                         </button>
                                     </form>
@@ -218,18 +212,18 @@
                                 <!-- Tags & Specs -->
                                 <div class="flex flex-wrap gap-1.5 mt-3">
                                     @foreach($s->tags->take(3) as $t)
-                                        <span class="text-2xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-medium">{{ $t->tag_name }}</span>
+                                        <x-ui.chip class="h-5 text-[11px]">{{ $t->tag_name }}</x-ui.chip>
                                     @endforeach
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-100 text-2xs text-gray-500">
+                                <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-100 text-2xs text-gray-500 tabular-nums">
                                     <div>
                                         <span class="block text-gray-400 uppercase font-semibold">MOQ (Min. Order)</span>
-                                        <span class="font-bold text-gray-800">{{ $s->moq ?? 'Sesuai Diskusi' }}</span>
+                                        <span class="font-bold text-gray-800">{{ \App\Support\SupplierFormat::moq($s->moq) }}</span>
                                     </div>
                                     <div>
                                         <span class="block text-gray-400 uppercase font-semibold">Lead Time</span>
-                                        <span class="font-bold text-gray-800">{{ $s->avg_lead_time ?? '2-4 Minggu' }}</span>
+                                        <span class="font-bold text-gray-800">{{ \App\Support\SupplierFormat::leadTime($s->avg_lead_time) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -240,7 +234,7 @@
                                 <form method="POST" action="{{ route('saved.move', $saved) }}" class="flex items-center justify-between gap-2">
                                     @csrf
                                     <label class="text-2xs font-semibold text-gray-500 shrink-0">Proyek:</label>
-                                    <select name="collection_id" onchange="this.form.submit()" class="text-2xs py-1 px-2.5 rounded-lg border-gray-300 bg-surface focus:border-black focus:ring-black flex-1">
+                                    <select name="collection_id" onchange="this.form.submit()" class="text-2xs py-1 px-2.5 rounded-lg border-gray-200 bg-surface focus:border-brand-600 focus:ring-brand-600/20 flex-1">
                                         <option value="" {{ is_null($saved->collection_id) ? 'selected' : '' }}>— Tanpa Proyek —</option>
                                         @foreach($collections as $c)
                                             <option value="{{ $c->id }}" {{ $saved->collection_id == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
@@ -252,20 +246,22 @@
                                 <div class="flex items-center gap-2">
                                     @if($s->whatsapp_url)
                                         <a href="{{ $s->whatsapp_url }}" target="_blank" rel="noopener noreferrer"
-                                           class="flex-1 text-center py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-2xs rounded-xl transition inline-flex items-center justify-center gap-1.5 shadow-2xs">
+                                           class="flex-1 text-center py-2 px-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-2xs rounded-xl transition inline-flex items-center justify-center gap-1.5 shadow-2xs nb-focus-ring">
                                             <x-heroicon-o-chat-bubble-left-ellipsis class="w-3.5 h-3.5" />
                                             <span>WhatsApp</span>
                                         </a>
                                     @endif
 
-                                    <a href="mailto:{{ $s->email ?: ($s->website ? 'sales@' . ltrim(parse_url($s->website, PHP_URL_HOST) ?? $s->website, 'www.') : 'contact@namabiz.com') }}"
-                                       class="flex-1 text-center py-2 px-3 bg-black hover:bg-gray-800 text-white font-semibold text-2xs rounded-xl transition inline-flex items-center justify-center gap-1.5 shadow-2xs">
+                                    @if($s->email)
+                                    <a href="mailto:{{ $s->email }}"
+                                       class="flex-1 text-center py-2 px-3 bg-gray-900 hover:bg-black text-white font-semibold text-2xs rounded-xl transition inline-flex items-center justify-center gap-1.5 shadow-2xs nb-focus-ring">
                                         <x-heroicon-o-envelope class="w-3.5 h-3.5" />
                                         <span>Email</span>
                                     </a>
+                                    @endif
 
                                     <a href="{{ route('suppliers.show', $s->slug) }}"
-                                       class="p-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 rounded-xl transition shadow-2xs" title="Lihat Profil Lengkap">
+                                       class="p-2 border border-gray-200 bg-white hover:bg-surface-subtle text-gray-700 rounded-xl transition shadow-2xs nb-focus-ring" title="Lihat Profil Lengkap">
                                         <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5" />
                                     </a>
                                 </div>
@@ -281,7 +277,7 @@
                                 Anda belum menyimpan pemasok ke kategori proyek ini. Buka direktori untuk menemukan rekanan industri pilihan.
                             </p>
                             <div class="pt-2">
-                                <a href="{{ route('discover.index') }}" class="px-5 py-2.5 bg-black hover:bg-gray-800 text-white font-semibold text-xs rounded-xl shadow-xs transition inline-flex items-center gap-1.5">
+                                <a href="{{ route('discover.index') }}" class="px-5 py-2.5 bg-gray-900 hover:bg-black text-white font-semibold text-xs rounded-xl shadow-xs transition inline-flex items-center gap-1.5 nb-focus-ring">
                                     <x-heroicon-o-magnifying-glass class="w-4 h-4" />
                                     <span>Jelajahi Direktori Pemasok</span>
                                 </a>

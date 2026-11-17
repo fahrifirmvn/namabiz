@@ -1,332 +1,121 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
-    @if($this->isHubMode)
-        <!-- ================= MODE HUB (JELAJAHI) ================= -->
-        <div class="space-y-12">
-            <!-- Header Hub -->
-            <div>
-                <span class="text-xs font-semibold text-text-muted uppercase tracking-widest">
-                    KATALOG TERPADU / DIREKTORI B2B INDONESIA
-                </span>
-                <h1 class="text-3xl sm:text-4xl font-extrabold text-text-primary tracking-tight mt-1">
-                    Cari pemasok
-                </h1>
-                <p class="text-sm sm:text-base text-text-secondary mt-1.5">
-                    Telusuri berdasarkan kategori industri atau mulai dari kata kunci bahan baku Anda.
-                </p>
-            </div>
+<div class="nb-container py-8 pb-32" x-data="{ panel: null, compact: false }" @keydown.escape.window="panel = null"
+     x-effect="$dispatch('compare-updated', { count: $wire.compareIds.length })">
+    @php($activeFilterCount = count($locations) + count($categories) + count($certifications))
+    <header class="nb-discover-header mb-6">
+        <p class="nb-eyebrow">JELAJAHI NAMABIZ</p>
+        <h1 class="mt-2 text-[28px] leading-[34px] font-bold tracking-tight md:text-4xl">Cari pemasok</h1>
+        <p class="mt-3 text-sm leading-[22px] text-text-muted">Dari bahan baku hingga kemasan. Temukan calon mitra bisnis Anda.</p>
+    </header>
 
-            <!-- Search Bar in Hub -->
-            <div class="max-w-3xl">
-                <div class="relative flex items-center shadow-xs rounded-2xl bg-white border border-border p-2 focus-within:ring-2 focus-within:ring-brand-600 focus-within:border-brand-600 transition">
-                    <x-heroicon-o-magnifying-glass class="w-5 h-5 text-text-muted ml-3 shrink-0" />
-                    <input type="text"
-                           wire:model.live.debounce.300ms="query"
-                           aria-label="Cari pemasok atau bahan baku"
-                           placeholder="Cari pemasok, spesifikasi, atau bahan baku..."
-                           class="w-full pl-3 pr-4 py-2 text-sm text-text-primary placeholder-text-muted bg-transparent border-none focus:outline-none focus:ring-0">
-                    <div class="mr-2 hidden sm:block">
-                        <kbd class="px-2 py-1 text-xs text-text-muted bg-surface border border-border rounded font-mono">/</kbd>
-                    </div>
-                </div>
-
-                <!-- Recent Searches -->
-                <div class="mt-3.5 flex flex-wrap items-center justify-between gap-2 text-13">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-text-secondary font-medium">Pencarian populer:</span>
-                        <button type="button" wire:click="selectKeyword('kardus bergelombang')" class="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-surface-subtle border border-border rounded-full text-text-secondary hover:text-text-primary transition nb-focus-ring">
-                            <x-heroicon-o-clock class="w-3.5 h-3.5 text-text-muted" /> kardus bergelombang
-                        </button>
-                        <button type="button" wire:click="selectKeyword('resin PET')" class="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-surface-subtle border border-border rounded-full text-text-secondary hover:text-text-primary transition nb-focus-ring">
-                            <x-heroicon-o-clock class="w-3.5 h-3.5 text-text-muted" /> resin PET
-                        </button>
-                        <button type="button" wire:click="selectKeyword('mesin pengemas')" class="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-surface-subtle border border-border rounded-full text-text-secondary hover:text-text-primary transition nb-focus-ring">
-                            <x-heroicon-o-clock class="w-3.5 h-3.5 text-text-muted" /> mesin pengemas
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kategori Industri Grid -->
-            <div>
-                <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-xl font-bold text-text-primary">Kategori industri</h2>
-                    <span class="text-13 font-medium text-text-secondary">{{ count($hubCategories) }} Sektor Terdaftar</span>
-                </div>
-
-                @php
-                    $categoryIcons = [
-                        'Packaging Manufacturer' => 'archive-box',
-                        'Distributor & Converter' => 'truck',
-                        'Contract Manufacturer' => 'cog-6-tooth',
-                        'Raw Material Supplier' => 'beaker',
-                        'Chemical & Ingredients' => 'funnel',
-                        'Spices & Coconut' => 'sparkles',
-                        'Logistics & Warehousing' => 'building-office',
-                    ];
-                @endphp
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                    @forelse($hubCategories as $cat)
-                        <button type="button"
-                                wire:click="selectCategory(@js($cat['name']))"
-                                class="p-5 nb-card-interactive text-left group flex items-center justify-between gap-3 nb-focus-ring">
-                            <div class="flex items-center gap-3.5 min-w-0">
-                                <div class="w-10 h-10 rounded-xl bg-surface-subtle border border-border/80 flex items-center justify-center text-text-primary group-hover:bg-brand-50 group-hover:text-brand-700 group-hover:border-brand-200 transition shrink-0">
-                                    <x-dynamic-component :component="'heroicon-o-' . ($categoryIcons[$cat['name']] ?? 'building-office-2')" class="w-5 h-5" />
-                                </div>
-                                <div class="min-w-0">
-                                    <h3 class="font-semibold text-text-primary text-sm truncate" title="{{ $cat['name'] }}">{{ $cat['name'] }}</h3>
-                                    <p class="text-13 text-text-secondary mt-0.5">{{ $cat['count'] }} pemasok</p>
-                                </div>
-                            </div>
-                            <x-heroicon-s-chevron-right class="w-4 h-4 text-text-muted group-hover:text-text-primary group-hover:translate-x-0.5 transition-transform shrink-0" />
-                        </button>
-                    @empty
-                        <div class="col-span-full py-8 text-center text-sm text-text-secondary bg-white rounded-2xl border border-dashed border-border">
-                            Belum ada kategori industri yang terdaftar.
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-
-            <!-- Rekomendasi "Untuk Anda" -->
-            <div>
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 class="text-xl font-bold text-text-primary">Untuk Anda</h2>
-                        <p class="text-13 text-text-secondary mt-0.5">Pilihan pabrik berdasarkan kapasitas produksi & kelengkapan dokumen katalog.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 items-stretch">
-                    @foreach($this->recommendedSuppliers as $rec)
-                        <x-supplier-card
-                            :supplier="$rec"
-                            :selectable="true"
-                            :selected="in_array($rec->id, $compareIds)"
-                            :limit-reached="count($compareIds) >= 4"
-                        />
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Banner Bantuan & Konsultasi Langsung -->
-            <div class="bg-surface rounded-2xl border border-border p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-white border border-border flex items-center justify-center text-brand-600 shadow-2xs shrink-0">
-                        <x-heroicon-o-chat-bubble-left-ellipsis class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-text-primary text-base">Tidak menemukan spesifikasi bahan baku yang Anda butuhkan?</h3>
-                        <p class="text-13 sm:text-sm text-text-secondary mt-0.5">Konsultasikan kebutuhan pasokan industri Anda langsung dengan tim kurator Namabiz.</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 shrink-0">
-                    <a href="{{ route('discover.index', ['q' => 'Kemasan']) }}" class="h-10 px-4 text-13 font-semibold text-text-primary bg-white border border-border rounded-xl hover:bg-surface-subtle transition inline-flex items-center justify-center nb-focus-ring">
-                        Telusuri Kategori
-                    </a>
-                    <a href="https://wa.me/6281234567890?text={{ urlencode('Halo Tim Namabiz, saya mencari rekomendasi pemasok untuk kebutuhan industri.') }}" target="_blank" rel="noopener noreferrer" class="h-10 px-4 text-13 font-semibold text-white bg-brand-600 rounded-xl hover:bg-brand-700 transition inline-flex items-center justify-center gap-1.5 nb-focus-ring">
-                        <x-heroicon-o-chat-bubble-left-ellipsis class="w-4 h-4" />
-                        <span>Hubungi Kurator WA</span>
-                    </a>
-                </div>
-            </div>
+    <div class="nb-catalog-toolbar sticky z-30 -mx-4 bg-surface/95 px-4 pt-2 pb-3 backdrop-blur-md" @scroll.window.passive="compact = window.scrollY > 140">
+        <form wire:submit="applyFilters" class="nb-search transition-all duration-180" :class="compact ? '!h-12' : ''" role="search">
+            <x-heroicon-o-magnifying-glass class="ml-2 h-5 w-5 shrink-0 text-text-muted" />
+            <input id="catalog-search" type="search" wire:model.live.debounce.300ms="query" aria-label="Cari nama pemasok, produk, atau bahan baku" placeholder="Cari pemasok atau bahan baku">
+            <button type="submit" class="nb-icon-button !bg-slate-900 !text-white" aria-label="Cari"><x-heroicon-o-arrow-right class="h-5 w-5" /></button>
+        </form>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+            <button type="button" class="nb-secondary" @click="panel = 'filters'" :aria-expanded="panel === 'filters'" aria-controls="catalog-sheet"><x-heroicon-o-adjustments-horizontal class="h-5 w-5" />Filter @if($activeFilterCount)({{ $activeFilterCount }})@endif</button>
+            <button type="button" class="nb-secondary" @click="panel = 'sort'" :aria-expanded="panel === 'sort'" aria-controls="catalog-sheet"><x-heroicon-o-arrows-up-down class="h-5 w-5" />Urutkan</button>
         </div>
+    </div>
 
+    @if($activeFilterCount || $query !== '')
+        <div class="nb-scroll-row mt-3" aria-label="Filter aktif">
+            @if($query !== '')<button type="button" class="nb-secondary !min-h-[44px] shrink-0 !px-3" wire:click="$set('query', '')" aria-label="Hapus kata kunci {{ $query }}">{{ $query }}<x-heroicon-o-x-mark class="h-4 w-4" /></button>@endif
+            @foreach(['locations' => $locations, 'categories' => $categories, 'certifications' => $certifications] as $filter => $values)
+                @foreach($values as $value)
+                    <button type="button" wire:click="removeFilter(@js($filter), @js($value))" class="nb-secondary !min-h-[44px] shrink-0 !px-3" aria-label="Hapus filter {{ \App\Support\SupplierFormat::category($value) }}">{{ \App\Support\SupplierFormat::category($value) }}<x-heroicon-o-x-mark class="h-4 w-4" /></button>
+                @endforeach
+            @endforeach
+            <button type="button" wire:click="clearFilters" class="nb-ghost shrink-0">Reset semua</button>
+        </div>
     @else
-        <!-- ================= MODE HASIL PENCARIAN ================= -->
-        <div>
-            <!-- Breadcrumbs -->
-            <nav class="text-13 text-text-secondary mb-5 flex items-center gap-2" aria-label="Breadcrumb">
-                <a href="{{ route('discover.index') }}" wire:click.prevent="clearFilters" class="hover:text-text-primary transition nb-focus-ring rounded">Direktori</a>
-                <span class="text-text-muted" aria-hidden="true">/</span>
-                <span>Manufaktur &amp; Kemasan</span>
-                <span class="text-text-muted" aria-hidden="true">/</span>
-                <span class="text-text-primary font-semibold">Indonesia</span>
-            </nav>
-
-            <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
-                <!-- Left Sidebar Filters -->
-                <aside class="lg:w-72 shrink-0">
-                    <div class="nb-card p-5 space-y-6">
-                        <div class="flex items-center justify-between pb-4 border-b border-border-subtle">
-                            <h2 class="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                                <x-heroicon-o-adjustments-horizontal class="w-4 h-4 text-text-secondary" />
-                                <span>Parameter Filter</span>
-                            </h2>
-                            <button type="button" wire:click="clearFilters" class="text-xs text-text-secondary hover:text-text-primary underline font-medium nb-focus-ring rounded">
-                                Reset
-                            </button>
-                        </div>
-
-                        <!-- Lokasi Filter -->
-                        <div>
-                            <h3 class="font-semibold text-xs uppercase text-text-secondary mb-3 tracking-wider">Lokasi Geografis</h3>
-                            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                @foreach($locationOptions as $loc)
-                                    <label class="flex items-center justify-between text-13 text-text-secondary hover:text-text-primary cursor-pointer py-0.5">
-                                        <span class="flex items-center gap-2.5 min-w-0">
-                                            <input type="checkbox" wire:model.live="locations" value="{{ $loc['country'] }}" class="rounded border-gray-300 text-gray-900 focus:ring-brand-600">
-                                            <span class="truncate">{{ $loc['country'] }}</span>
-                                        </span>
-                                        <span class="text-text-muted text-xs font-medium">{{ $loc['count'] }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Kategori Filter -->
-                        <div class="pt-4 border-t border-border-subtle">
-                            <h3 class="font-semibold text-xs uppercase text-text-secondary mb-3 tracking-wider">Kategori Industri</h3>
-                            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                @foreach($categoryOptions as $cat)
-                                    <label class="flex items-center justify-between text-13 text-text-secondary hover:text-text-primary cursor-pointer py-0.5">
-                                        <span class="flex items-center gap-2.5 min-w-0">
-                                            <input type="checkbox" wire:model.live="categories" value="{{ $cat['industry_category'] }}" class="rounded border-gray-300 text-gray-900 focus:ring-brand-600">
-                                            <span class="truncate max-w-[165px]" title="{{ $cat['industry_category'] }}">{{ $cat['industry_category'] }}</span>
-                                        </span>
-                                        <span class="text-text-muted text-xs font-medium">{{ $cat['count'] }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Sertifikasi Filter -->
-                        <div class="pt-4 border-t border-border-subtle">
-                            <h3 class="font-semibold text-xs uppercase text-text-secondary mb-3 tracking-wider">Sertifikasi Industri</h3>
-                            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                @foreach($certificationOptions as $cert)
-                                    <label class="flex items-center justify-between text-13 text-text-secondary hover:text-text-primary cursor-pointer py-0.5">
-                                        <span class="flex items-center gap-2.5 min-w-0">
-                                            <input type="checkbox" wire:model.live="certifications" value="{{ $cert['name'] }}" class="rounded border-gray-300 text-gray-900 focus:ring-brand-600">
-                                            <span class="truncate" title="{{ $cert['name'] }}">{{ $cert['name'] }}</span>
-                                        </span>
-                                        <span class="text-text-muted text-xs font-medium">{{ $cert['suppliers_count'] }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Metrik Wilayah -->
-                        <div class="pt-4 border-t border-border-subtle">
-                            <span class="text-xs font-semibold uppercase text-text-muted tracking-wider">Metrik Audit Wilayah</span>
-                            <div class="mt-3 space-y-2 text-13">
-                                <div class="flex justify-between text-text-secondary">
-                                    <span>Rata-rata lead time</span>
-                                    <span class="font-semibold text-text-primary">3,4 Minggu</span>
-                                </div>
-                                <div class="flex justify-between text-text-secondary">
-                                    <span>Kepatuhan ISO</span>
-                                    <span class="font-semibold text-brand-700">82,6%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Right Content (Header, Grid & Pagination) -->
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                        <div>
-                            <h1 class="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
-                                @if($query)
-                                    Pemasok untuk "{{ $query }}"
-                                @else
-                                    Pemasok terverifikasi di Indonesia
-                                @endif
-                            </h1>
-                            <p class="text-13 text-text-secondary mt-1">
-                                Menampilkan {{ $suppliers->firstItem() ?? 0 }}&ndash;{{ $suppliers->lastItem() ?? 0 }} dari {{ $suppliers->total() }} pemasok terdaftar
-                            </p>
-                        </div>
-
-                        <div class="flex items-center gap-2.5 shrink-0">
-                            <label for="supplier-sort" class="text-13 font-medium text-text-secondary">Urutkan:</label>
-                            <select id="supplier-sort" wire:model.live="sort" class="h-10 rounded-xl border-border text-13 text-text-primary bg-white shadow-2xs focus:ring-brand-600 focus:border-brand-600 py-2 pl-3 pr-8">
-                                <option value="relevance">Paling relevan</option>
-                                <option value="newest">Paling baru</option>
-                                <option value="company_size">Ukuran pabrik terbesar</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Active Filters Bar -->
-                    @if(!empty($locations) || !empty($categories) || !empty($certifications) || $query)
-                        <div class="flex flex-wrap items-center gap-2 mb-6 text-xs">
-                            <span class="text-text-secondary font-medium">Filter aktif:</span>
-                            @if($query)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-subtle border border-border rounded-lg text-text-primary font-medium">
-                                    <span>Kata kunci: {{ $query }}</span>
-                                    <button type="button" wire:click="$set('query', '')" aria-label="Hapus filter kata kunci" class="text-text-muted hover:text-danger">&times;</button>
-                                </span>
-                            @endif
-                            @foreach($locations as $loc)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-subtle border border-border rounded-lg text-text-primary font-medium">
-                                    <span>{{ $loc }}</span>
-                                    <button type="button" wire:click="$set('locations', {{ json_encode(array_values(array_diff($locations, [$loc]))) }})" aria-label="Hapus filter {{ $loc }}" class="text-text-muted hover:text-danger">&times;</button>
-                                </span>
-                            @endforeach
-                            @foreach($categories as $cat)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-subtle border border-border rounded-lg text-text-primary font-medium">
-                                    <span>{{ $cat }}</span>
-                                    <button type="button" wire:click="$set('categories', {{ json_encode(array_values(array_diff($categories, [$cat]))) }})" aria-label="Hapus filter {{ $cat }}" class="text-text-muted hover:text-danger">&times;</button>
-                                </span>
-                            @endforeach
-                            @foreach($certifications as $cert)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-subtle border border-border rounded-lg text-text-primary font-medium">
-                                    <span>{{ $cert }}</span>
-                                    <button type="button" wire:click="$set('certifications', {{ json_encode(array_values(array_diff($certifications, [$cert]))) }})" aria-label="Hapus filter {{ $cert }}" class="text-text-muted hover:text-danger">&times;</button>
-                                </span>
-                            @endforeach
-                            <button type="button" wire:click="clearFilters" class="text-xs font-medium text-danger hover:underline ml-2">Hapus semua</button>
-                        </div>
-                    @endif
-
-                    <!-- Loading Skeleton State -->
-                    <div wire:loading.grid
-                         wire:target="query,locations,categories,certifications,sort,clearFilters,selectCategory,selectKeyword"
-                         class="grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 items-stretch mb-6">
-                        @for($i = 0; $i < 4; $i++)
-                            <x-supplier-card-skeleton />
-                        @endfor
-                    </div>
-
-                    <!-- Suppliers Grid (Tinggi Kartu Seragam) -->
-                    <div wire:loading.remove
-                         wire:target="query,locations,categories,certifications,sort,clearFilters,selectCategory,selectKeyword"
-                         class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 items-stretch">
-                        @forelse($suppliers as $supplier)
-                            <x-supplier-card
-                                :supplier="$supplier"
-                                :selectable="true"
-                                :selected="in_array($supplier->id, $compareIds)"
-                                :limit-reached="count($compareIds) >= 4"
-                            />
-                        @empty
-                            <div class="md:col-span-2 text-center py-16 px-6 nb-card">
-                                <div class="w-12 h-12 rounded-2xl bg-surface-subtle border border-border flex items-center justify-center mx-auto mb-3 text-text-muted">
-                                    <x-heroicon-o-magnifying-glass class="w-6 h-6" />
-                                </div>
-                                <h3 class="font-semibold text-text-primary text-base">Tidak ada pemasok yang cocok</h3>
-                                <p class="text-sm text-text-secondary mt-1 max-w-md mx-auto">
-                                    Coba sesuaikan kata kunci pencarian atau bersihkan beberapa filter untuk melihat pilihan pabrik lainnya.
-                                </p>
-                                <button type="button" wire:click="clearFilters" class="mt-5 h-10 px-4 bg-gray-900 hover:bg-black text-white text-13 font-semibold rounded-xl transition nb-focus-ring">
-                                    Reset Semua Filter
-                                </button>
-                            </div>
-                        @endforelse
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="mt-8">
-                        {{ $suppliers->links() }}
-                    </div>
-                </div>
-            </div>
+        <div class="nb-scroll-row mt-3 items-center">
+            <span class="inline-flex shrink-0 items-center gap-1.5 text-13 text-text-muted"><x-heroicon-o-arrow-trending-up class="h-4 w-4" />Populer:</span>
+            @foreach(['Kemasan', 'Resin', 'Mesin pengemas'] as $keyword)<button type="button" class="nb-chip min-h-[44px] hover:bg-brand-50" wire:click="selectKeyword(@js($keyword))">{{ $keyword }}</button>@endforeach
         </div>
     @endif
 
-    <!-- ================= STICKY COMPARISON TRAY ================= -->
+    <section class="mt-6" aria-labelledby="catalog-categories">
+        <h2 id="catalog-categories" class="text-lg font-semibold mb-4">Kategori industri</h2>
+        <div class="nb-scroll-row gap-3 md:grid md:grid-cols-3 lg:grid-cols-5">
+            <button type="button" wire:click="$set('categories', [])" class="nb-category-tile nb-card p-4 text-left min-w-[140px] shrink-0 snap-start {{ empty($categories) ? '!bg-brand-50 !border-brand-200' : '' }}">
+                <x-heroicon-o-squares-2x2 class="h-5 w-5 mb-3 text-brand-700" /><span class="block text-sm font-semibold">Semua kategori</span><span class="mt-2 block text-13 text-text-muted">Telusuri katalog</span>
+            </button>
+            @foreach($hubCategories as $category)
+                <button type="button" wire:key="category-{{ md5($category->name) }}" wire:click="selectCategory(@js($category->name))" class="nb-category-tile nb-card p-4 text-left w-[160px] md:w-auto shrink-0 snap-start {{ in_array($category->name, $categories) ? '!bg-brand-50 !border-brand-200' : '' }}">
+                    <x-dynamic-component :component="'heroicon-o-'.\App\Support\SupplierFormat::categoryIcon($category->name)" class="h-5 w-5 mb-3 text-brand-700" /><span class="block text-sm font-semibold leading-5">{{ \App\Support\SupplierFormat::category($category->name) }}</span><span class="mt-2 block text-13 text-text-muted">{{ $category->count }} pemasok</span>
+                </button>
+            @endforeach
+        </div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="supplier-results">
+        <div class="flex flex-wrap items-end justify-between gap-2 mb-5">
+            <div><h2 id="supplier-results" class="text-xl font-semibold">{{ $this->isHubMode ? 'Pemasok pilihan' : 'Hasil pencarian' }}</h2><p class="mt-1 text-sm text-text-muted" role="status">{{ \App\Support\SupplierFormat::number($suppliers->total()) }} pemasok{{ $this->isHubMode ? ' dalam katalog' : ' ditemukan' }}</p></div>
+            <span class="text-13 text-text-muted">{{ ['relevance' => 'Paling relevan', 'newest' => 'Paling baru', 'company_size' => 'Ukuran perusahaan'][$sort] ?? 'Paling relevan' }}</span>
+        </div>
+        <p wire:offline class="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-700" role="alert">Koneksi terputus. Periksa jaringan Anda, lalu coba lagi.</p>
+        <div x-data="{ visible: false }" @catalog-request-failed.window="visible = true" x-show="visible" x-cloak class="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert"><p>Pencarian gagal dimuat. Silakan coba lagi.</p><button type="button" wire:click="$refresh" @click="visible = false" class="nb-secondary mt-3">Coba lagi</button></div>
+        <div wire:loading.grid wire:target="query,applyFilters,clearFilters,selectCategory,selectKeyword,removeFilter,setPage,nextPage,previousPage,categories" class="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="status" aria-label="Memuat pemasok">
+            @for($i = 0; $i < 3; $i++)<x-supplier-card-skeleton />@endfor
+        </div>
+        <div wire:loading.remove wire:target="query,applyFilters,clearFilters,selectCategory,selectKeyword,removeFilter,setPage,nextPage,previousPage,categories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+            @forelse($suppliers as $supplier)
+                <x-supplier-card wire:key="supplier-{{ $supplier->id }}" :supplier="$supplier" :selectable="true" :selected="in_array($supplier->id, $compareIds)" :limit-reached="count($compareIds) >= 4" />
+            @empty
+                <div class="nb-card col-span-full p-6 py-12 text-center">
+                    <x-heroicon-o-magnifying-glass class="h-8 w-8 text-text-muted mx-auto mb-4" /><h3 class="text-lg font-semibold">Tidak ada pemasok untuk filter ini</h3>
+                    <p class="mt-3 text-sm text-text-muted">Coba kata kunci lain atau kurangi filter pencarian Anda.</p>
+                    <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center"><button type="button" wire:click="clearFilters" class="nb-primary">Reset filter</button><a href="{{ \App\Support\PortalContent::pageUrl('help') }}" class="nb-secondary">Buka panduan bantuan</a></div>
+                </div>
+            @endforelse
+        </div>
+        <div class="mt-8">{{ $suppliers->links('components.ui.catalog-pagination') }}</div>
+    </section>
+
+    <aside class="nb-card mt-12 p-5 md:p-8 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div class="flex items-start gap-3"><x-heroicon-o-chat-bubble-left-right class="h-6 w-6 shrink-0 text-brand-700" /><div><h2 class="text-base font-semibold">Belum menemukan spesifikasi yang tepat?</h2><p class="mt-2 text-sm text-text-muted">Gunakan panduan penelusuran atau jelajahi kategori lainnya.</p></div></div>
+        <div class="grid gap-3">
+            @if($curatorUrl = \App\Support\PortalContent::whatsappUrl())<a href="{{ $curatorUrl }}" class="nb-accent" target="_blank" rel="noopener noreferrer">Hubungi kurator via WhatsApp</a>@else<a href="{{ \App\Support\PortalContent::pageUrl('help') }}" class="nb-accent">Buka panduan bantuan</a>@endif
+            <button type="button" class="nb-secondary" @click="document.getElementById('catalog-categories').scrollIntoView({ block: 'start' })">Telusuri kategori</button>
+        </div>
+    </aside>
+
+    <template x-teleport="body">
+        <div x-show="panel !== null" x-cloak x-transition.opacity.duration.300ms class="fixed inset-0 z-[70] flex items-end md:items-center md:justify-center bg-slate-900/40 backdrop-blur-sm"
+             @click.self="panel = null" x-trap.inert.noscroll="panel !== null" role="dialog" aria-modal="true" :aria-label="panel === 'sort' ? 'Urutkan pemasok' : 'Filter pemasok'">
+            <div id="catalog-sheet" x-show="panel !== null" x-transition:enter="nb-panel-transition" x-transition:enter-start="nb-sheet-from" x-transition:enter-end="nb-panel-to"
+                 x-transition:leave="nb-panel-transition" x-transition:leave-start="nb-panel-to" x-transition:leave-end="nb-sheet-from"
+                 class="w-full max-h-[85dvh] md:max-w-xl flex flex-col rounded-t-[20px] md:rounded-[20px] bg-white shadow-tray">
+                <div class="mx-auto mt-3 h-1 w-10 rounded-full bg-slate-300 md:hidden" aria-hidden="true"></div>
+                <div class="flex items-center justify-between gap-3 p-5 border-b border-border"><h2 class="text-lg font-semibold" x-text="panel === 'sort' ? 'Urutkan pemasok' : 'Filter pemasok'"></h2><button type="button" @click="panel = null" class="nb-icon-button" aria-label="Tutup filter"><x-heroicon-o-x-mark class="h-5 w-5" /></button></div>
+                <div class="overflow-y-auto overscroll-contain p-5 space-y-6">
+                    <div x-show="panel === 'sort'">
+                        @foreach(['relevance' => 'Paling relevan', 'newest' => 'Paling baru', 'company_size' => 'Ukuran perusahaan'] as $value => $label)
+                            <label class="flex min-h-[48px] items-center gap-3 text-sm"><input type="radio" wire:model="sort" value="{{ $value }}" name="sort" class="text-brand-700 focus:ring-brand-600">{{ $label }}</label>
+                        @endforeach
+                    </div>
+                    <div x-show="panel === 'filters'" class="space-y-6">
+                        <fieldset><legend class="text-sm font-semibold mb-2">Kategori industri</legend>
+                            @foreach($categoryOptions as $category)<label class="flex min-h-[44px] items-center gap-3 text-sm"><input type="checkbox" wire:model="categories" value="{{ $category['industry_category'] }}" class="rounded text-brand-700 border-border">{{ \App\Support\SupplierFormat::category($category['industry_category']) }}<span class="ml-auto text-text-muted text-xs">{{ $category['count'] }}</span></label>@endforeach
+                        </fieldset>
+                        <fieldset><legend class="text-sm font-semibold mb-2">Lokasi</legend>
+                            @foreach($locationOptions as $location)<label class="flex min-h-[44px] items-center gap-3 text-sm"><input type="checkbox" wire:model="locations" value="{{ $location['country'] }}" class="rounded text-brand-700 border-border">{{ $location['country'] }}</label>@endforeach
+                            @foreach($cityOptions as $city)<label class="flex min-h-[44px] items-center gap-3 text-sm"><input type="checkbox" wire:model="locations" value="{{ $city }}" class="rounded text-brand-700 border-border">{{ $city }}</label>@endforeach
+                        </fieldset>
+                        <fieldset><legend class="text-sm font-semibold mb-2">Sertifikasi</legend>
+                            @forelse($certificationOptions as $certification)<label class="flex min-h-[44px] items-center gap-3 text-sm"><input type="checkbox" wire:model="certifications" value="{{ $certification['name'] }}" class="rounded text-brand-700 border-border">{{ $certification['name'] }}</label>@empty<p class="text-sm text-text-muted">Belum ada sertifikasi dalam katalog.</p>@endforelse
+                        </fieldset>
+                        <div class="rounded-xl bg-surface p-4 text-sm text-text-muted"><p>Filter kapasitas, MOQ, lead time, dan waktu respons belum tersedia.</p><a href="{{ \App\Support\PortalContent::pageUrl('help') }}" class="mt-2 inline-flex min-h-[44px] items-center text-brand-700 underline underline-offset-4">Pelajari satuan dan status data</a></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 p-5 border-t border-border" style="padding-bottom: max(20px, env(safe-area-inset-bottom))">
+                    <button type="button" wire:click="clearFilters" class="nb-secondary">Reset</button>
+                    <button type="button" wire:click="applyFilters" @click="panel = null" class="nb-primary" wire:loading.attr="disabled" wire:target="applyFilters">Terapkan</button>
+                </div>
+            </div>
+        </div>
+    </template>
     <x-ui.compare-tray :selected-suppliers="$this->selectedCompareSuppliers" :max-suppliers="4" />
 </div>

@@ -36,6 +36,20 @@ class Supplier extends Model
     }
 
     /**
+     * Eagerly attach the authenticated user's saved state without N+1 EXISTS queries.
+     */
+    public function scopeWithUserSavedStatus(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query;
+        }
+
+        return $query->withExists([
+            'savedBy as is_saved' => fn (Builder $savedQuery) => $savedQuery->where('user_id', $user->id),
+        ]);
+    }
+
+    /**
      * Score how complete the public profile is.
      *
      * @return array{percent: int, missing: array<int, string>}

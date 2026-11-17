@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ApiAuthTest extends TestCase
@@ -107,10 +109,19 @@ class ApiAuthTest extends TestCase
 
     public function test_user_can_authenticate_via_google_endpoint(): void
     {
-        $response = $this->postJson(route('api.auth.google'), [
+        ['id_token' => $idToken] = $this->makeSignedGoogleJwt([
+            'iss' => 'https://accounts.google.com',
+            'aud' => 'namabiz-android-client.apps.googleusercontent.com',
+            'sub' => 'google-sub-12345',
             'email' => 'googleuser@gmail.com',
+            'email_verified' => true,
             'name' => 'Google User',
-            'avatar' => 'https://lh3.googleusercontent.com/a/default-user',
+            'picture' => 'https://lh3.googleusercontent.com/a/default-user',
+            'exp' => time() + 3600,
+        ]);
+
+        $response = $this->postJson(route('api.auth.google'), [
+            'id_token' => $idToken,
             'device_name' => 'Pixel 7',
         ]);
 
@@ -128,6 +139,56 @@ class ApiAuthTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'googleuser@gmail.com',
         ]);
+    }
+
+    public function test_google_endpoint_rejects_unverified_or_wrong_audience_tokens(): void
+    {
+        ['id_token' => $wrongAudToken] = $this->makeSignedGoogleJwt([
+            'iss' => 'https://accounts.google.com',
+            'aud' => 'other-app.apps.googleusercontent.com',
+            'sub' => 'google-sub-12345',
+            'email' => 'googleuser@gmail.com',
+            'email_verified' => true,
+            'exp' => time() + 3600,
+        ]);
+
+        $this->postJson(route('api.auth.google'), ['id_token' => $wrongAudToken])
+            ->assertStatus(401)
+            ->assertJson(['success' => false]);
+
+        $this->postJson(route('api.auth.google'), ['id_token' => 'invalid.jwt.signature'])
+            ->assertStatus(401);
+    }
+
+    /**
+     * @param  array<string, mixed>  $claims
+     * @return array{id_token: string}
+     */
+    private function makeSignedGoogleJwt(array $claims): array
+    {
+        $privateKey = openssl_pkey_new([
+            'private_key_bits' => 2048,
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+        ]);
+        $csr = openssl_csr_new(['commonName' => 'test-google-certs'], $privateKey);
+        $x509 = openssl_csr_sign($csr, null, $privateKey, 1);
+        openssl_x509_export($x509, $certPem);
+
+        config()->set('services.google.client_ids', ['namabiz-android-client.apps.googleusercontent.com']);
+        Cache::flush();
+        Http::fake([
+            'https://www.googleapis.com/oauth2/v1/certs' => Http::response([
+                'test-key-1' => $certPem,
+            ], 200),
+        ]);
+
+        $encode = fn (string $data): string => rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+        $headerB64 = $encode(json_encode(['alg' => 'RS256', 'kid' => 'test-key-1', 'typ' => 'JWT'], JSON_THROW_ON_ERROR));
+        $payloadB64 = $encode(json_encode($claims, JSON_THROW_ON_ERROR));
+
+        openssl_sign("{$headerB64}.{$payloadB64}", $signature, $privateKey, OPENSSL_ALGO_SHA256);
+
+        return ['id_token' => "{$headerB64}.{$payloadB64}.".$encode($signature)];
     }
 
     public function test_authenticated_user_can_retrieve_profile(): void

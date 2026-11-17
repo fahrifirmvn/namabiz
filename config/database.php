@@ -38,9 +38,9 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
+            'busy_timeout' => env('DB_SQLITE_BUSY_TIMEOUT') !== null ? (int) env('DB_SQLITE_BUSY_TIMEOUT') : null,
+            'journal_mode' => env('DB_SQLITE_JOURNAL_MODE'),
+            'synchronous' => env('DB_SQLITE_SYNCHRONOUS'),
             'transaction_mode' => 'DEFERRED',
         ],
 

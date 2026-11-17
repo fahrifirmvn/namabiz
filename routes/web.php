@@ -6,8 +6,10 @@ use App\Http\Controllers\Admin\SupplierAdminController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\PortalPageController;
 use App\Http\Controllers\ProcurementCollectionController;
 use App\Http\Controllers\SavedSupplierController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierReviewController;
@@ -35,14 +37,16 @@ Route::prefix('admin')
     });
 
 Route::get('/', function () {
-    $categories = IndustryCategory::withCount('suppliers')
-        ->orderByDesc('suppliers_count')
-        ->orderBy('name')
-        ->limit(8)
-        ->get();
-
-    return view('landing', compact('categories'));
+    return view('landing');
 })->name('home');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+foreach (config('namabiz.pages') as $key => $page) {
+    Route::get($page['path'], [PortalPageController::class, 'show'])
+        ->defaults('page', $key)
+        ->name($page['route']);
+}
 
 Route::get('/discover', [DiscoverController::class, 'index'])->name('discover.index');
 Route::get('/suppliers/{supplier:slug}', [SupplierController::class, 'show'])->name('suppliers.show');
@@ -85,19 +89,48 @@ Route::middleware('auth')->group(function () {
 Route::get('dashboard', function () {
     $user = auth()->user();
     $savedCount = $user->savedSuppliers()->count();
-    $savedSuppliers = $user->savedSuppliers()->with('supplier.tags')->get()->pluck('supplier')->filter();
-    if ($savedSuppliers->isEmpty()) {
-        $savedSuppliers = Supplier::with('tags')->limit(4)->get();
-    }
-    $recentlyViewed = Supplier::with('tags')->inRandomOrder()->limit(3)->get();
-    $recommended = Supplier::with('tags')->latest()->limit(3)->get();
-    $preferredCategories = IndustryCategory::withCount('suppliers')
+    $collectionsCount = $user->procurementCollections()->count();
+    $savedSuppliers = $user->savedSuppliers()
+        ->with('supplier.tags')
+        ->latest()
+        ->limit(4)
+        ->get()
+        ->pluck('supplier')
+        ->filter()
+        ->values();
+
+    $recentIds = array_values(array_filter(array_map('intval', (array) session()->get('recently_viewed_suppliers', []))));
+    $recentlyViewed = $recentIds !== []
+        ? Supplier::with('tags')
+            ->whereIn('id', array_slice($recentIds, 0, 3))
+            ->get()
+            ->sortBy(fn (Supplier $supplier): int => (int) array_search($supplier->id, $recentIds, true))
+            ->values()
+        : collect();
+
+    $recommended = Supplier::with('tags')->orderByDesc('is_verified')->latest()->limit(3)->get();
+    $preferredCategories = IndustryCategory::query()
+        ->has('suppliers')
+        ->withCount('suppliers')
         ->orderByDesc('suppliers_count')
         ->limit(3)
         ->get();
 
-    return view('dashboard', compact('savedSuppliers', 'savedCount', 'recentlyViewed', 'recommended', 'preferredCategories'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+    $sessionCompareIds = array_values(array_filter(array_map('intval', (array) session()->get('compared_suppliers', []))));
+    $compareSuppliers = $sessionCompareIds !== []
+        ? Supplier::whereIn('id', array_slice($sessionCompareIds, 0, 4))->get()
+        : collect();
+
+    return view('dashboard', compact(
+        'savedSuppliers',
+        'savedCount',
+        'collectionsCount',
+        'recentlyViewed',
+        'recommended',
+        'preferredCategories',
+        'compareSuppliers'
+    ));
+})->middleware(['auth'])->name('dashboard');
 
 Route::view('profile', 'profile')
     ->middleware(['auth'])

@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SupplierResource;
+use App\Models\Comparison;
+use App\Models\Document;
 use App\Models\SavedSupplier;
 use App\Models\Supplier;
 use App\Support\ApiResponse;
+use App\Support\PremiumAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,56 +21,78 @@ class DashboardController extends Controller
     public function home(Request $request): JsonResponse
     {
         $user = $request->user('sanctum') ?? $request->user();
+        $isPremium = PremiumAccess::isPremium($user);
 
-        $savedCount = $user ? SavedSupplier::where('user_id', $user->id)->count() : 12;
+        $savedCount = $user ? SavedSupplier::where('user_id', $user->id)->count() : 0;
 
-        $needsAttention = [
-            [
-                'id' => 'alert-1',
-                'type' => 'compliance_risk',
-                'title' => 'Nusantara Agro — Halal MUI certificate expires in 18 days',
-                'tag' => 'Compliance Risk',
-                'audited_info' => "Audited Oct '24",
-                'action_label' => 'Review',
-                'supplier_slug' => 'nusantara-agro',
-            ],
-            [
-                'id' => 'alert-2',
-                'type' => 'supplier_update',
-                'title' => 'Agrim PTE Ltd updated their catalog & certifications',
-                'details' => '(Black pepper, 20 MT available)',
-                'badge' => 'Verified',
-                'valid_until' => 'Updated today',
-                'action_label' => 'View Profile',
-                'supplier_slug' => 'agrim-pte-ltd',
-            ],
-            [
-                'id' => 'alert-3',
-                'type' => 'contact_available',
-                'title' => 'Direct WhatsApp contact verified for PT Sumber Logistik',
-                'action_label' => 'Contact',
-                'supplier_slug' => 'pt-sumber-logistik',
-            ],
-        ];
+        $latestComparison = $user
+            ? Comparison::where('user_id', $user->id)->latest()->first()
+            : null;
+        $comparingCount = is_array($latestComparison?->supplier_ids)
+            ? count($latestComparison->supplier_ids)
+            : 0;
+
+        $availableCatalogs = Document::query()
+            ->when(! $isPremium, fn ($q) => $q->where('is_premium', false))
+            ->count();
 
         $recentlyViewed = Supplier::query()
             ->with(['tags', 'documents', 'certifications.certification'])
+            ->withUserSavedStatus($user)
+            ->latest('updated_at')
             ->take(5)
             ->get();
 
-        return ApiResponse::success([
+        $needsAttention = $recentlyViewed
+            ->take(3)
+            ->map(function (Supplier $supplier): array {
+                $hasWhatsapp = filled($supplier->whatsapp_url);
+
+                return [
+                    'id' => 'supplier-'.$supplier->id,
+                    'type' => $hasWhatsapp ? 'contact_available' : 'supplier_update',
+                    'title' => $hasWhatsapp
+                        ? $supplier->name.' siap dihubungi via WhatsApp'
+                        : $supplier->name.' memperbarui profil & katalog',
+                    'details' => $supplier->industry_category.' · '.$supplier->country,
+                    'badge' => $supplier->is_verified ? 'Verified' : null,
+                    'valid_until' => $supplier->updated_at?->diffForHumans(),
+                    'action_label' => 'Lihat Profil',
+                    'supplier_slug' => $supplier->slug,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $tierLabel = match (true) {
+            $user === null => 'Guest',
+            $isPremium => 'Business Pro',
+            default => ucfirst((string) ($user->subscription_tier ?: 'free')),
+        };
+
+        $response = ApiResponse::success([
             'membership' => [
-                'tier' => $user->subscription_tier ?? 'Business Pro',
-                'renews_date' => $user?->premium_expires_at?->format('M d, Y') ?? 'Dec 14, 2026',
-                'is_active' => true,
+                'tier' => $tierLabel,
+                'renews_date' => $isPremium ? ($user?->premium_expires_at?->format('M d, Y') ?? 'Aktif') : 'Paket Gratis',
+                'is_active' => $isPremium,
             ],
             'quick_stats' => [
                 'saved' => $savedCount,
-                'comparing' => 2,
-                'catalogs_downloaded' => 18,
+                'comparing' => $comparingCount,
+                'catalogs_downloaded' => $availableCatalogs,
             ],
             'needs_attention' => $needsAttention,
             'recently_viewed' => SupplierResource::collection($recentlyViewed),
         ], 'Home dashboard retrieved successfully');
+
+        $scope = 'user:'.($user?->id ?? 'guest').'|tier:'.($user?->subscription_tier ?? 'guest');
+
+        return ApiResponse::withConditionalCache(
+            request: $request,
+            response: $response,
+            scope: $scope,
+            isPublic: false,
+            maxAge: 0
+        );
     }
 }

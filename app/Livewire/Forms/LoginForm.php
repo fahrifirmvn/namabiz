@@ -12,10 +12,13 @@ use Livewire\Form;
 
 class LoginForm extends Form
 {
-    #[Validate('required|string|email')]
+    #[Validate('required', message: 'Alamat email wajib diisi.')]
+    #[Validate('string')]
+    #[Validate('email', message: 'Masukkan alamat email yang valid.')]
     public string $email = '';
 
-    #[Validate('required|string')]
+    #[Validate('required', message: 'Kata sandi wajib diisi.')]
+    #[Validate('string')]
     public string $password = '';
 
     #[Validate('boolean')]
@@ -34,7 +37,7 @@ class LoginForm extends Form
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'form.email' => trans('auth.failed'),
+                'form.email' => 'Email atau kata sandi tidak sesuai.',
             ]);
         }
 
@@ -55,10 +58,7 @@ class LoginForm extends Form
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'form.email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'form.email' => "Terlalu banyak percobaan masuk. Coba lagi dalam {$seconds} detik.",
         ]);
     }
 

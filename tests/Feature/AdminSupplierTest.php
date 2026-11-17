@@ -158,6 +158,7 @@ class AdminSupplierTest extends TestCase
 
     public function test_admin_user_can_upload_and_delete_supplier_document(): void
     {
+        Storage::fake('local');
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
         $supplier = Supplier::factory()->create();
@@ -179,7 +180,8 @@ class AdminSupplierTest extends TestCase
         $this->assertNotNull($document);
         $this->assertEquals('Katalog Produk & Profil 2025', $document->title);
         $this->assertTrue($document->is_premium);
-        Storage::disk('public')->assertExists($document->file_path);
+        Storage::disk('local')->assertExists($document->file_path);
+        Storage::disk('public')->assertMissing($document->file_path);
 
         // Test Delete Document
         $deleteResponse = $this->actingAs($admin)->delete(route('admin.suppliers.documents.destroy', [
@@ -193,11 +195,12 @@ class AdminSupplierTest extends TestCase
         $this->assertDatabaseMissing('documents', [
             'id' => $document->id,
         ]);
-        Storage::disk('public')->assertMissing($document->file_path);
+        Storage::disk('local')->assertMissing($document->file_path);
     }
 
     public function test_admin_can_create_supplier_in_one_step_with_tags_certifications_and_documents(): void
     {
+        Storage::fake('local');
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
         $certification = Certification::create([
@@ -337,6 +340,7 @@ class AdminSupplierTest extends TestCase
 
     public function test_admin_can_bulk_upload_documents_and_rejects_invalid_formats(): void
     {
+        Storage::fake('local');
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
         $supplier = Supplier::factory()->create();
@@ -387,5 +391,36 @@ class AdminSupplierTest extends TestCase
         $this->assertContains('Logo', $result['missing']);
         $this->assertContains('Kemampuan inti (tag)', $result['missing']);
         $this->assertContains('Dokumen', $result['missing']);
+    }
+
+    public function test_admin_uploaded_logo_is_resized_and_stored_as_webp(): void
+    {
+        if (! function_exists('imagecreatefromstring') || ! function_exists('imagewebp')) {
+            $this->markTestSkipped('GD WebP extension is required.');
+        }
+
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $supplier = Supplier::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.suppliers.update', $supplier), [
+            'name' => $supplier->name,
+            'country' => $supplier->country,
+            'industry_category' => $supplier->industry_category,
+            'logo_file' => UploadedFile::fake()->image('factory_logo.png', 1200, 900),
+        ]);
+
+        $response->assertRedirect(route('admin.suppliers.edit', $supplier));
+
+        $supplier->refresh();
+        $this->assertNotNull($supplier->logo);
+        $this->assertStringEndsWith('.webp', $supplier->logo);
+        Storage::disk('public')->assertExists($supplier->logo);
+
+        $storedBytes = Storage::disk('public')->get($supplier->logo);
+        $dimensions = getimagesizefromstring($storedBytes);
+        $this->assertIsArray($dimensions);
+        $this->assertSame(512, $dimensions[0]);
+        $this->assertSame(384, $dimensions[1]);
     }
 }

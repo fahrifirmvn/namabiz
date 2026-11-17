@@ -34,8 +34,8 @@ new #[Layout('layouts.guest')] #[Title('Masuk Akun')] class extends Component
          get isEmailValid() { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.emailVal || ''); }
      }">
     <div>
-        <h2 class="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight">Selamat datang kembali</h2>
-        <p class="text-13 text-text-secondary mt-1">
+        <h1 class="text-[26px] leading-8 font-bold text-text-primary tracking-tight">Selamat datang kembali</h1>
+        <p class="text-sm text-text-muted mt-3">
             Masuk untuk mengakses daftar pemasok tersimpan, koleksi, dan dokumen katalog.
         </p>
     </div>
@@ -56,11 +56,14 @@ new #[Layout('layouts.guest')] #[Title('Masuk Akun')] class extends Component
                           @blur="touched.email = true"
                           required
                           autofocus
-                          autocomplete="username" />
-            <p x-show="touched.email && !isEmailValid" x-cloak class="mt-1.5 text-xs text-danger">
+                           inputmode="email"
+                           aria-describedby="email-error"
+                           aria-invalid="{{ $errors->has('form.email') ? 'true' : 'false' }}"
+                           autocomplete="email" />
+            <p x-show="touched.email && (emailVal || '').trim().length > 0 && !isEmailValid" x-cloak class="mt-1.5 text-xs text-danger">
                 Masukkan alamat email yang valid.
             </p>
-            <x-input-error :messages="$errors->get('form.email')" class="mt-1.5" />
+            <x-input-error :messages="$errors->get('form.email')" id="email-error" class="mt-1.5" />
         </div>
 
         <!-- Password -->
@@ -68,7 +71,7 @@ new #[Layout('layouts.guest')] #[Title('Masuk Akun')] class extends Component
             <div class="flex items-center justify-between">
                 <x-input-label for="password" value="Kata sandi" />
                 @if (Route::has('password.request'))
-                    <a class="text-xs font-medium text-text-secondary hover:text-text-primary hover:underline rounded nb-focus-ring" href="{{ route('password.request') }}" wire:navigate>
+                    <a class="inline-flex min-h-[44px] items-center text-sm font-medium text-brand-700 hover:underline rounded nb-focus-ring" href="{{ route('password.request') }}" wire:navigate>
                         Lupa kata sandi?
                     </a>
                 @endif
@@ -82,7 +85,9 @@ new #[Layout('layouts.guest')] #[Title('Masuk Akun')] class extends Component
                               name="password"
                               placeholder="Masukkan kata sandi"
                               @blur="touched.password = true"
-                              required
+                               required
+                               aria-describedby="password-error"
+                               aria-invalid="{{ $errors->has('form.password') ? 'true' : 'false' }}"
                               autocomplete="current-password" />
                 <button type="button"
                         @click="show = !show"
@@ -96,14 +101,14 @@ new #[Layout('layouts.guest')] #[Title('Masuk Akun')] class extends Component
             <p x-show="touched.password && !(passwordVal || '').length" x-cloak class="mt-1.5 text-xs text-danger">
                 Kata sandi wajib diisi.
             </p>
-            <x-input-error :messages="$errors->get('form.password')" class="mt-1.5" />
+            <x-input-error :messages="$errors->get('form.password')" id="password-error" class="mt-1.5" />
         </div>
 
         <!-- Remember Me -->
         <div class="pt-1">
-            <label for="remember" class="inline-flex items-center cursor-pointer">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-gray-300 text-gray-900 shadow-2xs focus:ring-brand-600" name="remember">
-                <span class="ms-2 text-13 text-text-secondary">Ingat saya di perangkat ini</span>
+            <label for="remember" class="inline-flex min-h-[44px] items-center cursor-pointer">
+                <input wire:model="form.remember" id="remember" type="checkbox" class="w-6 h-6 rounded border-border text-brand-700 focus:ring-brand-600" name="remember">
+                <span class="ms-3 text-sm text-text-secondary">Ingat saya di perangkat ini</span>
             </label>
         </div>
 
@@ -121,9 +126,12 @@ new #[Layout('layouts.guest')] #[Title('Masuk Akun')] class extends Component
         </div>
     </form>
 
-    <div class="pt-4 border-t border-border-subtle text-center text-13 text-text-secondary">
+    @foreach(\App\Support\PortalContent::authOptions() as $option)
+        <a href="{{ $option['url'] }}" class="nb-secondary w-full">{{ $option['label'] }}</a>
+    @endforeach
+    <div class="pt-4 border-t border-border-subtle text-center text-sm text-text-secondary">
         Belum punya akun?
-        <a href="{{ route('register') }}" wire:navigate class="font-semibold text-text-primary hover:underline ms-1 nb-focus-ring rounded">
+        <a href="{{ route('register') }}" wire:navigate class="inline-flex min-h-[44px] items-center font-semibold text-brand-700 hover:underline ms-1 nb-focus-ring rounded">
             Daftar sekarang
         </a>
     </div>

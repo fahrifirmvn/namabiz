@@ -1,192 +1,81 @@
-<nav x-data="{ open: false }" class="sticky top-0 z-40 bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16 gap-4">
-            <!-- Brand & Main Nav -->
-            <div class="flex items-center gap-8 min-w-0">
-                <a href="{{ auth()->check() ? route('dashboard') : url('/') }}" class="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-lg">
-                    <x-application-logo />
-                </a>
-
-                <div class="hidden md:flex items-center gap-6">
+<header x-data="{ panel: null, scrolled: false }" @scroll.window.passive="scrolled = window.scrollY > 8"
+        @keydown.escape.window="panel = null" class="nb-global-header sticky top-0 z-40 bg-white/90 backdrop-blur-md"
+        :class="scrolled ? 'shadow-sm' : ''">
+    <nav class="nb-container flex h-14 md:h-[72px] items-center justify-between gap-4" aria-label="Navigasi utama">
+        <a href="{{ auth()->check() ? route('dashboard') : route('home') }}" class="inline-flex min-h-[44px] items-center rounded-xl" aria-label="Namabiz — beranda"><x-application-logo /></a>
+        <div class="hidden md:flex items-center gap-1">
+            @auth
+                <a class="nb-ghost px-3" href="{{ route('dashboard') }}">Beranda</a>
+            @endauth
+            <a class="nb-ghost px-3" href="{{ route('discover.index') }}" @if(request()->routeIs('discover.*')) aria-current="page" @endif>Jelajahi</a>
+            @guest
+                <a class="nb-ghost px-3" href="{{ route('home') }}#cara-kerja">Cara kerja</a>
+                <a class="nb-ghost px-3" href="{{ route('home') }}#paket">Paket</a>
+            @else
+                <a class="nb-ghost px-3" href="{{ route('saved.index') }}">Tersimpan</a>
+                <a class="nb-ghost px-3" href="{{ route('compare.index') }}">Bandingkan</a>
+            @endguest
+        </div>
+        @unless(request()->routeIs('home', 'discover.*'))
+            <form method="GET" action="{{ route('discover.index') }}" class="hidden xl:flex min-w-0 flex-1 max-w-xs nb-search !h-12">
+                <x-heroicon-o-magnifying-glass class="h-5 w-5 ml-2 shrink-0 text-text-muted" aria-hidden="true" />
+                <input name="q" type="search" aria-label="Cari pemasok" placeholder="Cari pemasok" value="{{ request('q') }}">
+            </form>
+        @endunless
+        <div class="hidden md:flex items-center gap-2">
+            @auth
+                <a class="nb-ghost px-3" href="{{ route('profile') }}">Akun</a>
+                @can('access-admin')<a class="nb-ghost px-3" href="{{ route('admin.suppliers.index') }}">Admin</a>@endcan
+                @unless(auth()->user()->isPremium())<a class="nb-primary" href="{{ route('upgrade') }}">Premium</a>@endunless
+                <form method="POST" action="{{ route('logout') }}">@csrf<button class="nb-ghost px-3" type="submit">Keluar</button></form>
+            @else
+                <a class="nb-ghost" href="{{ route('login') }}">Masuk</a>
+                <a class="nb-primary" href="{{ route('register') }}">Daftar gratis</a>
+            @endauth
+        </div>
+        <div class="flex md:hidden">
+            <button class="nb-icon-button" type="button" @click="panel = 'search'" aria-label="Buka pencarian" aria-controls="mobile-search" :aria-expanded="panel === 'search'"><x-heroicon-o-magnifying-glass class="h-5 w-5" /></button>
+            <button class="nb-icon-button" type="button" @click="panel = 'menu'" aria-label="Buka menu" aria-controls="mobile-menu" :aria-expanded="panel === 'menu'"><x-heroicon-o-bars-3 class="h-5 w-5" /></button>
+        </div>
+    </nav>
+    <div data-scroll-progress class="nb-scroll-progress" style="transform: scaleX(0)" aria-hidden="true"></div>
+    <template x-teleport="body">
+        <div x-cloak x-show="panel !== null" x-transition:enter="nb-panel-transition" x-transition:enter-start="nb-menu-from" x-transition:enter-end="nb-panel-to"
+             x-transition:leave="nb-panel-transition" x-transition:leave-start="nb-panel-to" x-transition:leave-end="nb-menu-from" x-trap.inert.noscroll="panel !== null"
+             class="fixed inset-0 z-[70] flex flex-col bg-white p-4 md:hidden" style="padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom))"
+             role="dialog" aria-modal="true" :aria-label="panel === 'menu' ? 'Menu navigasi' : 'Pencarian pemasok'">
+            <div class="flex items-center justify-between pb-6">
+                <x-application-logo />
+                <button class="nb-icon-button" type="button" @click="panel = null" aria-label="Tutup panel"><x-heroicon-o-x-mark class="h-5 w-5" /></button>
+            </div>
+            <div id="mobile-search" x-show="panel === 'search'">
+                <h2 class="text-2xl font-bold mb-5">Cari pemasok</h2>
+                <form action="{{ route('discover.index') }}" method="GET" class="space-y-4">
+                    <label for="overlay-search" class="text-sm font-medium">Nama, produk, atau bahan baku</label>
+                    <input id="overlay-search" type="search" name="q" class="h-14 w-full rounded-xl border-border" placeholder="Apa yang Anda butuhkan?">
+                    <button class="nb-primary w-full" type="submit">Cari pemasok</button>
+                </form>
+            </div>
+            <div id="mobile-menu" x-show="panel === 'menu'" class="flex flex-1 flex-col">
+                <nav aria-label="Menu seluler" class="flex flex-col gap-2 text-lg">
+                    <a class="nb-ghost justify-start" href="{{ route('discover.index') }}">Jelajahi</a>
+                    <a class="nb-ghost justify-start" href="{{ route('home') }}#cara-kerja" @click="panel = null">Cara kerja</a>
+                    <a class="nb-ghost justify-start" href="{{ route('home') }}#paket" @click="panel = null">Paket</a>
                     @auth
-                        <a href="{{ route('dashboard') }}"
-                           class="text-sm font-medium pb-1 transition {{ request()->routeIs('dashboard') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
-                            Beranda
-                        </a>
-                        <a href="{{ route('discover.index') }}"
-                           class="text-sm font-medium pb-1 transition {{ request()->routeIs('discover.*') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
-                            Jelajahi
-                        </a>
-                        <a href="{{ route('compare.index') }}"
-                           class="text-sm font-medium pb-1 transition {{ request()->routeIs('compare.*') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
-                            Bandingkan
-                        </a>
-                        <a href="{{ route('saved.index') }}"
-                           class="text-sm font-medium pb-1 transition {{ request()->routeIs('saved.*') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
-                            Tersimpan
-                        </a>
-                    @else
-                        <a href="{{ route('discover.index') }}"
-                           class="text-sm font-medium pb-1 transition {{ request()->routeIs('discover.*') ? 'border-b-2 border-black font-semibold text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
-                            Jelajahi
-                        </a>
-                        <a href="{{ url('/#cara-kerja') }}"
-                           class="text-sm font-medium pb-1 text-gray-600 hover:text-gray-900 transition">
-                            Cara kerja
-                        </a>
-                        <a href="{{ url('/#paket') }}"
-                           class="text-sm font-medium pb-1 text-gray-600 hover:text-gray-900 transition">
-                            Paket
-                        </a>
+                        <a class="nb-ghost justify-start" href="{{ route('dashboard') }}">Beranda</a>
+                        <a class="nb-ghost justify-start" href="{{ route('profile') }}">Akun Anda</a>
+                        @can('access-admin')<a class="nb-ghost justify-start" href="{{ route('admin.suppliers.index') }}">Admin</a>@endcan
                     @endauth
+                </nav>
+                <div class="mt-auto grid gap-3 pt-8">
+                    @guest
+                        <a class="nb-secondary" href="{{ route('login') }}">Masuk</a>
+                        <a class="nb-primary" href="{{ route('register') }}">Daftar gratis</a>
+                    @else
+                        <form method="POST" action="{{ route('logout') }}">@csrf<button class="nb-secondary w-full" type="submit">Keluar</button></form>
+                    @endguest
                 </div>
-            </div>
-
-            <!-- Global Search Bar with '/' Shortcut -->
-            <form method="GET" action="{{ route('discover.index') }}"
-                  class="hidden lg:flex flex-1 max-w-md mx-2"
-                  x-data="{
-                      init() {
-                          window.addEventListener('keydown', (e) => {
-                              if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-                                  e.preventDefault();
-                                  this.$refs.searchInput.focus();
-                              }
-                          });
-                      }
-                  }">
-                <div class="relative w-full">
-                    <x-heroicon-o-magnifying-glass aria-hidden="true" class="w-4 h-4 text-text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <label for="navbar-search" class="sr-only">Cari pemasok atau bahan baku</label>
-                    <input id="navbar-search"
-                           x-ref="searchInput"
-                           name="q"
-                           type="search"
-                           value="{{ request('q', request('query')) }}"
-                           placeholder="Cari pemasok atau bahan baku"
-                           class="w-full h-10 rounded-xl bg-surface border border-border pl-10 pr-9 py-2 text-sm text-text-primary placeholder-text-muted focus:bg-white focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition">
-                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <kbd class="px-1.5 py-0.5 text-xs text-text-muted bg-white border border-border rounded font-mono shadow-2xs">/</kbd>
-                    </div>
-                </div>
-            </form>
-
-            <!-- Actions / Auth Area -->
-            <div class="flex items-center gap-3 shrink-0">
-                @auth
-                    <!-- Subscription Tier Indicator -->
-                    <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ auth()->user()->isPremium() ? 'bg-amber-100 text-amber-900' : 'bg-surface-subtle text-text-secondary border border-border' }}">
-                        {{ auth()->user()->isPremium() ? 'Premium' : 'Paket Gratis' }}
-                    </span>
-
-                    @unless (auth()->user()->isPremium())
-                        <a href="{{ route('upgrade') }}" class="hidden sm:inline-flex items-center gap-1.5 h-10 bg-gray-900 text-white rounded-xl px-3.5 text-sm font-semibold hover:bg-black transition nb-focus-ring">
-                            <x-heroicon-s-sparkles class="w-4 h-4 text-amber-300" />
-                            <span>Upgrade</span>
-                        </a>
-                    @endunless
-
-                    <!-- Notification Bell (Static / Mockup) -->
-                    <button type="button" aria-label="Notifikasi" class="relative w-10 h-10 inline-flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-subtle rounded-xl transition nb-focus-ring">
-                        <x-heroicon-o-bell class="w-5 h-5" />
-                        <span class="absolute top-2 right-2 w-2 h-2 bg-brand-500 rounded-full"></span>
-                    </button>
-
-                    <!-- User Profile Dropdown -->
-                    <div class="relative" x-data="{ profileOpen: false }">
-                        <button type="button" @click="profileOpen = !profileOpen" @click.outside="profileOpen = false"
-                                :aria-expanded="profileOpen" aria-controls="profile-menu" aria-label="Menu profil pengguna"
-                                class="w-10 h-10 rounded-full bg-gray-900 text-white text-xs font-semibold flex items-center justify-center overflow-hidden nb-focus-ring shadow-2xs">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                        </button>
-                        <div id="profile-menu" x-show="profileOpen" x-cloak
-                             class="absolute right-0 mt-2 w-52 bg-white rounded-xl border border-border shadow-card-hover py-1 text-sm divide-y divide-gray-100">
-                            <div class="px-4 py-2.5">
-                                <p class="font-medium text-text-primary truncate">{{ auth()->user()->name }}</p>
-                                <p class="text-xs text-text-secondary truncate">{{ auth()->user()->email }}</p>
-                            </div>
-                            <div class="py-1">
-                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-text-secondary hover:text-text-primary hover:bg-surface">Profil Saya</a>
-                                <a href="{{ route('saved.index') }}" class="block px-4 py-2 text-text-secondary hover:text-text-primary hover:bg-surface">Pemasok Tersimpan</a>
-                                <a href="{{ route('upgrade') }}" class="block px-4 py-2 text-text-secondary hover:text-text-primary hover:bg-surface">Langganan &amp; Billing</a>
-                                @can('access-admin')
-                                    <a href="{{ route('admin.suppliers.index') }}" class="block px-4 py-2 font-medium text-brand-700 hover:bg-brand-50">Admin Portal</a>
-                                @endcan
-                            </div>
-                            <div class="py-1">
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full text-left px-4 py-2 text-text-secondary hover:text-text-primary hover:bg-surface">Keluar</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <a href="{{ route('login') }}" class="h-10 inline-flex items-center text-sm font-medium text-text-secondary hover:text-text-primary px-3 rounded-xl transition nb-focus-ring">
-                        Masuk
-                    </a>
-                    <a href="{{ route('register') }}" class="h-10 inline-flex items-center bg-gray-900 text-white rounded-xl px-4 text-sm font-semibold hover:bg-black transition nb-focus-ring">
-                        Daftar gratis
-                    </a>
-                @endauth
-
-                <!-- Mobile Menu Button -->
-                <button type="button" @click="open = !open" :aria-expanded="open" aria-controls="mobile-navigation"
-                        aria-label="Menu navigasi mobile"
-                        class="inline-flex md:hidden items-center justify-center rounded-lg p-2 text-gray-600 hover:bg-gray-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black">
-                    <svg x-show="!open" aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <svg x-show="open" aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" d="M6 6l12 12M6 18L18 6" />
-                    </svg>
-                </button>
             </div>
         </div>
-
-        <!-- Mobile Drawer Navigation -->
-        <div id="mobile-navigation" x-show="open" x-cloak class="md:hidden border-t border-gray-100 py-4">
-            <form method="GET" action="{{ route('discover.index') }}" class="mb-4">
-                <label for="mobile-navbar-search" class="sr-only">Cari pemasok atau bahan baku</label>
-                <div class="relative">
-                    <x-heroicon-o-magnifying-glass aria-hidden="true" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input id="mobile-navbar-search" name="q" type="search" value="{{ request('q', request('query')) }}" placeholder="Cari pemasok atau bahan baku..."
-                           class="w-full rounded-lg bg-gray-50 border border-gray-200 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-black">
-                </div>
-            </form>
-
-            <div class="space-y-1 text-sm font-medium">
-                @auth
-                    <a href="{{ route('dashboard') }}" @click="open = false"
-                       class="block rounded-lg px-3 py-2 {{ request()->routeIs('dashboard') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Beranda</a>
-                    <a href="{{ route('discover.index') }}" @click="open = false"
-                       class="block rounded-lg px-3 py-2 {{ request()->routeIs('discover.*') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Jelajahi</a>
-                    <a href="{{ route('compare.index') }}" @click="open = false"
-                       class="block rounded-lg px-3 py-2 {{ request()->routeIs('compare.*') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Bandingkan</a>
-                    <a href="{{ route('saved.index') }}" @click="open = false"
-                       class="block rounded-lg px-3 py-2 {{ request()->routeIs('saved.*') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Tersimpan</a>
-                    @unless (auth()->user()->isPremium())
-                        <a href="{{ route('upgrade') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-amber-700 bg-amber-50">Upgrade ke Premium</a>
-                    @endunless
-                    @can('access-admin')
-                        <a href="{{ route('admin.suppliers.index') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-emerald-700 hover:bg-gray-50">Admin Portal</a>
-                    @endcan
-                    <a href="{{ route('profile') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-50">Profil Saya</a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full text-left rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-50">Keluar</button>
-                    </form>
-                @else
-                    <a href="{{ route('discover.index') }}" @click="open = false"
-                       class="block rounded-lg px-3 py-2 {{ request()->routeIs('discover.*') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">Jelajahi</a>
-                    <a href="{{ url('/#cara-kerja') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-50">Cara kerja</a>
-                    <a href="{{ url('/#paket') }}" @click="open = false" class="block rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-50">Paket</a>
-                    <div class="pt-2 border-t border-gray-100 flex gap-2">
-                        <a href="{{ route('login') }}" class="flex-1 text-center py-2 border border-gray-200 rounded-lg text-gray-700">Masuk</a>
-                        <a href="{{ route('register') }}" class="flex-1 text-center py-2 bg-black text-white rounded-lg">Daftar</a>
-                    </div>
-                @endauth
-            </div>
-        </div>
-    </div>
-</nav>
+    </template>
+</header>

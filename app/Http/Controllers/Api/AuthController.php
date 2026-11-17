@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\ApiResponse;
+use App\Support\GoogleIdTokenVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -67,32 +68,38 @@ class AuthController extends Controller
     }
 
     /**
-     * Authenticate or register via Google One-Tap on mobile.
+     * Authenticate or register via Google One-Tap on mobile after cryptographic ID token verification.
      */
-    public function google(Request $request): JsonResponse
+    public function google(Request $request, GoogleIdTokenVerifier $verifier): JsonResponse
     {
-        if (app()->environment('production') && ! $request->filled('id_token')) {
-            return ApiResponse::error('Google ID token verification is required.', 403);
-        }
-
         $validated = $request->validate([
-            'email' => ['required', 'email', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
-            'avatar' => ['nullable', 'string', 'max:500', 'url:http,https'],
+            'id_token' => ['required', 'string', 'min:20'],
             'device_name' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $existingUser = User::where('email', $validated['email'])->first();
+        try {
+            $claims = $verifier->verify($validated['id_token']);
+        } catch (\RuntimeException $exception) {
+            $status = str_contains($exception->getMessage(), 'not configured') ? 503 : 401;
+
+            return ApiResponse::error($exception->getMessage(), $status);
+        }
+
+        $existingUser = User::where('email', $claims['email'])->first();
         if ($existingUser && $existingUser->isAdmin()) {
-            return ApiResponse::error('Administrator accounts cannot authenticate via unverified social login.', 403);
+            return ApiResponse::error('Administrator accounts cannot authenticate via social login.', 403);
         }
 
         $user = $existingUser ?? User::create([
-            'email' => $validated['email'],
-            'name' => $validated['name'],
+            'email' => $claims['email'],
+            'name' => $claims['name'] ?? explode('@', $claims['email'])[0],
             'password' => Hash::make(Str::random(32)),
-            'avatar' => $validated['avatar'] ?? null,
+            'avatar' => $claims['avatar'],
         ]);
+
+        if (! $existingUser) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
 
         $deviceName = $validated['device_name'] ?? 'android-google-auth';
         $token = $user->createToken($deviceName)->plainTextToken;
