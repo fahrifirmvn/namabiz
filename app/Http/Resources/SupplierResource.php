@@ -23,7 +23,8 @@ class SupplierResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'logo' => $this->resolveLogoUrl(),
+            'logo' => $this->resolveAssetUrl($this->logo),
+            'cover_image' => $this->resolveAssetUrl($this->cover_image),
             'tagline' => $this->tagline,
             'description' => $this->description,
             'country' => $this->country,
@@ -69,17 +70,17 @@ class SupplierResource extends JsonResource
         ];
     }
 
-    private function resolveLogoUrl(): ?string
+    private function resolveAssetUrl(?string $path): ?string
     {
-        if (! $this->logo) {
+        if (! $path) {
             return null;
         }
 
-        if (str_starts_with($this->logo, 'http')) {
-            return $this->logo;
+        if (str_starts_with($path, 'http')) {
+            return $path;
         }
 
-        $url = url('storage/'.ltrim(str_replace('storage/', '', $this->logo), '/'));
+        $url = url('storage/'.ltrim(str_replace('storage/', '', $path), '/'));
         $version = $this->updated_at?->timestamp;
 
         return $version ? "{$url}?v={$version}" : $url;

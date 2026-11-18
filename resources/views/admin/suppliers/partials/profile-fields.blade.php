@@ -42,8 +42,8 @@
 
         <div class="p-5 bg-surface rounded-xl border border-gray-200 flex flex-col sm:flex-row items-start gap-5"
              x-data="{ preview: @js($supplier->logo ? (str_starts_with($supplier->logo, 'http') ? $supplier->logo : asset('storage/'.$supplier->logo)) : null) }">
-            <div class="w-20 h-20 rounded-2xl overflow-hidden border border-gray-200 bg-white flex items-center justify-center shrink-0">
-                <template x-if="preview"><img :src="preview" alt="Pratinjau logo" class="w-full h-full object-cover"></template>
+            <div class="w-20 h-20 rounded-2xl overflow-hidden border border-gray-200 bg-white p-1.5 flex items-center justify-center shrink-0">
+                <template x-if="preview"><img :src="preview" alt="Pratinjau logo" class="w-full h-full object-contain"></template>
                 <template x-if="!preview"><x-heroicon-o-photo class="w-7 h-7 text-gray-300" /></template>
             </div>
             <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
@@ -58,6 +58,29 @@
                 @if($supplier->exists && $supplier->logo)
                     <label class="inline-flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
                         <input type="checkbox" name="remove_logo" value="1" class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"> Hapus logo saat ini
+                    </label>
+                @endif
+            </div>
+        </div>
+
+        <div class="p-5 bg-surface rounded-xl border border-gray-200 flex flex-col sm:flex-row items-start gap-5"
+             x-data="{ coverPreview: @js($supplier->cover_image ? (str_starts_with($supplier->cover_image, 'http') ? $supplier->cover_image : asset('storage/'.$supplier->cover_image)) : null) }">
+            <div class="w-32 h-20 rounded-xl overflow-hidden border border-gray-200 bg-white flex items-center justify-center shrink-0">
+                <template x-if="coverPreview"><img :src="coverPreview" alt="Pratinjau foto fasilitas" class="w-full h-full object-cover"></template>
+                <template x-if="!coverPreview"><x-heroicon-o-building-office-2 class="w-7 h-7 text-gray-300" /></template>
+            </div>
+            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Foto Fasilitas / Pabrik (PNG/JPG/WebP, maks 4MB)</label>
+                    <input type="file" name="cover_image_file" accept="image/*"
+                           @change="coverPreview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : coverPreview"
+                           class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 transition" />
+                    @error('cover_image_file') <p class="text-2xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+                <x-admin.field label="Atau tautan URL foto fasilitas" name="cover_image_url" type="url" :value="str_starts_with($supplier->cover_image ?? '', 'http') ? $supplier->cover_image : ''" placeholder="https://example.com/pabrik.jpg" />
+                @if($supplier->exists && $supplier->cover_image)
+                    <label class="inline-flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                        <input type="checkbox" name="remove_cover_image" value="1" class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"> Hapus foto fasilitas saat ini
                     </label>
                 @endif
             </div>

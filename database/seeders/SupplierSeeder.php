@@ -5,13 +5,14 @@ namespace Database\Seeders;
 use App\Models\Certification;
 use App\Models\Supplier;
 use App\Observers\CatalogCacheObserver;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
 class SupplierSeeder extends Seeder
 {
     /**
-     * Seed curated profiles of real Indonesian B2B manufacturing and logistics companies.
+     * Seed curated profiles of 35 real Indonesian B2B manufacturing and logistics companies.
      */
     public function run(): void
     {
@@ -25,14 +26,8 @@ class SupplierSeeder extends Seeder
 
         foreach ($this->companies() as $company) {
             $slug = $company['slug'];
-            $logoPath = null;
-            $sourceLogo = database_path("seeders/assets/suppliers/{$slug}.webp");
-
-            if (is_file($sourceLogo)) {
-                $targetPath = "suppliers/{$slug}.webp";
-                $disk->put($targetPath, (string) file_get_contents($sourceLogo));
-                $logoPath = $targetPath;
-            }
+            $logoPath = $this->syncSeededAsset($disk, "seeders/assets/suppliers/{$slug}.webp", "suppliers/{$slug}.webp");
+            $coverPath = $this->syncSeededAsset($disk, "seeders/assets/covers/{$slug}.webp", "suppliers/covers/{$slug}.webp");
 
             $supplier = Supplier::updateOrCreate(
                 ['slug' => $slug],
@@ -41,18 +36,20 @@ class SupplierSeeder extends Seeder
                     'industry_category' => $company['industry_category'],
                     'tagline' => $company['tagline'],
                     'description' => $company['description'],
-                    'about' => $company['description'],
+                    'about' => $company['about'] ?? $company['description'],
                     'country' => 'Indonesia',
                     'city' => $company['city'],
                     'website' => $company['website'],
                     'email' => $company['email'] ?? null,
-                    'whatsapp' => null,
+                    'whatsapp' => $company['whatsapp'] ?? null,
                     'founded_year' => $company['founded_year'],
-                    'company_size' => null,
-                    'production_capacity' => null,
+                    'company_size' => $company['company_size'] ?? null,
+                    'production_capacity' => $company['production_capacity'] ?? null,
                     'moq' => null,
                     'avg_lead_time' => null,
+                    'carbon_footprint_report' => $company['carbon_footprint_report'] ?? null,
                     'logo' => $logoPath,
+                    'cover_image' => $coverPath,
                     'is_verified' => false,
                 ]
             );
@@ -80,14 +77,27 @@ class SupplierSeeder extends Seeder
         CatalogCacheObserver::flush();
     }
 
+    private function syncSeededAsset(Filesystem $disk, string $databaseRelativePath, string $publicTargetPath): ?string
+    {
+        $source = database_path($databaseRelativePath);
+        if (! is_file($source)) {
+            return null;
+        }
+
+        $disk->put($publicTargetPath, (string) file_get_contents($source));
+
+        return $publicTargetPath;
+    }
+
     /**
-     * Curated Indonesian B2B suppliers researched from official company websites.
+     * Curated Indonesian B2B suppliers researched from official company websites and IDX filings.
      *
      * @return list<array<string, mixed>>
      */
     private function companies(): array
     {
         return [
+            // Packaging Manufacturer (5)
             [
                 'name' => 'PT Berlina Tbk',
                 'slug' => 'pt-berlina-tbk',
@@ -95,9 +105,13 @@ class SupplierSeeder extends Seeder
                 'city' => 'Cikarang, Bekasi',
                 'founded_year' => 1969,
                 'website' => 'https://www.berlina.co.id',
+                'email' => 'info@berlina.co.id',
+                'company_size' => '890 karyawan tetap',
+                'carbon_footprint_report' => 'Sustainability Report 2024',
                 'tagline' => 'Produsen kemasan plastik injeksi, tiup, dan tube untuk industri.',
                 'description' => 'Perusahaan publik Indonesia yang memproduksi kemasan plastik rigid, tube plastik, sikat gigi, serta cetakan (mould) untuk sektor kosmetik, farmasi, makanan, dan otomotif.',
                 'tags' => ['Blow Moulding', 'Injection Moulding', 'Plastic Tubes', 'Packaging Mould'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'FSSC 22000'],
             ],
             [
                 'name' => 'PT Trias Sentosa Tbk',
@@ -106,9 +120,14 @@ class SupplierSeeder extends Seeder
                 'city' => 'Sidoarjo',
                 'founded_year' => 1979,
                 'website' => 'https://www.trias-sentosa.com',
+                'email' => 'benefit.info@trias-sentosa.com',
+                'company_size' => '1.113 karyawan',
+                'production_capacity' => '137.000 MT/tahun (BOPP & BOPET)',
+                'carbon_footprint_report' => 'Annual & Sustainability Report 2024/2025',
                 'tagline' => 'Produsen film kemasan fleksibel BOPP dan BOPET berskala regional.',
                 'description' => 'Manufaktur Biaxially Oriented Polypropylene (BOPP) dan Polyester (BOPET) film untuk aplikasi kemasan makanan, minuman, rokok, dan laminasi industri.',
                 'tags' => ['BOPP Film', 'BOPET Film', 'Flexible Packaging', 'Metalized Film'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'FSSC 22000', 'Halal BPJPH / MUI'],
             ],
             [
                 'name' => 'PT Fajar Surya Wisesa Tbk',
@@ -117,9 +136,14 @@ class SupplierSeeder extends Seeder
                 'city' => 'Jakarta Pusat',
                 'founded_year' => 1988,
                 'website' => 'https://www.fajarpaper.com',
+                'email' => 'legalfasw@fajarpaper.com',
+                'company_size' => '2.927 karyawan tetap',
+                'production_capacity' => '1.500.000+ ton/tahun',
+                'carbon_footprint_report' => 'Sustainability Report & JCM GHG',
                 'tagline' => 'Produsen kertas kemasan industri berbahan baku kertas daur ulang.',
                 'description' => 'Memproduksi kertas kemasan industri seperti kraft linerboard, corrugated medium paper, dan coated duplex board untuk kebutuhan kotak karton bergelombang.',
                 'tags' => ['Containerboard', 'Kraft Liner', 'Corrugated Medium', 'Duplex Board'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'Halal BPJPH / MUI'],
             ],
             [
                 'name' => 'PT Suparma Tbk',
@@ -129,10 +153,14 @@ class SupplierSeeder extends Seeder
                 'founded_year' => 1976,
                 'website' => 'https://www.ptsuparmatbk.com',
                 'email' => 'info@ptsuparmatbk.com',
+                'whatsapp' => '+62 811-3391-818',
+                'company_size' => '824 karyawan tetap',
+                'production_capacity' => '255.900 ton/tahun',
+                'carbon_footprint_report' => 'Sustainability Report 2025',
                 'tagline' => 'Manufaktur kertas industri, kertas tisu, dan kertas pembungkus.',
                 'description' => 'Produsen kertas dan tisu berbasis di Surabaya yang memproduksi duplex, kraft, laminated wrapping kraft, serta produk tisu komersial dan rumah tangga.',
                 'tags' => ['Industrial Paper', 'Duplex Board', 'Kraft Paper', 'Commercial Tissue'],
-                'certifications' => ['ISO 9001:2015', 'ISO 14001'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 22000', 'ISO 45001', 'FSSC 22000', 'Halal BPJPH / MUI'],
             ],
             [
                 'name' => 'PT Indopoly Swakarsa Industry Tbk',
@@ -141,11 +169,17 @@ class SupplierSeeder extends Seeder
                 'city' => 'Jakarta',
                 'founded_year' => 1995,
                 'website' => 'https://www.indopoly.co.id',
+                'email' => 'marketing@indopoly.co.id',
+                'company_size' => '1.369 karyawan tetap',
+                'production_capacity' => '100.000 ton/tahun (BOPP & BOPET)',
+                'carbon_footprint_report' => 'Greenhouse Gas Emissions Report 2024',
                 'tagline' => 'Produsen BOPP dan BOPET film untuk kemasan fleksibel.',
                 'description' => 'Menyuplai film kemasan fleksibel untuk industri makanan, barang konsumen, laminasi termal, serta berbagai kebutuhan kemasan industri.',
                 'tags' => ['BOPP Film', 'BOPET Film', 'Food Packaging Film', 'Thermal Lamination'],
-                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'FSSC 22000'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'FSSC 22000', 'Halal BPJPH / MUI'],
             ],
+
+            // Distributor & Converter (5)
             [
                 'name' => 'PT Alkindo Naratama Tbk',
                 'slug' => 'pt-alkindo-naratama-tbk',
@@ -154,10 +188,14 @@ class SupplierSeeder extends Seeder
                 'founded_year' => 1989,
                 'website' => 'https://www.alkindo.co.id',
                 'email' => 'aldopack@alkindo.co.id',
+                'whatsapp' => '+62 811-1911-5000',
+                'company_size' => '857 karyawan tetap',
+                'production_capacity' => '40.500 ton/tahun terpasang',
+                'carbon_footprint_report' => 'Annual & Sustainability Report 2025',
                 'tagline' => 'Konverter kertas terintegrasi untuk paper tube, core, dan honeycomb.',
                 'description' => 'Grup manufaktur dan konversi produk berbasis kertas daur ulang yang menghasilkan paper tube, paper core, edge protector, honeycomb, dan kemasan kertas.',
                 'tags' => ['Paper Core', 'Paper Tube', 'Paper Honeycomb', 'Paper Packaging'],
-                'certifications' => ['ISO 9001:2015'],
+                'certifications' => ['ISO 9001:2015', 'Halal BPJPH / MUI'],
             ],
             [
                 'name' => 'PT Lautan Luas Tbk',
@@ -167,11 +205,64 @@ class SupplierSeeder extends Seeder
                 'founded_year' => 1951,
                 'website' => 'https://www.lautan-luas.com',
                 'email' => 'info@lautan-luas.com',
+                'company_size' => '3.150 karyawan',
+                'production_capacity' => '1.000.000 MT/tahun (15 pabrik)',
+                'carbon_footprint_report' => 'Sustainability Report 2024/2025',
                 'tagline' => 'Distributor dan manufaktur bahan kimia dasar serta spesialisasi industri.',
                 'description' => 'Penyedia bahan baku kimia, konversi produk pangan, pengolahan air bersih, serta layanan pendukung teknis untuk berbagai sektor manufaktur di Indonesia.',
                 'tags' => ['Industrial Chemicals', 'Water Treatment', 'Food Ingredients', 'Chemical Distribution'],
-                'certifications' => ['ISO 9001:2015', 'ISO 14001'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'FSSC 22000', 'Halal BPJPH / MUI'],
             ],
+            [
+                'name' => 'PT Colorpak Indonesia Tbk',
+                'slug' => 'pt-colorpak-indonesia-tbk',
+                'industry_category' => 'Distributor & Converter',
+                'city' => 'Tangerang',
+                'founded_year' => 1988,
+                'website' => 'https://www.colorpak.co.id',
+                'email' => 'contact@colorpak.co.id',
+                'company_size' => '102 karyawan',
+                'production_capacity' => '25.000 MT/tahun terpasang',
+                'carbon_footprint_report' => 'Laporan Keberlanjutan 2025 (AR 2025)',
+                'tagline' => 'Produsen tinta cetak kemasan sekaligus distributor film fleksibel dan perekat industri.',
+                'description' => 'Mengoperasikan pabrik di Tangerang dan Gresik untuk memproduksi tinta rotogravure/flexo serta pelapis kemasan, sekaligus mendistribusikan film BOPP, PET, Nylon, aluminium foil, dan adhesive laminasi.',
+                'tags' => ['Packaging Film Distribution', 'BOPP & BOPET Film', 'Printing Inks', 'Lamination Adhesives', 'Flexible Packaging'],
+                'certifications' => ['ISO 9001:2015', 'ISO 45001', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Champion Pacific Indonesia Tbk',
+                'slug' => 'pt-champion-pacific-indonesia-tbk',
+                'industry_category' => 'Distributor & Converter',
+                'city' => 'Bekasi',
+                'founded_year' => 1975,
+                'website' => 'https://champion.co.id',
+                'email' => 'corporate@champion.co.id',
+                'company_size' => '775 karyawan',
+                'carbon_footprint_report' => 'AR & Sustainability Report 2025 (11.835 tCO2eq)',
+                'tagline' => 'Konverter kemasan fleksibel berbasis laminasi aluminium foil dan film plastik.',
+                'description' => 'Perusahaan publik yang menjalankan usaha konversi kemasan fleksibel melalui entitas anak PT Avesta Continental Pack dan PT Indogravure untuk sektor farmasi, makanan, kosmetik, dan agroindustri.',
+                'tags' => ['Flexible Packaging', 'Foil & Film Lamination', 'Pharma Blister Pack', 'Rotogravure Converting', 'Industrial Pouches'],
+                'certifications' => ['ISO 9001:2015', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Ekadharma International Tbk',
+                'slug' => 'pt-ekadharma-international-tbk',
+                'industry_category' => 'Distributor & Converter',
+                'city' => 'Tangerang',
+                'founded_year' => 1981,
+                'website' => 'https://ekadharma.com',
+                'email' => 'contact@tng.ekadharma.com',
+                'whatsapp' => '+62 851-7962-7289',
+                'company_size' => '542 karyawan',
+                'production_capacity' => '376 juta m2/tahun',
+                'carbon_footprint_report' => 'Laporan Keberlanjutan 2025 (1.080 tCO2eq)',
+                'tagline' => 'Konverter dan distributor nasional pita perekat pengemasan industri serta film pembungkus.',
+                'description' => 'Mengoperasikan fasilitas konversi di Pasar Kemis, Tangerang, didukung jaringan 48 cabang di Indonesia untuk memproduksi OPP packaging tape, masking tape, kraft tape, cling wrap, dan custom printed tape.',
+                'tags' => ['Adhesive Packaging Tape', 'OPP & Masking Tape', 'Cling & Stretch Film', 'Tape Converting', 'National Distribution'],
+                'certifications' => ['ISO 9001:2015'],
+            ],
+
+            // Contract Manufacturer (5)
             [
                 'name' => 'PT Sat Nusapersada Tbk',
                 'slug' => 'pt-sat-nusapersada-tbk',
@@ -179,10 +270,75 @@ class SupplierSeeder extends Seeder
                 'city' => 'Batam',
                 'founded_year' => 1990,
                 'website' => 'https://www.satnusa.com',
+                'email' => 'customer.services@satnusa.com',
+                'company_size' => '5.812 karyawan',
+                'production_capacity' => '21 lini SMT (~330 jt komponen/bln)',
+                'carbon_footprint_report' => 'Sustainability Report (IDX / Investor Hub)',
                 'tagline' => 'Jasa manufaktur elektronik terintegrasi (EMS) dan perakitan OEM.',
                 'description' => 'Penyedia layanan Electronics Manufacturing Services (EMS) di Batam yang mencakup SMT assembly, plastic injection, metal stamping, hingga perakitan produk jadi.',
                 'tags' => ['Electronics Manufacturing', 'SMT Assembly', 'OEM Assembly', 'Contract Manufacturing'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001'],
             ],
+            [
+                'name' => 'PT Intim Harmonis Foods Industri',
+                'slug' => 'pt-intim-harmonis-foods-industri',
+                'industry_category' => 'Contract Manufacturer',
+                'city' => 'Pasuruan',
+                'founded_year' => 1997,
+                'website' => 'https://tollmanufacturing.inafood.com',
+                'email' => 'tollmnf@inafood.com',
+                'whatsapp' => '+62 811-6077-852',
+                'tagline' => 'Produsen maklon dan toll manufacturing biskuit, cookies, krakers, dan wafer bersertifikasi internasional.',
+                'description' => 'PT Intim Harmonis Foods Industri (INAFOOD) menyediakan layanan toll manufacturing dan private label untuk produk biskuit, cookies, krakers, serta wafer roll dan block di Sukorejo, Pasuruan, lengkap dengan dukungan R&D formulasi dan regulasi BPOM/Halal.',
+                'tags' => ['F&B Toll Manufacturing', 'Biscuit & Wafer OEM', 'Private Label Foods', 'Custom Formulation', 'Food R&D Facility'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 22000', 'FSSC 22000', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Nose Herbal Indo',
+                'slug' => 'pt-nose-herbal-indo',
+                'industry_category' => 'Contract Manufacturer',
+                'city' => 'Jakarta Utara',
+                'founded_year' => null,
+                'website' => 'https://nose.co.id',
+                'whatsapp' => '+62 811-1529-293',
+                'company_size' => '200+ karyawan',
+                'tagline' => 'Pabrik maklon kosmetik dan skincare OEM/ODM tersertifikasi CPKB BPOM, ISO 9001:2015, dan Halal MUI.',
+                'description' => 'Menyediakan jasa maklon kosmetik dan perawatan diri OEM/ODM meliputi skincare, body care, hair care, parfum, dan makeup dengan layanan formulasi R&D, uji stabilitas berstandar CPKB, serta pengurusan izin BPOM dan Halal.',
+                'tags' => ['Cosmetics Maklon', 'Skincare OEM/ODM', 'CPKB Certified', 'R&D Formulation', 'BPOM & Halal Licensing'],
+                'certifications' => ['ISO 9001:2015', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Pyridam Farma Tbk',
+                'slug' => 'pt-pyridam-farma-tbk',
+                'industry_category' => 'Contract Manufacturer',
+                'city' => 'Jakarta Selatan',
+                'founded_year' => 1976,
+                'website' => 'https://pyfa.co.id',
+                'email' => 'corsec@pyfa.co.id',
+                'company_size' => '2.341 karyawan',
+                'carbon_footprint_report' => 'Annual & Sustainability Report 2025',
+                'tagline' => 'Perusahaan farmasi dan penyedia jasa CDMO terintegrasi untuk sediaan padat, cair, herbal, hingga injeksi steril.',
+                'description' => 'Menyediakan layanan Contract Development and Manufacturing Organization (CDMO) end-to-end melalui fasilitas produksi di Cianjur, Cimahi, dan Cikarang untuk sediaan tablet, kapsul, produk herbal, sirup, krim, dan injeksi steril.',
+                'tags' => ['Pharmaceutical CDMO', 'Herbal & Supplement Maklon', 'Sterile Injectables', 'Formulation R&D', 'Toll Manufacturing'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'HACCP', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Astra Otoparts Tbk',
+                'slug' => 'pt-astra-otoparts-tbk',
+                'industry_category' => 'Contract Manufacturer',
+                'city' => 'Jakarta Utara',
+                'founded_year' => 1976,
+                'website' => 'https://www.astra-otoparts.com',
+                'email' => 'domestic.sales@component.astra.co.id',
+                'company_size' => '30.051 karyawan',
+                'carbon_footprint_report' => 'Sustainability Report 2025',
+                'tagline' => 'Grup manufaktur komponen otomotif OEM presisi untuk kendaraan roda dua, roda empat, dan xEV.',
+                'description' => 'Grup manufaktur dan rekayasa komponen otomotif terintegrasi di Indonesia dengan segmen pasar OEM dan aftermarket, memproduksi komponen mesin, bodi dan sasis, kelistrikan presisi, serta komponen kendaraan elektrifikasi (xEV).',
+                'tags' => ['Automotive OEM', 'Precision Components', 'Engine & Chassis Parts', 'Electrical & Electronic Parts', 'xEV Components'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001'],
+            ],
+
+            // Raw Material Supplier (5)
             [
                 'name' => 'PT Chandra Asri Pacific Tbk',
                 'slug' => 'pt-chandra-asri-pacific-tbk',
@@ -190,11 +346,78 @@ class SupplierSeeder extends Seeder
                 'city' => 'Jakarta',
                 'founded_year' => 1984,
                 'website' => 'https://chandra-asri.com',
+                'email' => 'corporate.comm@capcx.com',
+                'company_size' => '2.384 karyawan tetap (2024)',
+                'production_capacity' => '4,4 jt MT/tahun (Indonesia)',
+                'carbon_footprint_report' => 'Sustainability Report 2024/2025',
                 'tagline' => 'Perusahaan solusi kimia, petrokimia, dan infrastruktur industri.',
                 'description' => 'Produsen petrokimia Indonesia yang memasok olefin, polietilena (PE), polipropilena (PP), stirena monomer, serta bahan baku kimia industri.',
                 'tags' => ['Petrochemical', 'Polypropylene', 'Polyethylene', 'Industrial Resin'],
-                'certifications' => ['ISO 9001:2015', 'ISO 14001'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'Halal BPJPH / MUI'],
             ],
+            [
+                'name' => 'PT Gunung Raja Paksi Tbk',
+                'slug' => 'pt-gunung-raja-paksi-tbk',
+                'industry_category' => 'Raw Material Supplier',
+                'city' => 'Bekasi',
+                'founded_year' => 1970,
+                'website' => 'https://www.gunungrajapaksi.com',
+                'email' => 'sales.manufacturer@gunungsteel.com',
+                'whatsapp' => '+62 811-9001-6536',
+                'company_size' => '1.484 karyawan',
+                'production_capacity' => 'Slab 1,2 jt MT/th; HRC/HRP 1,2 jt MT/th',
+                'carbon_footprint_report' => 'Sustainability Report 2025',
+                'tagline' => 'Produsen baja swasta terintegrasi untuk pasokan baja lembaran, Hot Rolled Coil (HRC), dan pelat baja industri.',
+                'description' => 'Mengoperasikan pabrik baja terintegrasi seluas lebih dari 150 hektare di Cikarang Barat, Bekasi, memasok slab baja, Hot Rolled Coil (HRC), pelat baja, serta produk baja rendah karbon untuk sektor konstruksi dan manufaktur.',
+                'tags' => ['Steel Coil (HRC)', 'Steel Plates', 'Steel Slabs', 'Flat Steel Products', 'Low-Carbon Steel'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001'],
+            ],
+            [
+                'name' => 'PT Indonesia Asahan Aluminium (Persero)',
+                'slug' => 'pt-indonesia-asahan-aluminium-persero',
+                'industry_category' => 'Raw Material Supplier',
+                'city' => 'Batu Bara',
+                'founded_year' => 1976,
+                'website' => 'https://www.inalum.id',
+                'email' => 'scm@inalum.id',
+                'production_capacity' => '275.000 ton/tahun',
+                'carbon_footprint_report' => 'Sustainability Report 2025',
+                'tagline' => 'Produsen peleburan aluminium primer penyuplai ingot, billet, dan alloy berenergi PLTA.',
+                'description' => 'INALUM mengoperasikan pabrik peleburan aluminium di Kuala Tanjung, Sumatera Utara yang didukung energi hijau PLTA Sungai Asahan, memasok Aluminium Ingot, Billet, dan Foundry Alloy berstandar internasional.',
+                'tags' => ['Primary Aluminum', 'Aluminum Ingot', 'Aluminum Billet', 'Aluminum Alloy', 'Smelting & Casting'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001'],
+            ],
+            [
+                'name' => 'PT Asahimas Chemical',
+                'slug' => 'pt-asahimas-chemical',
+                'industry_category' => 'Raw Material Supplier',
+                'city' => 'Cilegon',
+                'founded_year' => 1986,
+                'website' => 'https://www.asc.co.id',
+                'production_capacity' => 'PVC 750 rb ton/th; VCM 900 rb ton/th',
+                'tagline' => 'Produsen terintegrasi resin Polyvinyl Chloride (PVC) dan bahan kimia dasar chlor-alkali di Cilegon.',
+                'description' => 'Mengoperasikan kompleks pabrik Chlor-Alkali dan Vinyl Chloride terintegrasi di Cilegon, Banten sejak 1989, memasok resin PVC bermerek UNIVYL, VCM, EDC, Caustic Soda (NaOH), HCl, serta Sodium Hypochlorite.',
+                'tags' => ['PVC Resin', 'VCM & EDC', 'Caustic Soda (NaOH)', 'Chlor-Alkali Chemicals', 'Industrial Polymer'],
+                'certifications' => ['ISO 14001', 'ISO 45001'],
+            ],
+            [
+                'name' => 'PT Indah Kiat Pulp & Paper Tbk',
+                'slug' => 'pt-indah-kiat-pulp-paper-tbk',
+                'industry_category' => 'Raw Material Supplier',
+                'city' => 'Tangerang',
+                'founded_year' => 1976,
+                'website' => 'https://indahkiat.co.id',
+                'email' => 'cs_iks@app.co.id',
+                'company_size' => '12.839 karyawan',
+                'production_capacity' => 'Pulp 3,0 jt ton/th; Kertas Kemasan 2,1 jt ton/th',
+                'carbon_footprint_report' => 'Sustainability Report 2025',
+                'tagline' => 'Produsen terintegrasi bahan baku pulp, kertas budaya, dan kertas kemasan industri berskala global.',
+                'description' => 'Mengoperasikan pabrik utama di Tangerang, Serang, dan Perawang (Riau) untuk memproduksi bahan baku pulp kayu, kertas kemasan industri (containerboard, duplex, ivory, food packaging board), kertas budaya, dan tisu.',
+                'tags' => ['Pulp & Fiber', 'Industrial Paper', 'Packaging Board', 'Containerboard', 'Food Packaging Board'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 22000', 'ISO 45001', 'Halal BPJPH / MUI'],
+            ],
+
+            // Spices & Coconut (5)
             [
                 'name' => 'PT Pulau Sambu',
                 'slug' => 'pt-pulau-sambu',
@@ -203,10 +426,69 @@ class SupplierSeeder extends Seeder
                 'founded_year' => 1967,
                 'website' => 'https://www.sambugroup.com',
                 'email' => 'info@sambu.co.id',
+                'whatsapp' => '+62 813-8080-8095',
+                'company_size' => '10.000+ karyawan',
                 'tagline' => 'Pengolahan kelapa terpadu untuk bahan pangan dan industri ekspor.',
                 'description' => 'Bagian dari Sambu Group yang bergerak di industri pengolahan kelapa terpadu, menghasilkan santan, air kelapa, kelapa parut kering (desiccated coconut), dan minyak kelapa.',
                 'tags' => ['Coconut Processing', 'Desiccated Coconut', 'Coconut Milk', 'Agri Exports'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'HACCP', 'Halal BPJPH / MUI'],
             ],
+            [
+                'name' => 'PT Tripper Nature',
+                'slug' => 'pt-tripper-nature',
+                'industry_category' => 'Spices & Coconut',
+                'city' => 'Gianyar, Bali',
+                'founded_year' => null,
+                'website' => 'https://www.tripper.com',
+                'company_size' => '200+ karyawan',
+                'tagline' => 'Produsen dan eksportir rempah organik serta ekstrak botani Indonesia yang terlacak.',
+                'description' => 'Mengolah komoditas rempah langsung di daerah asal melalui fasilitas di Bali serta pabrik kayu manis di kawasan industri MM2100 Cikarang Barat untuk memproduksi kayu manis (cassia), vanila, cengkeh, pala, jahe, kunyit, dan ekstrak botani.',
+                'tags' => ['Cassia Cinnamon', 'Vanilla & Cloves', 'Spice Extracts', 'Ginger & Turmeric', 'Organic Spices'],
+                'certifications' => ['FSSC 22000', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Agri Spice Indonesia',
+                'slug' => 'pt-agri-spice-indonesia',
+                'industry_category' => 'Spices & Coconut',
+                'city' => 'Klaten',
+                'founded_year' => null,
+                'website' => 'https://www.ptasi.id',
+                'email' => 'ptasi@agrobusiness.id',
+                'whatsapp' => '+62 821-3834-4480',
+                'tagline' => 'Pengolah dan eksportir rempah unggulan Indonesia dari fasilitas terpadu di Klaten.',
+                'description' => 'Mengoperasikan fasilitas pengolahan seluas 3 hektar di Klaten Utara dengan kemitraan petani di berbagai pulau sentra rempah untuk memproses kayu manis, cengkeh, biji dan fuli pala, lada hitam/putih, serta biji vanila.',
+                'tags' => ['Nutmeg & Mace', 'Cassia Cinnamon', 'Cloves', 'Black & White Pepper', 'Vanilla Beans'],
+                'certifications' => ['FSSC 22000', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Mega Inovasi Organik',
+                'slug' => 'pt-mega-inovasi-organik',
+                'industry_category' => 'Spices & Coconut',
+                'city' => 'Bekasi',
+                'founded_year' => 2011,
+                'website' => 'https://megainovasiorganik.com',
+                'email' => 'info@megainovasiorganik.com',
+                'whatsapp' => '+62 821-7777-9660',
+                'tagline' => 'Produsen dan eksportir gula kelapa organik, vanila, dan rempah-rempah tersertifikasi.',
+                'description' => 'Mengoperasikan fasilitas pengolahan di Kulon Progo dan Banyumas dengan kemitraan lebih dari 3.500 petani organik untuk memproduksi gula kelapa organik, vanila Planifolia, kakao, serta aneka rempah ekspor.',
+                'tags' => ['Coconut Sugar', 'Organic Spices', 'Vanilla Beans', 'Fairtrade Ingredients', 'Agri Exports'],
+                'certifications' => ['FSSC 22000', 'HACCP', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Tropica Cocoprima',
+                'slug' => 'pt-tropica-cocoprima',
+                'industry_category' => 'Spices & Coconut',
+                'city' => 'Minahasa Selatan',
+                'founded_year' => 1997,
+                'website' => 'https://cocoprima.id',
+                'email' => 'info@cocoprima.id',
+                'tagline' => 'Manufaktur kelapa parut kering (desiccated coconut), coconut chips, dan krim kelapa beku ekspor.',
+                'description' => 'Beroperasi di kawasan sentra perkebunan kelapa Lelema, Minahasa Selatan dengan kantor pusat di Manado, memproduksi desiccated coconut berbagai grade, coconut chips, dan frozen coconut cream untuk industri pangan.',
+                'tags' => ['Desiccated Coconut', 'Frozen Coconut Cream', 'Coconut Chips', 'Coconut Processing', 'Food Ingredients'],
+                'certifications' => ['Halal BPJPH / MUI'],
+            ],
+
+            // Logistics & Warehousing (5)
             [
                 'name' => 'PT Puninar Jaya',
                 'slug' => 'pt-puninar-jaya',
@@ -214,9 +496,12 @@ class SupplierSeeder extends Seeder
                 'city' => 'Jakarta Timur',
                 'founded_year' => 1969,
                 'website' => 'https://www.puninar.com',
+                'email' => 'sales@puninar.com',
+                'production_capacity' => '136 rb+ m2 gudang indoor; 650+ truk',
                 'tagline' => 'Layanan logistik end-to-end, pergudangan, dan distribusi kargo B2B.',
                 'description' => 'Dikenal sebagai Puninar Logistics, menyediakan manajemen rantai pasok terintegrasi meliputi freight forwarding, transportasi multimoda, custom clearance, dan pergudangan.',
                 'tags' => ['Supply Chain Logistics', 'Warehousing', 'Freight Forwarding', 'Inland Transport'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'Halal BPJPH / MUI'],
             ],
             [
                 'name' => 'PT Kamadjaja Logistics',
@@ -226,9 +511,11 @@ class SupplierSeeder extends Seeder
                 'founded_year' => 1968,
                 'website' => 'https://www.kamadjaja.com',
                 'email' => 'info@kamadjaja.com',
+                'production_capacity' => '180.000 m2 logistics park (KLOG Park)',
                 'tagline' => 'Jaringan pergudangan modern dan distribusi logistik nasional.',
                 'description' => 'Menyediakan layanan logistik pihak ketiga (3PL), pusat distribusi K-LOG Park, manajemen inventaris, serta pengiriman domestik terintegrasi.',
                 'tags' => ['3PL Logistics', 'Distribution Center', 'Contract Warehousing', 'Domestic Freight'],
+                'certifications' => ['Halal BPJPH / MUI'],
             ],
             [
                 'name' => 'PT Samudera Indonesia Tbk',
@@ -238,10 +525,49 @@ class SupplierSeeder extends Seeder
                 'founded_year' => 1964,
                 'website' => 'https://www.samudera.id',
                 'email' => 'corporate.secretary@samudera.id',
+                'company_size' => '5.079 karyawan (Grup FY 2025)',
+                'production_capacity' => '40 kapal; 577 rb DWT (~2,06 jt TEUs/th)',
+                'carbon_footprint_report' => 'Sustainability Report 2024/2025',
                 'tagline' => 'Grup pelayaran kargo, operator pelabuhan, dan logistik terintegrasi.',
-                'description' => 'Mengoperasikan armada kapal kargo kontainer, curah, dan tanker bersama terminal pelabuhan serta jaringan logistik darat dan gudang berikat.',
+                'description' => 'Mengoperasikan armada kapal kargo kontainer, tanker kimia, dan gas bersama terminal pelabuhan serta jaringan logistik darat dan gudang berikat.',
+                'about' => 'Didirikan pada tahun 1964 dan tercatat di Bursa Efek Indonesia (SMDR), PT Samudera Indonesia Tbk merupakan grup pelayaran kargo, operator terminal pelabuhan, dan logistik terintegrasi yang melayani rute domestik dan internasional dengan 40 kapal operasional dan throughput kontainer sekitar 2 juta TEUs per tahun.',
                 'tags' => ['Container Shipping', 'Port Terminal', 'Bonded Warehouse', 'Supply Chain'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001'],
             ],
+            [
+                'name' => 'PT Mulia Bosco Logistik',
+                'slug' => 'pt-mulia-bosco-logistik',
+                'industry_category' => 'Logistics & Warehousing',
+                'city' => 'Bekasi',
+                'founded_year' => 2016,
+                'website' => 'https://mgmbosco.com',
+                'email' => 'info.marketing@mgmbosco.com',
+                'whatsapp' => '+62 812-8555-0711',
+                'production_capacity' => '70.000+ pallet & 1.000+ truk berpendingin',
+                'carbon_footprint_report' => 'Sustainability Metrics 2024 (434,7 tCO2 dihindari)',
+                'tagline' => 'Solusi rantai dingin terpadu, cold storage modern, dan armada berpendingin nasional.',
+                'description' => 'Dikenal sebagai MGM Bosco Logistics, menyediakan layanan logistik rantai dingin terintegrasi dengan fasilitas gudang pendingin multi-suhu (chiller, AC, dan frozen) serta armada truk berpendingin berpemantauan suhu 24/7.',
+                'tags' => ['Cold Chain Logistics', 'Cold Storage', 'Refrigerated Transport', '3PL Warehousing'],
+                'certifications' => ['ISO 9001:2015', 'ISO 45001', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT BGR Logistik Indonesia',
+                'slug' => 'pt-bgr-logistik-indonesia',
+                'industry_category' => 'Logistics & Warehousing',
+                'city' => 'Jakarta Barat',
+                'founded_year' => 2021,
+                'website' => 'https://bgrlogistik.id',
+                'email' => 'info@bgrlogistik.id',
+                'whatsapp' => '+62 21-690-6600',
+                'production_capacity' => '500+ gudang & 1.500+ armada (20 cabang)',
+                'carbon_footprint_report' => 'Laporan Keberlanjutan Induk PT PPI 2024',
+                'tagline' => 'Penyedia layanan pergudangan terpadu, depo kontainer, dan logistik berbasis digital.',
+                'description' => 'Anak usaha PT Perusahaan Perdagangan Indonesia (ID FOOD Group) yang mengintegrasikan historis Bhanda Ghara Reksa sejak 1977 untuk layanan pergudangan modern, cold storage, depo peti kemas, freight forwarding, dan transportasi terintegrasi ERP.',
+                'tags' => ['Integrated 3PL', 'Digital Warehousing', 'Container Depot', 'Freight Forwarding'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'Halal BPJPH / MUI'],
+            ],
+
+            // Chemical & Ingredients (5)
             [
                 'name' => 'PT Haldin Pacific Semesta',
                 'slug' => 'pt-haldin-pacific-semesta',
@@ -249,9 +575,14 @@ class SupplierSeeder extends Seeder
                 'city' => 'Bekasi',
                 'founded_year' => 1989,
                 'website' => 'https://haldin.com',
+                'email' => 'info@haldin.com',
+                'whatsapp' => '+62 811-1545-115',
+                'production_capacity' => 'Ekstraksi 50 rb MT/th; UHT 20 rb MT/th',
                 'tagline' => 'Produsen bahan alami, ekstrak botani, dan bahan baku rasa.',
-                'description' => 'Mengolah bahan baku pertanian Indonesia menjadi ekstrak teh, kopi, cokelat, gula kelapa, madu, serta minyak atsiri dan bahan fungsional industri.',
+                'description' => 'Mengolah bahan baku pertanian Indonesia menjadi ekstrak teh, kopi, cokelat, gula kelapa, madu, serta minyak atsiri dan bahan fungsional untuk industri pangan dan personal care.',
+                'about' => 'Berpusat di Kawasan Industri MM2100 Cibitung, Bekasi dengan empat fasilitas manufaktur (Cibitung, Cikarang, Setu, dan Lampung), PT Haldin Pacific Semesta memproduksi ekstrak botani, UHT Bag-in-Box, lini rempah, spray dry, dan bahan fungsional untuk ekspor ke lebih dari 65 negara.',
                 'tags' => ['Natural Extracts', 'Botanical Ingredients', 'Essential Oils', 'Food Ingredients'],
+                'certifications' => ['ISO 22000', 'FSSC 22000', 'HACCP', 'Halal BPJPH / MUI'],
             ],
             [
                 'name' => 'PT Indesso Aroma',
@@ -261,9 +592,58 @@ class SupplierSeeder extends Seeder
                 'founded_year' => 1968,
                 'website' => 'https://www.indesso.com',
                 'email' => 'contact@indesso.com',
+                'company_size' => '655 karyawan internal (SR 2025)',
+                'carbon_footprint_report' => 'Sustainability Report 2025 (SBTi)',
                 'tagline' => 'Produsen bahan aroma kimia, minyak atsiri, dan ekstrak alami.',
                 'description' => 'Memproduksi bahan baku aroma, ekstrak rempah alami Indonesia, serta bahan perisa dan wewangian (flavor & fragrance ingredients) untuk industri pangan dan kosmetik.',
+                'about' => 'Berdiri sejak tahun 1968 di Jakarta bermula dari penyulingan minyak daun cengkeh, PT Indesso Aroma kini mengoperasikan pabrik dan gudang di Cileungsi, Baturraden, dan Ungaran untuk memasok bahan aroma kimia, minyak atsiri, dan vanilin alami ke pasar global.',
                 'tags' => ['Aroma Chemicals', 'Essential Oils', 'Natural Extracts', 'Flavor & Fragrance'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'FSSC 22000', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Ecogreen Oleochemicals',
+                'slug' => 'pt-ecogreen-oleochemicals',
+                'industry_category' => 'Chemical & Ingredients',
+                'city' => 'Batam',
+                'founded_year' => 1989,
+                'website' => 'https://www.ecogreenoleo.com',
+                'email' => 'info@ecogreenoleo.com',
+                'carbon_footprint_report' => 'RSPO ACOP & Sustainability Disclosures',
+                'tagline' => 'Produsen global natural fatty alcohol, asam lemak, dan ester oleokimia berbasis sawit.',
+                'description' => 'Produsen oleokimia terkemuka di Indonesia dengan fasilitas pabrik di Batam dan Medan yang mengolah minyak inti sawit menjadi fatty alcohols, oleic acid, refined glycerin, dan specialty esters.',
+                'tags' => ['Oleochemicals', 'Fatty Alcohols', 'Refined Glycerin', 'Specialty Esters'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'FSSC 22000', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Ajinomoto Indonesia',
+                'slug' => 'pt-ajinomoto-indonesia',
+                'industry_category' => 'Chemical & Ingredients',
+                'city' => 'Jakarta Utara',
+                'founded_year' => 1969,
+                'website' => 'https://www.ajinomoto.co.id',
+                'company_size' => '2.200+ karyawan',
+                'production_capacity' => '80.000 ton/tahun (Karawang) + Mojokerto',
+                'carbon_footprint_report' => 'Ajinomoto Group Sustainability Report',
+                'tagline' => 'Produsen ingredien pangan berbasis fermentasi asam amino dan solusi bumbu industri.',
+                'description' => 'Perusahaan manufaktur bahan pangan berbasis teknologi fermentasi asam amino (AminoScience) dengan pabrik di Mojokerto dan Karawang yang memasok MSG, penyedap, dan ingredien fungsional industri pangan.',
+                'tags' => ['Food Ingredients', 'Amino Acids', 'Fermentation', 'Industrial Seasoning'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'FSSC 22000', 'Halal BPJPH / MUI'],
+            ],
+            [
+                'name' => 'PT Samator Indo Gas Tbk',
+                'slug' => 'pt-samator-indo-gas-tbk',
+                'industry_category' => 'Chemical & Ingredients',
+                'city' => 'Jakarta Selatan',
+                'founded_year' => 1971,
+                'website' => 'https://www.samatorgas.com',
+                'email' => 'corsec@samator.com',
+                'company_size' => '1.687 karyawan (FY 2025)',
+                'production_capacity' => '729,24 jt m3/th (60 pabrik, 103 stasiun)',
+                'carbon_footprint_report' => 'Integrated Report 2025 (474.788 tCO2e)',
+                'tagline' => 'Produsen gas industri, medis, spesial, dan food-grade terbesar di Indonesia.',
+                'description' => 'Memproduksi dan mendistribusikan gas udara (oksigen, nitrogen, argon), CO2 food-grade, hidrogen, asetilen, serta gas spesial dan elektronik melalui teknologi Air Separation Unit (ASU) di 30 provinsi Indonesia.',
+                'tags' => ['Industrial Gases', 'Food-Grade CO2', 'Specialty Gases', 'Air Separation Unit'],
+                'certifications' => ['ISO 9001:2015', 'ISO 14001', 'ISO 45001', 'FSSC 22000', 'Halal BPJPH / MUI'],
             ],
         ];
     }

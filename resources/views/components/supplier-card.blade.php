@@ -4,6 +4,14 @@
     $verifiedCert = $supplier->certifications->firstWhere('status', 'verified')?->certification?->name;
 @endphp
 <article data-reveal {{ $attributes->merge(['class' => 'group nb-supplier-card nb-card-interactive relative min-w-0 p-5 md:p-6 flex h-full flex-col '.($selected ? 'nb-card-selected !border-brand-700 ring-1 ring-brand-700' : '')]) }}>
+    @if($supplier->cover_image)
+        <div class="-mx-5 -mt-5 md:-mx-6 md:-mt-6 mb-4 h-32 overflow-hidden rounded-t-2xl border-b border-border bg-slate-100">
+            <img src="{{ str_starts_with($supplier->cover_image, 'http') ? $supplier->cover_image : asset('storage/' . $supplier->cover_image) }}"
+                 alt="Fasilitas {{ $supplier->name }}"
+                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                 loading="lazy" />
+        </div>
+    @endif
     <div class="flex items-start gap-3">
         <x-ui.avatar :name="$supplier->name" :logo="$supplier->logo" class="!w-11 !h-11" />
         <div class="min-w-0 flex-1">

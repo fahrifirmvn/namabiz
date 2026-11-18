@@ -235,6 +235,7 @@ class SupplierController extends Controller
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'slug' => ['sometimes', 'required', 'string', 'max:255', 'alpha_dash'],
             'logo' => ['nullable', 'string', 'max:500', 'url:http,https'],
+            'cover_image' => ['nullable', 'string', 'max:500', 'url:http,https'],
             'tagline' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'country' => ['sometimes', 'required', 'string', 'max:100'],

@@ -15,8 +15,11 @@ class CertificationSeeder extends Seeder
         $certifications = [
             ['name' => 'ISO 9001:2015', 'category' => 'Quality Management'],
             ['name' => 'ISO 14001', 'category' => 'Environmental'],
+            ['name' => 'ISO 45001', 'category' => 'Occupational Health & Safety'],
+            ['name' => 'ISO 22000', 'category' => 'Food Safety'],
             ['name' => 'FSSC 22000', 'category' => 'Food Safety'],
             ['name' => 'HACCP', 'category' => 'Food Safety'],
+            ['name' => 'Halal BPJPH / MUI', 'category' => 'Halal Assurance'],
         ];
 
         foreach ($certifications as $certification) {

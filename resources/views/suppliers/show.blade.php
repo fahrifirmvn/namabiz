@@ -32,6 +32,13 @@
 
         <!-- Top Profile Header Card -->
         <div class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 shadow-xs mb-8">
+            @if($supplier->cover_image)
+                <div class="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6 h-40 sm:h-52 overflow-hidden rounded-t-2xl border-b border-gray-200 bg-slate-100">
+                    <img src="{{ str_starts_with($supplier->cover_image, 'http') ? $supplier->cover_image : asset('storage/' . $supplier->cover_image) }}"
+                         alt="Fasilitas {{ $supplier->name }}"
+                         class="w-full h-full object-cover" />
+                </div>
+            @endif
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <!-- Left: Logo & Info -->
                 <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
@@ -262,7 +269,7 @@
                         <div class="rounded-xl p-4 border {{ auth()->user()?->isPremium() ? 'bg-surface border-gray-100' : 'bg-surface/90 border-gray-200/80 nb-striped-locked' }}">
                             <span class="text-2xs text-gray-400 font-semibold uppercase">Audit Jejak Karbon</span>
                             @if(auth()->user()?->isPremium())
-                                <p class="text-sm font-bold text-gray-900 mt-1">{{ $supplier->carbon_footprint_report ?? 'Tersedia 2024' }}</p>
+                                <p class="text-sm font-bold text-gray-900 mt-1">{{ $supplier->carbon_footprint_report ?? 'Belum tersedia' }}</p>
                             @else
                                 <div class="mt-2 filter blur-xs select-none">
                                     <p class="text-sm font-bold text-gray-400">Tersedia Audit</p>

@@ -423,4 +423,54 @@ class AdminSupplierTest extends TestCase
         $this->assertSame(512, $dimensions[0]);
         $this->assertSame(384, $dimensions[1]);
     }
+
+    public function test_admin_can_upload_render_and_delete_supplier_cover_image(): void
+    {
+        if (! function_exists('imagecreatefromstring') || ! function_exists('imagewebp')) {
+            $this->markTestSkipped('GD WebP extension is required.');
+        }
+
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $premiumUser = User::factory()->create(['subscription_tier' => 'premium']);
+        $supplier = Supplier::factory()->create([
+            'name' => 'PT Uji Fasilitas',
+            'slug' => 'pt-uji-fasilitas',
+            'carbon_footprint_report' => null,
+        ]);
+
+        $this->actingAs($admin)->put(route('admin.suppliers.update', $supplier), [
+            'name' => $supplier->name,
+            'country' => $supplier->country,
+            'industry_category' => $supplier->industry_category,
+            'logo_file' => UploadedFile::fake()->image('logo.png', 200, 200),
+            'cover_image_file' => UploadedFile::fake()->image('plant.jpg', 1600, 900),
+        ])->assertRedirect(route('admin.suppliers.edit', $supplier));
+
+        $supplier->refresh();
+        $logoPath = $supplier->logo;
+        $coverPath = $supplier->cover_image;
+
+        $this->assertNotNull($coverPath);
+        $this->assertStringStartsWith('suppliers/covers/', $coverPath);
+        Storage::disk('public')->assertExists($coverPath);
+
+        $coverDimensions = getimagesizefromstring((string) Storage::disk('public')->get($coverPath));
+        $this->assertSame(1200, $coverDimensions[0]);
+        $this->assertSame(675, $coverDimensions[1]);
+
+        $this->actingAs($premiumUser)
+            ->get(route('suppliers.show', $supplier->slug))
+            ->assertOk()
+            ->assertSee($coverPath)
+            ->assertSee('Belum tersedia')
+            ->assertDontSee('Tersedia 2024');
+
+        $this->actingAs($admin)
+            ->delete(route('admin.suppliers.destroy', $supplier))
+            ->assertRedirect(route('admin.suppliers.index'));
+
+        Storage::disk('public')->assertMissing($logoPath);
+        Storage::disk('public')->assertMissing($coverPath);
+    }
 }

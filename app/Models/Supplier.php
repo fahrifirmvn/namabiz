@@ -16,7 +16,7 @@ class Supplier extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'logo', 'tagline', 'description', 'country', 'city',
+        'name', 'slug', 'logo', 'cover_image', 'tagline', 'description', 'country', 'city',
         'industry_category', 'is_verified', 'about', 'website', 'whatsapp', 'email',
         'founded_year', 'company_size', 'production_capacity', 'moq',
         'avg_lead_time', 'carbon_footprint_report',

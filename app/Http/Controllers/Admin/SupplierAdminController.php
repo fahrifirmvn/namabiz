@@ -185,6 +185,12 @@ class SupplierAdminController extends Controller
             $this->deleteDocumentFile($doc->file_path);
         }
 
+        foreach ([$supplier->logo, $supplier->cover_image] as $imagePath) {
+            if ($imagePath && ! str_starts_with($imagePath, 'http')) {
+                Storage::disk('public')->delete($imagePath);
+            }
+        }
+
         $supplier->documents()->delete();
         $supplier->tags()->delete();
         $supplier->certifications()->delete();
@@ -315,18 +321,36 @@ class SupplierAdminController extends Controller
         $supplier->about ??= '';
         $supplier->is_verified = $request->boolean('is_verified');
 
-        $previousLogo = $supplier->logo;
+        $this->syncImageField($supplier, $request, 'logo', 'suppliers', 512);
+        $this->syncImageField($supplier, $request, 'cover_image', 'suppliers/covers', 1200);
+    }
 
-        if ($request->hasFile('logo_file')) {
-            $supplier->logo = SupplierLogoProcessor::storeOptimized($request->file('logo_file'));
-        } elseif ($request->filled('logo_url')) {
-            $supplier->logo = $request->input('logo_url');
-        } elseif ($request->boolean('remove_logo')) {
-            $supplier->logo = null;
+    /**
+     * Update an image column from an uploaded file, URL, or removal toggle and clean up stale public files.
+     */
+    private function syncImageField(
+        Supplier $supplier,
+        SupplierRequest $request,
+        string $attribute,
+        string $directory,
+        int $maxDimension
+    ): void {
+        $previous = $supplier->getAttribute($attribute);
+
+        if ($request->hasFile("{$attribute}_file")) {
+            $next = SupplierLogoProcessor::storeOptimized($request->file("{$attribute}_file"), $directory, $maxDimension);
+        } elseif ($request->filled("{$attribute}_url")) {
+            $next = $request->input("{$attribute}_url");
+        } elseif ($request->boolean("remove_{$attribute}")) {
+            $next = null;
+        } else {
+            $next = $previous;
         }
 
-        if ($previousLogo && $previousLogo !== $supplier->logo && ! str_starts_with($previousLogo, 'http')) {
-            Storage::disk('public')->delete($previousLogo);
+        $supplier->setAttribute($attribute, $next);
+
+        if ($previous && $previous !== $next && ! str_starts_with($previous, 'http')) {
+            Storage::disk('public')->delete($previous);
         }
     }
 
